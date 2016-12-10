@@ -17,7 +17,11 @@ library
   hs-source-dirs:      common
   exposed-modules:
   build-depends:       base >= 4.7 && < 5
+                     , protolude
   default-language:    Haskell2010
+  default-extensions:  OverloadedStrings
+                     , NoImplicitPrelude
+
 
 executable purple-muon-client
   hs-source-dirs:      client
@@ -25,7 +29,10 @@ executable purple-muon-client
   ghc-options:         -threaded -rtsopts -with-rtsopts=-N
   build-depends:       base
                      , purple-muon
+                     , protolude
   default-language:    Haskell2010
+  default-extensions:  OverloadedStrings
+                     , NoImplicitPrelude
 
 executable purple-muon-server
   hs-source-dirs:      server
@@ -33,7 +40,10 @@ executable purple-muon-server
   ghc-options:         -threaded -rtsopts -with-rtsopts=-N
   build-depends:       base
                      , purple-muon
+                     , protolude
   default-language:    Haskell2010
+  default-extensions:  OverloadedStrings
+                     , NoImplicitPrelude
 
 source-repository head
   type:     git
