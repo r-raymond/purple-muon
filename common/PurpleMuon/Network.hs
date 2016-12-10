@@ -1,5 +1,5 @@
 module PurpleMuon.Network
-    (
+    ( MessageCount
     ) where
 
 import Protolude
@@ -30,3 +30,9 @@ strip uuid msg = if (u == h) then (Just $ NakedMessage t) else Nothing
     u = (unUUID uuid)
     l = DBS.length u
     (h, t) = DBS.splitAt l (unRawMessage msg)
+
+-- | A counter to count both the remote and local messages
+newtype MessageCount = MessageCount { unMessageCounter :: Word32 }
+
+-- | A field indicating which of the last 32 messages have arrived.
+newtype AckField = AckField { unAckField :: Word32 }
