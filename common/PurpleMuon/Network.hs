@@ -2,7 +2,7 @@ module PurpleMuon.Network
     ( MessageCount
     ) where
 
-import Protolude
+import           Protolude
 
 import qualified Data.ByteString as DBS
 

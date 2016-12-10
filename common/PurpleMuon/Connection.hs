@@ -2,9 +2,9 @@ module PurpleMuon.Connection
     (
     ) where
 
-import Protolude
+import           Protolude
 
-import qualified Network.Socket as NSO
+import qualified Network.Socket     as NSO
 
 import qualified PurpleMuon.Network as PNE
 
@@ -21,6 +21,6 @@ data NetworkState
 
 data ConnectionState
     = ConnectionState
-    { addr :: NSO.SockAddr
+    { addr          :: NSO.SockAddr
     , latestCounter :: PNE.MessageCount
     }
