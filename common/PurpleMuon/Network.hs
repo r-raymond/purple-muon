@@ -6,6 +6,7 @@ module PurpleMuon.Network
     , strip
     , nextMC
     , diffMC
+    , moveMC
     , UUID(..)
     , Offset(..)
     , AckField(..)
@@ -63,9 +64,14 @@ diffMC :: MessageCount -> MessageCount -> Offset
 diffMC (MessageCount a) (MessageCount b) = Offset $
     if (abs (ai - bi)) < threshold
         then bi - ai
-        else 0
+        else bi - ai  + (signum (ai - bi)) * (maxi + 1)
   where
     ai = fromIntegral a
     bi = fromIntegral b
     maxi = fromIntegral (maxBound :: Word32)
     threshold = maxi `div` 2
+
+-- | Move a MessageCount by a given offset
+moveMC :: MessageCount -> Offset -> MessageCount
+moveMC (MessageCount m) (Offset o) = MessageCount $
+    fromIntegral ((fromIntegral m) + o)
