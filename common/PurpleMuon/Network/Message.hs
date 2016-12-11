@@ -40,9 +40,11 @@ nextMC (PNT.MessageCount c) = PNT.MessageCount (c + 1) -- note that Word32 wraps
 
 -- | Calculate the offset of two message types.
 -- Guarantees that
--- ```
--- a + (diffMC a b) = b
--- ```
+--
+-- @
+-- moveMC a (diffMC a b) = b
+-- @
+--
 -- for all MessageCounts a and b.
 diffMC :: PNT.MessageCount -> PNT.MessageCount -> PNT.Offset
 diffMC (PNT.MessageCount a) (PNT.MessageCount b) = PNT.Offset $
