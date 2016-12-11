@@ -1,33 +1,12 @@
-module PurpleMuon.Connection
-    ( NetworkConfig(..)
-    , NetworkState(..)
-    , ConnectionState(..)
-    , serverSocket
+module PurpleMuon.Network.Util
+    ( serverSocket
     , clientSocket
     ) where
 
-import           Protolude
+import Protolude
+
 
 import qualified Network.Socket     as NSO
-
-import qualified PurpleMuon.Network as PNE
-
--- | A Configuration of a connection
-data NetworkConfig
-    = ConnectionConfig
-    { maxClients :: Int
-    }
-
-data NetworkState
-    = NetworkState
-    { socket :: NSO.Socket
-    }
-
-data ConnectionState
-    = ConnectionState
-    { addr          :: NSO.SockAddr
-    , latestCounter :: PNE.MessageCount
-    }
 
 -- | Open a UDP Socket on a specific port
 serverSocket :: Text -> IO (Either SomeException NSO.Socket)

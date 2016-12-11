@@ -15,8 +15,9 @@ cabal-version:       >=1.10
 
 library
   hs-source-dirs:      common
-  exposed-modules:     PurpleMuon.Network
-                     , PurpleMuon.Connection
+  exposed-modules:     PurpleMuon.Network.Types
+                     , PurpleMuon.Network.Message
+                     , PurpleMuon.Network.Util
   ghc-options:         -Wall -O -Werror
   build-depends:       base >= 4.7 && < 5
                      , protolude
