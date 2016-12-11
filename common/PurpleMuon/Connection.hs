@@ -2,6 +2,7 @@ module PurpleMuon.Connection
     ( NetworkConfig(..)
     , NetworkState(..)
     , ConnectionState(..)
+    , openConnection
     ) where
 
 import           Protolude
@@ -26,3 +27,9 @@ data ConnectionState
     { addr          :: NSO.SockAddr
     , latestCounter :: PNE.MessageCount
     }
+
+-- | Open a UDP Socket and optionally specify a port
+openConnection :: Maybe Text -> IO (Either SomeException NSO.Socket)
+openConnection port = try $ do
+    a:_ <- NSO.getAddrInfo Nothing (Just "localhost") (fmap toS port)
+    NSO.socket (NSO.addrFamily a) NSO.Datagram NSO.defaultProtocol
