@@ -2,6 +2,7 @@ module PurpleMuon.Network.Types
     ( RawMessage(..)
     , NakedMessage(..)
     , UUID(..)
+    , Payload(..)
     , MessageCount(..)
     , AckField(..)
     , Offset(..)
@@ -19,6 +20,9 @@ newtype RawMessage = RawMessage { unRawMessage :: ByteString }
 
 -- | A binary message without a uuid header
 newtype NakedMessage = NakedMessage { unNakedMessage :: ByteString }
+
+-- | The payload of a Message
+newtype Payload = Payload { unPayload :: ByteString }
 
 -- | A uuid is a header that the server and client prepends to
 -- every message. A message that does not have such a header is
