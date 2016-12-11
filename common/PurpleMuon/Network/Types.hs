@@ -1,3 +1,11 @@
+{-|
+Module      : PurpleMuon.Network.Types
+Description : A collection of all types used in PupleMuon's Network Code
+Copyright   : (c) Robin Raymond, 2016
+License     : GPL-3
+Maintainer  : robin@robinraymond.de
+Portability : POSIX
+-}
 module PurpleMuon.Network.Types
     ( RawMessage(..)
     , NakedMessage(..)

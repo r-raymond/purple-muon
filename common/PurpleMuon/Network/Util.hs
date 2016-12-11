@@ -1,3 +1,11 @@
+{-|
+Module      : PurpleMuon.Network.Types
+Description : A collection utilty functions of PurpleMuon's Network Code
+Copyright   : (c) Robin Raymond, 2016
+License     : GPL-3
+Maintainer  : robin@robinraymond.de
+Portability : POSIX
+-}
 module PurpleMuon.Network.Util
     ( serverSocket
     , clientSocket

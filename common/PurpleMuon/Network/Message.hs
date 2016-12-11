@@ -1,3 +1,11 @@
+{-|
+Module      : PurpleMuon.Network.Message
+Description : Functions that evolve around (dis)assembly of network messages
+Copyright   : (c) Robin Raymond, 2016
+License     : GPL-3
+Maintainer  : robin@robinraymond.de
+Portability : POSIX
+-}
 module PurpleMuon.Network.Message
     ( prepend
     , strip
