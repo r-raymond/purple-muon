@@ -1,5 +1,7 @@
 module PurpleMuon.Connection
-    (
+    ( NetworkConfig(..)
+    , NetworkState(..)
+    , ConnectionState(..)
     ) where
 
 import           Protolude
