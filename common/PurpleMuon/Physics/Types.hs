@@ -33,3 +33,9 @@ type Acceleration = LV2.V2 Float
 
 -- | A time delta
 type DeltaTime = Float
+
+-- | A Force
+type Force = type LV2.V2 Float
+
+-- | A static object
+type StaticObject = (Position, Mass)
