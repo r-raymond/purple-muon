@@ -11,6 +11,7 @@ module PurpleMuon.Physics.Algorithm
     ( integrateAccel
     , integrateVel
     , gravitationalForce
+    , gravitationalForceVec
     ) where
 
 import Protolude
@@ -29,3 +30,10 @@ integrateVel dt v p = fmap (* dt) v + p
 -- This only calculates the magnitude of the force
 gravitationalForce :: Float -> PPT.StaticObject -> PPT.StaticObject -> Float
 gravitationalForce g (p1, m1) (p2, m2) = g * m1 * m2 / (LME.qd p1 p2)
+
+-- |The graviational forces between to objects
+-- Returns the gravitaitonal force on the first object. The force on the
+-- second one is of course just the negative of the returned force.
+gravitationalForceVec :: Float -> PPT.StaticObject -> PPT.StaticObject -> PPT.Force
+gravitationalForceVec g o1@(p1, _) o2@(p2, _) =
+    fmap (* (gravitationalForce g o1 o2)) (LME.signorm (p2 - p1))
