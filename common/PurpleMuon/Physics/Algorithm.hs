@@ -10,9 +10,12 @@ Portability : POSIX
 module PurpleMuon.Physics.Algorithm
     ( integrateAccel
     , integrateVel
+    , gravitationalForce
     ) where
 
 import Protolude
+
+import qualified Linear.Metric as LME
 
 import qualified PurpleMuon.Physics.Types as PPT
 
@@ -24,5 +27,5 @@ integrateVel dt v p = fmap (* dt) v + p
 
 -- |The gravitational force between to objects
 -- This only calculates the magnitude of the force
-gravitationalForce :: Float -> StaticObject -> StaticObject -> Float
-gravitationalForce g (p1, m1) (p2, m2) = undefined -- TODO
+gravitationalForce :: Float -> PPT.StaticObject -> PPT.StaticObject -> Float
+gravitationalForce g (p1, m1) (p2, m2) = g * m1 * m2 / (LME.qd p1 p2)
