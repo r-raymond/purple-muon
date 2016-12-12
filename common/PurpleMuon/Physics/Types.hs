@@ -8,13 +8,14 @@ Portability : POSIX
 -}
 
 module PurpleMuon.Physics.Types
-    ( Position
-    , Mass
-    , Velocity
-    , Acceleration
-    , DeltaTime
-    , Force
-    , StaticObject
+    ( Position(..)
+    , Mass(..)
+    , Velocity(..)
+    , Acceleration(..)
+    , DeltaTime(..)
+    , Force(..)
+    , StaticObject(..)
+    , GravitationalConstant(..)
     ) where
 
 import Protolude
@@ -22,22 +23,25 @@ import Protolude
 import qualified Linear.V2 as LV2
 
 -- | The position of an object
-type Position = LV2.V2 Float
+newtype Position = Position { unPosition :: LV2.V2 Float }
 
 -- | The mass of an object
-type Mass = Float
+newtype Mass = Mass { unMass :: Float }
 
 -- | The velocity of an object
-type Velocity = LV2.V2 Float
+newtype Velocity = Velocity { unVelocity :: LV2.V2 Float }
 
 -- | The acceleration of an object
-type Acceleration = LV2.V2 Float
+newtype Acceleration = Acceleration { unAcceleration :: LV2.V2 Float }
 
 -- | A time delta
-type DeltaTime = Float
+newtype DeltaTime = DeltaTime { unDeltaTime :: Float }
 
 -- | A Force
-type Force = LV2.V2 Float
+newtype Force = Force { unForce :: LV2.V2 Float }
 
 -- | A static object
-type StaticObject = (Position, Mass)
+newtype StaticObject = StaticObject { unStaticObject :: (Position, Mass) }
+
+-- | The gravitaional constant
+newtype GravitationalConstant = GravitationalConstant { unGravitationalConstant :: Float }
