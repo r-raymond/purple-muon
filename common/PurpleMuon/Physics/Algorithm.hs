@@ -8,8 +8,7 @@ Portability : POSIX
 -}
 
 module PurpleMuon.Physics.Algorithm
-    ( integrateAccel
-    , integrateVel
+    ( integrateObject
     , gravitationalForceVec
     ) where
 
@@ -24,6 +23,17 @@ integrateAccel (PPT.DeltaTime dt) (PPT.Acceleration a) (PPT.Velocity v) = PPT.Ve
 
 integrateVel :: PPT.DeltaTime -> PPT.Velocity -> PPT.Position -> PPT.Position
 integrateVel (PPT.DeltaTime dt) (PPT.Velocity v) (PPT.Position p) = PPT.Position (fmap (* dt) v + p)
+
+newton2nd :: PPT.Force -> PPT.Mass -> PPT.Acceleration
+newton2nd (PPT.Force f) (PPT.Mass m) = PPT.Acceleration (fmap (/ m) f)
+
+integrateObject :: PPT.DeltaTime -> PPT.DynamicObject -> PPT.Force -> PPT.DynamicObject
+integrateObject dt (PPT.DynamicObject (PPT.StaticObject (p, m), v)) f =
+    PPT.DynamicObject ((PPT.StaticObject (pnew, m)), vnew)
+      where
+        a = newton2nd f m
+        vnew = integrateAccel dt a v
+        pnew = integrateVel dt vnew p
 
 -- |The gravitational force between to objects
 -- This only calculates the magnitude of the force
@@ -41,3 +51,5 @@ gravitationalForceVec g
                       o1@(PPT.StaticObject (PPT.Position p1, _))
                       o2@(PPT.StaticObject (PPT.Position p2, _)) = PPT.Force $
     fmap (* (gravitationalForce g o1 o2)) (LME.signorm (p2 - p1))
+
+-- | 

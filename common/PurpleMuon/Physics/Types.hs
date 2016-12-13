@@ -16,6 +16,7 @@ module PurpleMuon.Physics.Types
     , Force(..)
     , StaticObject(..)
     , GravitationalConstant(..)
+    , DynamicObject(..)
     ) where
 
 import Protolude
@@ -42,6 +43,9 @@ newtype Force = Force { unForce :: LV2.V2 Float }
 
 -- | A static object
 newtype StaticObject = StaticObject { unStaticObject :: (Position, Mass) }
+
+-- | A dynamic object
+newtype DynamicObject = DynamicObject { unDynamicObject :: (StaticObject, Velocity) }
 
 -- | The gravitaional constant
 newtype GravitationalConstant = GravitationalConstant { unGravitationalConstant :: Float }
