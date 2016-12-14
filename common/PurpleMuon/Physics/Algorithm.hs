@@ -88,9 +88,9 @@ staticForces :: PPT.GravitationalConstant
 staticForces g so go ro = (graObj, dynObj)
   where
     helper :: PPT.StaticObject -> (PPT.DynamicObject, PPT.Force) -> (PPT.DynamicObject, PPT.Force)
-    helper s (o, f) = (o, addForce f (gravitationalForceVec g (dynToSt o) s))
+    helper = foldingForceHelper g identity dynToSt
     helper2 :: PPT.StaticObject -> (PPT.GravitatingObject, PPT.Force) -> (PPT.GravitatingObject, PPT.Force)
-    helper2 s (o, f) = (o, addForce f (gravitationalForceVec g (grToSt o) s))
+    helper2 = foldingForceHelper g identity grToSt
     dynObj = fmap (\x -> foldr' helper x so) ro
     graObj = fmap (\x -> foldr' helper2 x so) go
 
@@ -103,9 +103,9 @@ dynamicForces :: PPT.GravitationalConstant
 dynamicForces g go ro = (graObj, dynObj)
   where
     helper :: PPT.GravitatingObject -> (PPT.DynamicObject, PPT.Force) -> (PPT.DynamicObject, PPT.Force)
-    helper s (o, f) = (o, addForce f (gravitationalForceVec g (dynToSt o) (grToSt s)))
+    helper = foldingForceHelper g grToSt dynToSt
     helper2 :: PPT.GravitatingObject -> (PPT.GravitatingObject, PPT.Force) -> (PPT.GravitatingObject, PPT.Force)
-    helper2 s (o, f) = (o, addForce f (gravitationalForceVec g (grToSt o) (grToSt s)))
+    helper2 = foldingForceHelper g grToSt grToSt
     dynObj = fmap (\x -> foldr' helper x (map fst go)) ro
     graObj = fmap (\x -> foldr' helper2 x (map fst go)) go -- TODO: Avoid calculating gravitational forces on oneself
 
