@@ -10,11 +10,13 @@ Portability : POSIX
 module PurpleMuon.Physics.Algorithm
     ( integrateObject
     , gravitationalForceVec
+    , calculateGravitationalForces
     ) where
 
 import Protolude
 
 import qualified Linear.Metric as LME
+import qualified Linear.V2 as LV2
 
 import qualified PurpleMuon.Physics.Types as PPT
 
@@ -71,12 +73,12 @@ calculateGravitationalForces :: PPT.GravitationalConstant -- ^ Gravitational Con
                              -> [PPT.DynamicObject] -- ^ Objects that only move
                              -> ( [(PPT.GravitatingObject, PPT.Force)]
                                 , [(PPT.DynamicObject, PPT.Force)] )
-calculateGravitationalForces g so go ro = undefined
---  where
---    goUnp   = fmap PPT.unGravitatingObject go
---    goWithF = fmap (\x -> (PPT.unGravitatingObject x, PPT.Force (0,0))) go
---    roWithF = fmap (\x -> (x, PPT.Force (0,0))) ro
---    staticForces = fmap (\(x,y) ->  (sequence so (doWithF ++ roWithF))
+calculateGravitationalForces g so go ro = dynamicForces g grWithF2 roWithF2
+    where
+      goWithF = fmap (\x -> (x, PPT.Force $ LV2.V2 0 0)) go
+      roWithF = fmap (\x -> (x, PPT.Force $ LV2.V2 0 0)) ro
+      (grWithF2, roWithF2) = staticForces g so goWithF roWithF
+
 
 -- | Helper function for only the static forces
 staticForces :: PPT.GravitationalConstant
