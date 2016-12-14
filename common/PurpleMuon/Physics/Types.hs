@@ -17,6 +17,7 @@ module PurpleMuon.Physics.Types
     , StaticObject(..)
     , GravitationalConstant(..)
     , DynamicObject(..)
+    , GravitatingObject(..)
     ) where
 
 import Protolude
@@ -46,6 +47,9 @@ newtype StaticObject = StaticObject { unStaticObject :: (Position, Mass) }
 
 -- | A dynamic object
 newtype DynamicObject = DynamicObject { unDynamicObject :: (StaticObject, Velocity) }
+
+-- | An object that both moves and gravitates
+newtype GravitatingObject = GravitatingObject { unGravitatingObject :: DynamicObject }
 
 -- | The gravitaional constant
 newtype GravitationalConstant = GravitationalConstant { unGravitationalConstant :: Float }
