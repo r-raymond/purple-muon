@@ -63,6 +63,16 @@ grToSt (PPT.GravitatingObject x) = dynToSt x
 addForce :: PPT.Force -> PPT.Force -> PPT.Force
 addForce (PPT.Force f1) (PPT.Force f2) = PPT.Force (f1 + f2)
 
+-- | Save calulcation of gravitational forces
+-- Does check if objects happen to be the same (in which case the force will be
+-- zero) and also sets a minimum distance so that the algorithm becomes
+-- numerically more stable
+saveGravitationalForceVec :: Float -> PPT.GravitationalConstant -> PPT.StaticObject -> PPT.StaticObject -> PPT.Force
+saveGravitationalForceVec eps g o1 o2 = if o1 /= o2
+                                            then gravitationalForceVec g o1 o2
+                                            else PPT.Force $ LV2.V2 0 0
+                                            -- TODO Implement eps
+
 -- | Calculate all forces for a system.
 -- For performance reasons we differentiate between objects that only receive
 -- gravitating forces and objects that both receive and induce gravitating
@@ -109,7 +119,7 @@ dynamicForces g go ro = (graObj, dynObj)
     helper2 :: PPT.GravitatingObject -> (PPT.GravitatingObject, PPT.Force) -> (PPT.GravitatingObject, PPT.Force)
     helper2 = foldingForceHelper g grToSt grToSt
     dynObj = fmap (\x -> foldr' helper x (map fst go)) ro
-    graObj = fmap (\x -> foldr' helper2 x (map fst go)) go -- TODO: Avoid calculating gravitational forces on oneself
+    graObj = fmap (\x -> foldr' helper2 x (map fst go)) go
 
 
 foldingForceHelper :: PPT.GravitationalConstant -> (a -> PPT.StaticObject) -> (b -> PPT.StaticObject) -> a -> (b, PPT.Force) -> (b, PPT.Force)

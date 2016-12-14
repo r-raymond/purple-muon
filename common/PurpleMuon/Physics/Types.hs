@@ -26,9 +26,11 @@ import qualified Linear.V2 as LV2
 
 -- | The position of an object
 newtype Position = Position { unPosition :: LV2.V2 Float }
+  deriving (Eq)
 
 -- | The mass of an object
 newtype Mass = Mass { unMass :: Float }
+  deriving (Eq)
 
 -- | The velocity of an object
 newtype Velocity = Velocity { unVelocity :: LV2.V2 Float }
@@ -44,6 +46,7 @@ newtype Force = Force { unForce :: LV2.V2 Float }
 
 -- | A static object
 newtype StaticObject = StaticObject { unStaticObject :: (Position, Mass) }
+  deriving (Eq)
 
 -- | A dynamic object
 newtype DynamicObject = DynamicObject { unDynamicObject :: (StaticObject, Velocity) }
