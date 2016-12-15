@@ -76,12 +76,13 @@ resetForces = fmap (CLE.set PPT.force (PPT.Force $ LV2.V2 0 0))
 calculateGravitationalForces :: PPT.GravitationalConstant -- ^ Gravitational Constant
                              -> [PPT.PhysicalObject]      -- ^ The physical objects to integrate
                              -> [PPT.PhysicalObject]
-calculateGravitationalForces g pos = undefined
+calculateGravitationalForces g pos = staticObjs ++ newNonStaticObjs
       where
         staticObjs      = filter (CLE.view PPT.static) pos
+        gravitatingObjs = filter (CLE.view PPT.gravitating) pos
         nonStaticObjs   = filter (not . (CLE.view PPT.static)) pos
-        gravitatingObjs = filter (CLE.view PPT.gravitating) nonStaticObjs
-        dynamicObjs     = filter (not . (CLE.view PPT.gravitating)) nonStaticObjs
+        -- Apply all forces
+        newNonStaticObjs = fmap (\x -> foldr' (applyForce g) x gravitatingObjs) nonStaticObjs
 
 
 -- |Apply the force of the first object to the second
