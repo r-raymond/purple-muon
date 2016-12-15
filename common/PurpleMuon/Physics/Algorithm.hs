@@ -124,3 +124,6 @@ dynamicForces g go ro = (graObj, dynObj)
 
 foldingForceHelper :: PPT.GravitationalConstant -> (a -> PPT.StaticObject) -> (b -> PPT.StaticObject) -> a -> (b, PPT.Force) -> (b, PPT.Force)
 foldingForceHelper g xts yts x (y, f) = (y, addForce f (gravitationalForceVec g (yts y) (xts x)))
+
+
+

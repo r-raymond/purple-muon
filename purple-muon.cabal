@@ -26,6 +26,7 @@ library
                      , bytestring
                      , network
                      , linear
+                     , lens
   default-language:    Haskell2010
   default-extensions:  OverloadedStrings
                      , NoImplicitPrelude

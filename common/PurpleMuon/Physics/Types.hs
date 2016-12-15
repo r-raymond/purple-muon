@@ -7,6 +7,8 @@ Maintainer  : robin@robinraymond.de
 Portability : POSIX
 -}
 
+{-# LANGUAGE TemplateHaskell #-}
+
 module PurpleMuon.Physics.Types
     ( Position(..)
     , Mass(..)
@@ -14,14 +16,12 @@ module PurpleMuon.Physics.Types
     , Acceleration(..)
     , DeltaTime(..)
     , Force(..)
-    , StaticObject(..)
     , GravitationalConstant(..)
-    , DynamicObject(..)
-    , GravitatingObject(..)
     ) where
 
-import Protolude
+import           Protolude
 
+import qualified Control.Lens as CLE
 import qualified Linear.V2 as LV2
 
 -- | The position of an object
@@ -44,15 +44,19 @@ newtype DeltaTime = DeltaTime { unDeltaTime :: Float }
 -- | A Force
 newtype Force = Force { unForce :: LV2.V2 Float }
 
--- | A static object
-newtype StaticObject = StaticObject { unStaticObject :: (Position, Mass) }
-  deriving (Eq)
-
--- | A dynamic object
-newtype DynamicObject = DynamicObject { unDynamicObject :: (StaticObject, Velocity) }
-
--- | An object that both moves and gravitates
-newtype GravitatingObject = GravitatingObject { unGravitatingObject :: DynamicObject }
-
 -- | The gravitaional constant
 newtype GravitationalConstant = GravitationalConstant { unGravitationalConstant :: Float }
+
+-- | A physical object
+data PhysicalObject
+    = PhysicalObject
+    { _uuid        :: Int      -- ^ A unique id of this object
+    , _mass        :: Mass     -- ^ The mass of the object
+    , _pos         :: Position -- ^ The position of the object
+    , _vel         :: Velocity -- ^ The velocity of the object
+    , _force       :: Force    -- ^ The current forces applied to this object
+    , _static      :: Bool     -- ^ Is this object moving?
+    , _gravitating :: Bool     -- ^ Is this object gravitating?
+    }
+
+CLE.makeLenses ''PhysicalObject
