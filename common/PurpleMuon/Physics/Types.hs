@@ -60,4 +60,7 @@ data PhysicalObject
     , _gravitating :: Bool     -- ^ Is this object gravitating?
     }
 
+instance (Eq PhysicalObject) where
+    (==) a b = (_uuid a) == (_uuid b)
+
 CLE.makeLenses ''PhysicalObject
