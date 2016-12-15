@@ -17,12 +17,13 @@ module PurpleMuon.Physics.Types
     , DeltaTime(..)
     , Force(..)
     , GravitationalConstant(..)
+    , PhysicalObject(..), uuid, mass, pos, vel, PurpleMuon.Physics.Types.force, static, gravitating
     ) where
 
 import           Protolude
 
 import qualified Control.Lens as CLE
-import qualified Linear.V2 as LV2
+import qualified Linear.V2    as LV2
 
 -- | The position of an object
 newtype Position = Position { unPosition :: LV2.V2 Float }
