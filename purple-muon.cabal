@@ -1,5 +1,5 @@
 name:                purple-muon
-version:             0.0.0.0
+version:             0
 synopsis:            A multiplayer space game
 description:         Please see README.md
 homepage:            https://github.com/r-raymond/purple-muon#readme
@@ -41,6 +41,7 @@ executable purple-muon-client
                      , purple-muon
                      , protolude
                      , network
+                     , sdl2
   default-language:    Haskell2010
   default-extensions:  OverloadedStrings
                      , NoImplicitPrelude
