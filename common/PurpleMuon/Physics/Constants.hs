@@ -10,7 +10,10 @@ Portability : POSIX
 module PurpleMuon.Physics.Constants
     ( g
     , physicalSize
+    , minimumDistance
     ) where
+
+import Protolude
 
 import qualified Linear.V2                as LV2
 
@@ -21,3 +24,8 @@ g = PPT.GravitationalConstant 1
 
 physicalSize :: PPT.PhysicalSize
 physicalSize = PPT.PhysicalSize (LV2.V2 1 1)
+
+-- | The minimum distance two objects are allowed to have
+-- This makes the integration numerically much more stable
+minimumDistance :: Float
+minimumDistance = 0.05

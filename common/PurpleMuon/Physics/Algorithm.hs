@@ -54,7 +54,7 @@ integrateObject dt po =
 -- The returned force is the force to apply to the first of the two objects.
 -- Obviously the force on the other one is the negative of that.
 --
--- This function uses the eps constant to define a minimum distance
+-- This function uses the minimum distance defined in `Constants`
 gravitationalForce :: PPT.PhysicalSize
                    -> PPT.GravitationalConstant
                    -> PPT.PhysicalObject
@@ -80,7 +80,7 @@ gravitationalForce ps g o1 o2 = PPT.Force $ LV2.V2 projectedForce1 projectedForc
     q1 = LV4.V4 (cos phi1) (sin phi1) (cos phi2) (sin phi2)
     q2 = LV4.V4 (cos psi1) (sin psi1) (cos psi2) (sin psi2)
     -- Calculate force in $\R^4$
-    dist = LME.distance q1 q2
+    dist = max (LME.distance q1 q2) PPC.minimumDistance
     direction  = q2 - q1
 
     coeff= gVal * m1 * m2 / (dist * dist * dist)
