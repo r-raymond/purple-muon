@@ -13,7 +13,7 @@ before_install:
   - travis_retry curl -L https://www.stackage.org/stack/linux-x86_64 | tar xz --wildcards --strip-components=1 -C ~/.local/bin '*/stack'
 
   # sdl2
-  - curl -o https://www.libsdl.org/release/SDL2-2.0.5.tar.gz
+  - curl https://www.libsdl.org/release/SDL2-2.0.5.tar.gz -o SDL2-2.0.5.tar.gz
   - tar -xzvf SDL2-2.0.5.tar.gz
   - (cd SDL2-2.0.5 && ./configure && make && sudo make install)
   
