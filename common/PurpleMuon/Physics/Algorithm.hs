@@ -127,4 +127,4 @@ applyForce g o1 o2 =
         then CLE.over PPT.force (addForce f) o2
         else o2
       where
-        f = gravitationalForce PPC.physicalSize g o1 o2
+        f = gravitationalForce PPC.physicalSize g o2 o1
