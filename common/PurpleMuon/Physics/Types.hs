@@ -18,6 +18,7 @@ module PurpleMuon.Physics.Types
     , Force(..)
     , GravitationalConstant(..)
     , PhysicalObject(..), uuid, mass, pos, vel, PurpleMuon.Physics.Types.force, static, gravitating
+    , PhysicalSize(..)
     ) where
 
 import           Protolude
@@ -64,3 +65,6 @@ instance (Eq PhysicalObject) where
     (==) a b = (_uuid a) == (_uuid b)
 
 CLE.makeLenses ''PhysicalObject
+
+-- The physical size of the playing board
+newtype PhysicalSize = PhysicalSize { unPhysicalSize :: LV2.V2 Float }

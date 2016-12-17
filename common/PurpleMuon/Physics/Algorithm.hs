@@ -9,9 +9,9 @@ Portability : POSIX
 
 module PurpleMuon.Physics.Algorithm
     ( integrateObject
-    , gravitationalForceVec
     , calculateGravitationalForces
     , resetForces
+    , gravitationalForce
     ) where
 
 import           Protolude
@@ -20,6 +20,7 @@ import qualified Control.Lens             as CLE
 import qualified Linear.Metric            as LME
 import qualified Linear.V2                as LV2
 
+import qualified PurpleMuon.Physics.Constants as PPC
 import qualified PurpleMuon.Physics.Types as PPT
 
 integrateAccel :: PPT.DeltaTime -> PPT.Acceleration -> PPT.Velocity -> PPT.Velocity
@@ -43,31 +44,65 @@ integrateObject dt po =
         vnew = integrateAccel dt a (CLE.view PPT.vel po)
         pnew = integrateVel dt vnew (CLE.view PPT.pos po)
 
--- |The gravitational force between to objects
--- This only calculates the magnitude of the force
-gravitationalForce :: PPT.GravitationalConstant -> PPT.PhysicalObject -> PPT.PhysicalObject -> Float
-gravitationalForce (PPT.GravitationalConstant g) po1 po2 =
-    g * m1 * m2 / (LME.qd p1 p2)
-      where
-        m1 = PPT.unMass $ CLE.view PPT.mass po1
-        m2 = PPT.unMass $ CLE.view PPT.mass po2
-        p1 = PPT.unPosition $ CLE.view PPT.pos po1
-        p2 = PPT.unPosition $ CLE.view PPT.pos po2
+-- | Calculate the gravitational forces between two objects
+-- The logic is as follow. First find the coordinates of the two objects
+-- on the two-torus. Then embedds that torus (flat) into $\mathbb{R}^4$ and
+-- calculates the forces in there. The third step is to project the forces onto
+-- the torus and finally push it back to $\R^2$.
+--
+-- The returned force is the force to apply to the first of the two objects.
+-- Obviously the force on the other one is the negative of that.
+gravitationalForce :: PPT.PhysicalSize
+                   -> PPT.GravitationalConstant
+                   -> PPT.PhysicalObject
+                   -> PPT.PhysicalObject
+                   -> PPT.Force
+gravitationalForce ps g o1 o2 = PPT.Force $ LV2.V2 projectedForce1 projectedForce2
+  where
+    p1 = PPT.unPosition $ (CLE.view PPT.pos) o1
+    p2 = PPT.unPosition $ (CLE.view PPT.pos) o2
+    m1 = PPT.unMass $ (CLE.view PPT.mass) o1
+    m2 = PPT.unMass $ (CLE.view PPT.mass) o2
+    gVal = PPT.unGravitationalConstant g
+    LV2.V2 xMax yMax = PPT.unPhysicalSize ps
+    -- Calculate positions in the 2-torus parametrized by two angles from 0 to
+    -- 2*pi
+    phi1 = ((CLE.view LV2._x) p1) * 2 * pi / xMax
+    phi2 = ((CLE.view LV2._y) p1) * 2 * pi / yMax
 
--- |The graviational forces between to objects
--- Returns the gravitaitonal force on the first object. The force on the
--- second one is of course just the negative of the returned force.
-gravitationalForceVec :: PPT.GravitationalConstant -> PPT.PhysicalObject -> PPT.PhysicalObject -> PPT.Force
-gravitationalForceVec g po1 po2 = PPT.Force $
-    fmap (* (gravitationalForce g po1 po2)) (LME.signorm (p2 - p1))
-      where
-        p1 = PPT.unPosition $ CLE.view PPT.pos po1
-        p2 = PPT.unPosition $ CLE.view PPT.pos po2
+    psi1 = ((CLE.view LV2._x) p2) * 2 * pi / xMax
+    psi2 = ((CLE.view LV2._y) p2) * 2 * pi / yMax
+    -- Calculate Position in $\R^4$. Notice that we use the normed two-torus,
+    -- because the final push forward cancels the xMax, yMax coefficients
+    qa1 = LV2.V2 (cos phi1) (sin phi1)
+    qa2 = LV2.V2 (cos phi2) (sin phi2)
+    qb1 = LV2.V2 (cos psi1) (sin psi1)
+    qb2 = LV2.V2 (cos psi2) (sin psi2)
+    -- Calculate force in $\R^4$
+    dist1 = LME.distance qa1 qb1
+    dist2 = LME.distance qa2 qb2
+    direction1 = qb1 - qa1
+    direction2 = qb2 - qa2
+
+    coeff= gVal * m1 * m2
+    coeff1 = coeff / (dist1 * dist1 * dist1)
+    coeff2 = coeff / (dist2 * dist2 * dist2)
+    force1 = fmap (* coeff1) direction1
+    force2 = fmap (* coeff2) direction2
+    -- Project the force onto the torus
+    unitVec1 = LV2.V2 ((-1)*(sin phi1)) (cos phi1)
+    unitVec2 = LV2.V2 ((-1)*(sin phi2)) (cos phi2)
+    projectedForce1 = (force1 `LME.dot` unitVec1)
+    projectedForce2 = (force2 `LME.dot` unitVec2)
+    -- Technically I need to still push back here, i.e. multiply both vectors
+    -- with 1/(2*pi). However, let's just compensate this with g.
+
 
 addForce :: PPT.Force -> PPT.Force -> PPT.Force
 addForce (PPT.Force f1) (PPT.Force f2) = PPT.Force (f1 + f2)
 
 -- | Reset all forces to 0
+-- , gravitationalForce
 resetForces :: [PPT.PhysicalObject] -> [PPT.PhysicalObject]
 resetForces = fmap (CLE.set PPT.force (PPT.Force $ LV2.V2 0 0))
 
@@ -94,4 +129,4 @@ applyForce g o1 o2 =
         then CLE.over PPT.force (addForce f) o2
         else o2
       where
-        f = gravitationalForceVec g o1 o2
+        f = gravitationalForce PPC.physicalSize g o1 o2
