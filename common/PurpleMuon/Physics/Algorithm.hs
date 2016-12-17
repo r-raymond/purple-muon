@@ -19,6 +19,7 @@ import           Protolude
 import qualified Control.Lens             as CLE
 import qualified Linear.Metric            as LME
 import qualified Linear.V2                as LV2
+import qualified Linear.V4                as LV4
 
 import qualified PurpleMuon.Physics.Constants as PPC
 import qualified PurpleMuon.Physics.Types as PPT
@@ -52,6 +53,8 @@ integrateObject dt po =
 --
 -- The returned force is the force to apply to the first of the two objects.
 -- Obviously the force on the other one is the negative of that.
+--
+-- This function uses the eps constant to define a minimum distance
 gravitationalForce :: PPT.PhysicalSize
                    -> PPT.GravitationalConstant
                    -> PPT.PhysicalObject
@@ -74,21 +77,16 @@ gravitationalForce ps g o1 o2 = PPT.Force $ LV2.V2 projectedForce1 projectedForc
     psi2 = ((CLE.view LV2._y) p2) * 2 * pi / yMax
     -- Calculate Position in $\R^4$. Notice that we use the normed two-torus,
     -- because the final push forward cancels the xMax, yMax coefficients
-    qa1 = LV2.V2 (cos phi1) (sin phi1)
-    qa2 = LV2.V2 (cos phi2) (sin phi2)
-    qb1 = LV2.V2 (cos psi1) (sin psi1)
-    qb2 = LV2.V2 (cos psi2) (sin psi2)
+    q1 = LV4.V4 (cos phi1) (sin phi1) (cos phi2) (sin phi2)
+    q2 = LV4.V4 (cos psi1) (sin psi1) (cos psi2) (sin psi2)
     -- Calculate force in $\R^4$
-    dist1 = LME.distance qa1 qb1
-    dist2 = LME.distance qa2 qb2
-    direction1 = qb1 - qa1
-    direction2 = qb2 - qa2
+    dist = LME.distance q1 q2
+    direction  = q2 - q1
 
-    coeff= gVal * m1 * m2
-    coeff1 = coeff / (dist1 * dist1 * dist1)
-    coeff2 = coeff / (dist2 * dist2 * dist2)
-    force1 = fmap (* coeff1) direction1
-    force2 = fmap (* coeff2) direction2
+    coeff= gVal * m1 * m2 / (dist * dist * dist)
+    LV4.V4 fw fx fy fz = fmap (* coeff) direction
+    force1 = LV2.V2 fw fx
+    force2 = LV2.V2 fy fz
     -- Project the force onto the torus
     unitVec1 = LV2.V2 ((-1)*(sin phi1)) (cos phi1)
     unitVec2 = LV2.V2 ((-1)*(sin phi2)) (cos phi2)

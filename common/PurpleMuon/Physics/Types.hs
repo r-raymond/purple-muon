@@ -28,26 +28,31 @@ import qualified Linear.V2    as LV2
 
 -- | The position of an object
 newtype Position = Position { unPosition :: LV2.V2 Float }
-  deriving (Eq)
+  deriving (Eq, Show)
 
 -- | The mass of an object
 newtype Mass = Mass { unMass :: Float }
-  deriving (Eq)
+  deriving (Eq, Show)
 
 -- | The velocity of an object
 newtype Velocity = Velocity { unVelocity :: LV2.V2 Float }
+  deriving (Eq, Show)
 
 -- | The acceleration of an object
 newtype Acceleration = Acceleration { unAcceleration :: LV2.V2 Float }
+  deriving (Eq, Show)
 
 -- | A time delta
 newtype DeltaTime = DeltaTime { unDeltaTime :: Float }
+  deriving (Eq, Show)
 
 -- | A Force
 newtype Force = Force { unForce :: LV2.V2 Float }
+  deriving (Eq, Show)
 
 -- | The gravitaional constant
 newtype GravitationalConstant = GravitationalConstant { unGravitationalConstant :: Float }
+  deriving (Eq, Show)
 
 -- | A physical object
 data PhysicalObject
@@ -59,7 +64,7 @@ data PhysicalObject
     , _force       :: Force    -- ^ The current forces applied to this object
     , _static      :: Bool     -- ^ Is this object moving?
     , _gravitating :: Bool     -- ^ Is this object gravitating?
-    }
+    } deriving (Show)
 
 instance (Eq PhysicalObject) where
     (==) a b = (_uuid a) == (_uuid b)
@@ -68,3 +73,4 @@ CLE.makeLenses ''PhysicalObject
 
 -- The physical size of the playing board
 newtype PhysicalSize = PhysicalSize { unPhysicalSize :: LV2.V2 Float }
+  deriving (Eq, Show)
