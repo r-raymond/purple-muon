@@ -42,6 +42,8 @@ executable purple-muon-client
                      , protolude
                      , network
                      , sdl2
+                     , thyme
+                     , vector-space
   default-language:    Haskell2010
   default-extensions:  OverloadedStrings
                      , NoImplicitPrelude
