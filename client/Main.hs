@@ -14,7 +14,10 @@ main :: IO ()
 main = do
     (Right cs) <- clientSocket "127.0.0.1" "7123"
     _ <- send cs "Hello World"
-    r <- withGraphics (\_ _ -> CCO.threadDelay 1000000)
+    r <- withGraphics (\_ renderer -> do
+                                SVI.clear renderer
+                                SVI.present renderer
+                                CCO.threadDelay 1000000)
     case r of
         Left ex -> putStrLn ("Error: " <> (show ex) :: Text)
         Right () -> return ()
