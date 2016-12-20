@@ -17,12 +17,5 @@ before_install:
   - tar -xzvf SDL2-2.0.5.tar.gz
   - (cd SDL2-2.0.5 && ./configure && make && sudo make install)
   
-addons:
-  apt:
-    sources:
-    - hvr-ghc
-    packages:
-    - ghc-8.0.1
-
 script:
   - stack --no-terminal --skip-ghc-check build --install-ghc
