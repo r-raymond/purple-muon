@@ -21,20 +21,13 @@ import qualified Client.Types       as CTY
 loop :: CTY.Game ()
 loop = do
     res <- ask
-    let renderer = CLE.view CTY.renderer res
-        window   = CLE.view CTY.window   res
+    let window   = CLE.view CTY.window   res
 
     start <- liftIO $ DTC.getCurrentTime
 
     SEV.mapEvents CEV.handleEvent
-    SVI.rendererDrawColor renderer SDL.$= SVE.V4 0 0 0 0
-    SVI.clear renderer
+    render
 
-    SVI.rendererDrawColor renderer SDL.$= SVE.V4 255 0 0 0
-    let help = fmap FCT.CInt (SVE.V2 10 10)
-    SVI.fillRect renderer (Just (SVI.Rectangle (SVE.P help) help))
-
-    SVI.present renderer
     end <- liftIO $ DTC.getCurrentTime
     let elapsed = end DAF..-. start
     when (elapsed < minLoopTime) (waitFor (minLoopTime DAD.^-^ elapsed))
@@ -53,3 +46,17 @@ waitFor dt = liftIO $ CCO.threadDelay dt_ms
     dt_s = DTC.toSeconds dt :: Float
     dt_ms_float = dt_s * 1000000
     dt_ms = truncate dt_ms_float
+
+render :: CTY.Game ()
+render = do
+    res <- ask
+    let renderer = CLE.view CTY.renderer res
+    SVI.rendererDrawColor renderer SDL.$= SVE.V4 0 0 0 0
+    SVI.clear renderer
+
+    SVI.rendererDrawColor renderer SDL.$= SVE.V4 255 0 0 0
+    let help = fmap FCT.CInt (SVE.V2 10 10)
+    SVI.fillRect renderer (Just (SVI.Rectangle (SVE.P help) help))
+
+    SVI.present renderer
+
