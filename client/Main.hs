@@ -1,22 +1,22 @@
 module Main where
 
-import Protolude
+import           Protolude
 
-import qualified Control.Exception as CEX
-import Network.Socket.ByteString
-import qualified SDL as SDL
-import qualified SDL.Init as SIN
-import qualified SDL.Video as SVI
-import qualified SDL.Event as SEV
-import qualified SDL.Vect as SVE
-import qualified SDL.Input.Keyboard as SIK
-import qualified Control.Concurrent as CCO
-import qualified Data.Thyme.Clock as DTC
-import qualified Data.AffineSpace as DAF
-import qualified Data.AdditiveGroup as DAD
-import qualified Foreign.C.Types as FCT
+import qualified Control.Concurrent        as CCO
+import qualified Control.Exception         as CEX
+import qualified Data.AdditiveGroup        as DAD
+import qualified Data.AffineSpace          as DAF
+import qualified Data.Thyme.Clock          as DTC
+import qualified Foreign.C.Types           as FCT
+import           Network.Socket.ByteString
+import qualified SDL                       as SDL
+import qualified SDL.Event                 as SEV
+import qualified SDL.Init                  as SIN
+import qualified SDL.Input.Keyboard        as SIK
+import qualified SDL.Vect                  as SVE
+import qualified SDL.Video                 as SVI
 
-import PurpleMuon.Network.Util
+import           PurpleMuon.Network.Util
 
 main :: IO ()
 main = do
@@ -24,7 +24,7 @@ main = do
     _ <- send cs "Hello World"
     r <- withGraphics (\x y -> (evalStateT (loop x y) (AppState True)))
     case r of
-        Left ex -> putStrLn ("Error: " <> (show ex) :: Text)
+        Left ex  -> putStrLn ("Error: " <> (show ex) :: Text)
         Right () -> return ()
     return ()
 
@@ -55,7 +55,7 @@ withGraphics comp = try $ do
 minLoopTime :: DTC.NominalDiffTime
 minLoopTime = DTC.fromSeconds (1 / 60 :: Float)
 
-data AppState 
+data AppState
     = AppState
     { running :: Bool
     } deriving (Show)
