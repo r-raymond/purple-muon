@@ -4,14 +4,17 @@ import Protolude
 
 import qualified Control.Exception as CEX
 import Network.Socket.ByteString
+import qualified SDL as SDL
 import qualified SDL.Init as SIN
 import qualified SDL.Video as SVI
 import qualified SDL.Event as SEV
+import qualified SDL.Vect as SVE
 import qualified SDL.Input.Keyboard as SIK
 import qualified Control.Concurrent as CCO
 import qualified Data.Thyme.Clock as DTC
 import qualified Data.AffineSpace as DAF
 import qualified Data.AdditiveGroup as DAD
+import qualified Foreign.C.Types as FCT
 
 import PurpleMuon.Network.Util
 
@@ -65,9 +68,12 @@ loop window renderer = do
     start <- liftIO $ DTC.getCurrentTime
 
     SEV.mapEvents handleEvent
+    SVI.rendererDrawColor renderer SDL.$= SVE.V4 0 0 0 0
     SVI.clear renderer
 
-
+    SVI.rendererDrawColor renderer SDL.$= SVE.V4 255 0 0 0
+    let help = fmap FCT.CInt (SVE.V2 10 10)
+    SVI.fillRect renderer (Just (SVI.Rectangle (SVE.P help) help))
 
     SVI.present renderer
     end <- liftIO $ DTC.getCurrentTime
