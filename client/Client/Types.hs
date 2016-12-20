@@ -3,7 +3,7 @@
 module Client.Types
     ( AppState(..), running, game
     , Game
-    , GameState(..), physicalObjects
+    , GameState(..), physicalObjects, dt
     , Resources(..), window, renderer
     ) where
 
@@ -25,6 +25,7 @@ type Game a = ReaderT Resources (StateT AppState IO) a
 data GameState
     = GameState
     { _physicalObjects :: [PPT.PhysicalObject]
+    , _dt              :: PPT.DeltaTime
     } deriving (Show)
 
 data Resources

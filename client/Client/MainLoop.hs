@@ -16,6 +16,8 @@ import qualified SDL.Vect           as SVE
 import qualified SDL.Video          as SVI
 
 import qualified PurpleMuon.Physics.Types as PPT
+import qualified PurpleMuon.Physics.Algorithm as PPA
+import qualified PurpleMuon.Physics.Constants as PPC
 
 import qualified Client.Event       as CEV
 import qualified Client.Types       as CTY
@@ -30,10 +32,17 @@ loop = do
     SEV.mapEvents CEV.handleEvent
     render
 
+    advanceGameState
+
     end <- liftIO $ DTC.getCurrentTime
-    let elapsed = end DAF..-. start
-    when (elapsed < minLoopTime) (waitFor (minLoopTime DAD.^-^ elapsed))
+    let used = end DAF..-. start
+
+    when (used < minLoopTime) (waitFor (minLoopTime DAD.^-^ used))
+    final <- liftIO $ DTC.getCurrentTime
+    let elapsed = final DAF..-. start
+
     SVI.windowTitle window SDL.$= (formatTitle elapsed)
+    modify (CLE.set (CTY.game . CTY.dt) (PPT.DeltaTime $ DTC.toSeconds elapsed))
     whenM (fmap (CLE.view CTY.running) get) loop
 
 minLoopTime :: DTC.NominalDiffTime
@@ -56,8 +65,8 @@ render = do
     SVI.rendererDrawColor renderer SDL.$= SVE.V4 0 0 0 0
     SVI.clear renderer
 
-    appstate <- get
-    let pos = CLE.view (CTY.game . CTY.physicalObjects) appstate
+    appState <- get
+    let pos = CLE.view (CTY.game . CTY.physicalObjects) appState
 
     sequence_ (fmap renderPhysicalObject pos)
 
@@ -79,3 +88,28 @@ renderPhysicalObject po = do
     let size = fmap FCT.CInt (SVE.V2 10 10)
         p    = fmap FCT.CInt coord
     SVI.fillRect renderer (Just (SVI.Rectangle (SVE.P p) size))
+
+wrap :: Float -> Float -> Float
+wrap bound x
+    | x < 0     = wrap bound (x + bound)
+    | x > bound = wrap bound (x - bound)
+    | otherwise = x
+
+wrapTorus :: PPT.PhysicalObject -> PPT.PhysicalObject
+wrapTorus = CLE.over PPT.pos cutOffP
+  where
+    PPT.PhysicalSize (SVE.V2 xMax yMax) = PPC.physicalSize
+    cutOff :: SVE.V2 Float -> SVE.V2 Float
+    cutOff (SVE.V2 x y) = SVE.V2 (wrap xMax x) (wrap yMax y)
+    cutOffP :: PPT.Position -> PPT.Position
+    cutOffP = PPT.Position . cutOff . PPT.unPosition
+
+advanceGameState :: CTY.Game ()
+advanceGameState = do
+  appState <- get
+  let dt = CLE.view (CTY.game . CTY.dt) appState
+      f  =  (fmap wrapTorus)
+            . (fmap (PPA.integrateObject dt)) 
+            . (PPA.calculateGravitationalForces PPC.g)
+            . PPA.resetForces
+  modify (CLE.over (CTY.game . CTY.physicalObjects) f)

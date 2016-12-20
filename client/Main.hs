@@ -14,10 +14,11 @@ import qualified Client.MainLoop           as CMA
 import qualified Client.Types              as CTY
 
 objs :: [PPT.PhysicalObject]
-objs = [PPT.PhysicalObject 1 (PPT.Mass 1) (PPT.Position (LV2.V2 0.5 0.5)) (PPT.Velocity (LV2.V2 0 0)) (PPT.Force (LV2.V2 0 0)) False True]
+objs = [ PPT.PhysicalObject 1 (PPT.Mass 1) (PPT.Position (LV2.V2 0.5 0.5)) (PPT.Velocity (LV2.V2 0 0)) (PPT.Force (LV2.V2 0 0)) False True
+       , PPT.PhysicalObject 2 (PPT.Mass 1) (PPT.Position (LV2.V2 0.75 0.5)) (PPT.Velocity (LV2.V2 0 0)) (PPT.Force (LV2.V2 0 0)) False True]
 
 initialeState :: CTY.AppState
-initialeState = CTY.AppState True (CTY.GameState objs)
+initialeState = CTY.AppState True (CTY.GameState objs (PPT.DeltaTime 0))
 
 game :: SVI.Window -> SVI.Renderer -> IO ()
 game w r = evalStateT (runReaderT CMA.loop (CTY.Resources w r)) initialeState

@@ -41,9 +41,11 @@ integrateObject dt po =
     CLE.set PPT.pos pnew $
     CLE.set PPT.vel vnew po
       where
+        dtHalf = PPT.DeltaTime $ (/ 2) $ PPT.unDeltaTime dt
         a = newton2nd (CLE.view PPT.force po) (CLE.view PPT.mass po)
         vnew = integrateAccel dt a (CLE.view PPT.vel po)
-        pnew = integrateVel dt vnew (CLE.view PPT.pos po)
+        p_1p5 = integrateVel dtHalf (CLE.view PPT.vel po) (CLE.view PPT.pos po)
+        pnew = integrateVel dtHalf vnew p_1p5
 
 -- | Calculate the gravitational forces between two objects
 -- The logic is as follow. First find the coordinates of the two objects
