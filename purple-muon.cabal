@@ -45,7 +45,10 @@ executable purple-muon-client
                      , thyme
                      , vector-space
                      , linear
+                     , lens
   default-language:    Haskell2010
+  other-modules:       Client.Types
+                       Client.Event
   default-extensions:  OverloadedStrings
                      , NoImplicitPrelude
 

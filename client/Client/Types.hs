@@ -2,6 +2,7 @@
 
 module Client.Types
     ( AppState(..), running
+    , Game
     ) where
 
 import Protolude
@@ -14,3 +15,5 @@ data AppState
     } deriving (Show)
 
 CLE.makeLenses ''AppState
+
+type Game a = StateT AppState IO a
