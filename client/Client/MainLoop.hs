@@ -34,11 +34,14 @@ loop window renderer = do
     end <- liftIO $ DTC.getCurrentTime
     let elapsed = end DAF..-. start
     when (elapsed < minLoopTime) (waitFor (minLoopTime DAD.^-^ elapsed))
+    SVI.windowTitle window SDL.$= (formatTitle elapsed)
     whenM (fmap (CLE.view CTY.running) get) (loop window renderer)
 
 minLoopTime :: DTC.NominalDiffTime
 minLoopTime = DTC.fromSeconds (1 / 60 :: Float)
 
+formatTitle :: DTC.NominalDiffTime -> Text
+formatTitle dt = "FPS: " <> (show (1 / ((DTC.toSeconds dt) :: Float)))
 
 waitFor :: MonadIO m => DTC.NominalDiffTime -> m ()
 waitFor dt = liftIO $ CCO.threadDelay dt_ms
