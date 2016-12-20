@@ -15,6 +15,8 @@ import qualified SDL.Event          as SEV
 import qualified SDL.Vect           as SVE
 import qualified SDL.Video          as SVI
 
+import qualified PurpleMuon.Physics.Types as PPT
+
 import qualified Client.Event       as CEV
 import qualified Client.Types       as CTY
 
@@ -54,9 +56,26 @@ render = do
     SVI.rendererDrawColor renderer SDL.$= SVE.V4 0 0 0 0
     SVI.clear renderer
 
-    SVI.rendererDrawColor renderer SDL.$= SVE.V4 255 0 0 0
-    let help = fmap FCT.CInt (SVE.V2 10 10)
-    SVI.fillRect renderer (Just (SVI.Rectangle (SVE.P help) help))
+    appstate <- get
+    let pos = CLE.view (CTY.game . CTY.physicalObjects) appstate
+
+    sequence_ (fmap renderPhysicalObject pos)
 
     SVI.present renderer
 
+
+renderPhysicalObject :: PPT.PhysicalObject -> CTY.Game ()
+renderPhysicalObject po = do
+    res <- ask
+    let pos = PPT.unPosition $ CLE.view PPT.pos po
+        window = CLE.view CTY.window res
+        renderer = CLE.view CTY.renderer res
+    windowsize <- SDL.get $ SVI.windowSize window
+
+    -- TODO: Fix this with actual physical size
+    let coord = (fmap truncate) (pos * (fmap fromIntegral windowsize))
+
+    SVI.rendererDrawColor renderer SDL.$= SVE.V4 255 0 0 0
+    let size = fmap FCT.CInt (SVE.V2 10 10)
+        p    = fmap FCT.CInt coord
+    SVI.fillRect renderer (Just (SVI.Rectangle (SVE.P p) size))
