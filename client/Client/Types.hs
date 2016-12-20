@@ -4,11 +4,13 @@ module Client.Types
     ( AppState(..), running, game
     , Game
     , GameState(..), physicalObjects
+    , Resources(..), window, renderer
     ) where
 
 import Protolude
 
 import qualified Control.Lens as CLE
+import qualified SDL.Video          as SVI
 
 import qualified PurpleMuon.Physics.Types as PPT
 
@@ -18,12 +20,19 @@ data AppState
     , _game    :: GameState
     } deriving (Show)
 
-type Game a = StateT AppState IO a
+type Game a = ReaderT Resources (StateT AppState IO) a
 
 data GameState
     = GameState
     { _physicalObjects :: [PPT.PhysicalObject]
     } deriving (Show)
 
+data Resources
+    = Resources 
+    { _window :: SVI.Window
+    , _renderer :: SVI.Renderer
+    } deriving (Show)
+
 CLE.makeLenses ''AppState
 CLE.makeLenses ''GameState
+CLE.makeLenses ''Resources

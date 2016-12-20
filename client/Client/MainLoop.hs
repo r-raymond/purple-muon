@@ -18,8 +18,12 @@ import qualified SDL.Video          as SVI
 import qualified Client.Event       as CEV
 import qualified Client.Types       as CTY
 
-loop :: SVI.Window -> SVI.Renderer -> CTY.Game ()
-loop window renderer = do
+loop :: CTY.Game ()
+loop = do
+    res <- ask
+    let renderer = CLE.view CTY.renderer res
+        window   = CLE.view CTY.window   res
+
     start <- liftIO $ DTC.getCurrentTime
 
     SEV.mapEvents CEV.handleEvent
@@ -35,7 +39,7 @@ loop window renderer = do
     let elapsed = end DAF..-. start
     when (elapsed < minLoopTime) (waitFor (minLoopTime DAD.^-^ elapsed))
     SVI.windowTitle window SDL.$= (formatTitle elapsed)
-    whenM (fmap (CLE.view CTY.running) get) (loop window renderer)
+    whenM (fmap (CLE.view CTY.running) get) loop
 
 minLoopTime :: DTC.NominalDiffTime
 minLoopTime = DTC.fromSeconds (1 / 60 :: Float)
