@@ -6,6 +6,8 @@ import qualified Control.Exception as CEX
 import Network.Socket.ByteString
 import qualified SDL.Init as SIN
 import qualified SDL.Video as SVI
+import qualified SDL.Event as SEV
+import qualified SDL.Input.Keyboard as SIK
 import qualified Control.Concurrent as CCO
 import qualified Data.Thyme.Clock as DTC
 import qualified Data.AffineSpace as DAF
@@ -17,7 +19,7 @@ main :: IO ()
 main = do
     (Right cs) <- clientSocket "127.0.0.1" "7123"
     _ <- send cs "Hello World"
-    r <- withGraphics loop
+    r <- withGraphics (\x y -> (evalStateT (loop x y) (AppState True)))
     case r of
         Left ex -> putStrLn ("Error: " <> (show ex) :: Text)
         Right () -> return ()
@@ -50,22 +52,37 @@ withGraphics comp = try $ do
 minLoopTime :: DTC.NominalDiffTime
 minLoopTime = DTC.fromSeconds (1 / 60 :: Float)
 
-loop :: SVI.Window -> SVI.Renderer -> IO ()
+data AppState 
+    = AppState
+    { running :: Bool
+    } deriving (Show)
+
+
+type Game a = StateT AppState IO a
+
+loop :: SVI.Window -> SVI.Renderer -> Game ()
 loop window renderer = do
-    start <- DTC.getCurrentTime
+    start <- liftIO $ DTC.getCurrentTime
+
+    SEV.mapEvents handleEvent
     SVI.clear renderer
 
 
 
     SVI.present renderer
-    end <- DTC.getCurrentTime
+    end <- liftIO $ DTC.getCurrentTime
     let elapsed = end DAF..-. start
     when (elapsed < minLoopTime) (waitFor (minLoopTime DAD.^-^ elapsed))
-    loop window renderer
+    whenM (fmap running get) (loop window renderer)
 
-waitFor :: DTC.NominalDiffTime -> IO ()
-waitFor dt = CCO.threadDelay dt_ms
+waitFor :: MonadIO m => DTC.NominalDiffTime -> m ()
+waitFor dt = liftIO $ CCO.threadDelay dt_ms
   where
     dt_s = DTC.toSeconds dt :: Float
     dt_ms_float = dt_s * 1000000
     dt_ms = truncate dt_ms_float
+
+handleEvent :: SEV.Event -> Game ()
+handleEvent ev = case (SEV.eventPayload ev) of
+    SEV.KeyboardEvent (SEV.KeyboardEventData _ SEV.Pressed _ (SIK.Keysym SIK.ScancodeEscape _ _)) -> (put (AppState False)) -- TODO: do this via lenses
+    _ -> return ()
