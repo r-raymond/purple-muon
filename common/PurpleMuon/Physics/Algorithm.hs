@@ -10,7 +10,6 @@ Portability : POSIX
 module PurpleMuon.Physics.Algorithm
     ( integrateObject
     , calculateGravitationalForces
-    , resetForces
     , gravitationalForce
     ) where
 
@@ -33,19 +32,32 @@ integrateVel (PPT.DeltaTime dt) (PPT.Velocity v) (PPT.Position p) = PPT.Position
 newton2nd :: PPT.Force -> PPT.Mass -> PPT.Acceleration
 newton2nd (PPT.Force f) (PPT.Mass m) = PPT.Acceleration (fmap (/ m) f)
 
+-- | Integrate a physical object system.
+-- Uses RK4, and the notation from the wikipedia article
+-- https://en.wikipedia.org/wiki/Runge%E2%80%93Kutta_methods
+integrateTimeStep :: PPT.DeltaTime -> [PPT.PhysicalObject] -> [PPT.PhysicalObject]
+integrateTimeStep dt objs = undefined
+  where
+    dt_half = PPT.DeltaTime $ (/2) $ PPT.unDeltaTime dt
+    yn = objs
+    k1 = calculateGravitationalForces PPC.g yn
+    k2 = calculateGravitationalForces PPC.g (fmap (integrateObject dt_half) k1)
+    k3 = calculateGravitationalForces PPC.g (fmap (integrateObject dt_half) k1)
+    k4 = calculateGravitationalForces PPC.g (fmap (integrateObject dt_half) k2)
+
 -- | Integrate a physical object.
 -- Uses the force saved in the object and applies is to the physical object
 -- So far ignore the fact if the object is static. Should this be changed?
-integrateObject :: PPT.DeltaTime -> PPT.PhysicalObject -> PPT.PhysicalObject
-integrateObject dt po =
+integrateObject :: PPT.DeltaTime -> (PPT.PhysicalObject, PPT.Derivative) -> PPT.PhysicalObject
+integrateObject dt (po, PPT.Derivative (v, f)) =
     CLE.set PPT.pos pnew $
     CLE.set PPT.vel vnew po
       where
-        dtHalf = PPT.DeltaTime $ (/ 2) $ PPT.unDeltaTime dt
-        a = newton2nd (CLE.view PPT.force po) (CLE.view PPT.mass po)
-        vnew = integrateAccel dt a (CLE.view PPT.vel po)
-        p_1p5 = integrateVel dtHalf (CLE.view PPT.vel po) (CLE.view PPT.pos po)
-        pnew = integrateVel dtHalf vnew p_1p5
+        m = CLE.view PPT.mass po
+        p = CLE.view PPT.pos po
+        a = newton2nd f m
+        vnew = integrateAccel dt a v
+        pnew = integrateVel dt v p
 
 -- | Calculate the gravitational forces between two objects
 -- The logic is as follow. First find the coordinates of the two objects
@@ -101,18 +113,15 @@ gravitationalForce ps g o1 o2 = PPT.Force $ LV2.V2 projectedForce1 projectedForc
 addForce :: PPT.Force -> PPT.Force -> PPT.Force
 addForce (PPT.Force f1) (PPT.Force f2) = PPT.Force (f1 + f2)
 
--- | Reset all forces to 0
--- , gravitationalForce
-resetForces :: [PPT.PhysicalObject] -> [PPT.PhysicalObject]
-resetForces = fmap (CLE.set PPT.force (PPT.Force $ LV2.V2 0 0))
-
 -- | Calculate all forces for a system.
 -- Does not reset the forces, needs to be done manually before
 calculateGravitationalForces :: PPT.GravitationalConstant -- ^ Gravitational Constant
                              -> [PPT.PhysicalObject]      -- ^ The physical objects to integrate
-                             -> [PPT.PhysicalObject]
+                             -> [(PPT.PhysicalObject, PPT.Derivative)]
 calculateGravitationalForces g pos = staticObjs ++ newNonStaticObjs
       where
+        initialize :: PPT.PhysicalObject -> (PPT.PhysicalObject, PPT.Derivative)
+        initialize o@(PPT.PhysicalObject _ _ _ v _ _) = (o, PPT.Derivative (o, 
         staticObjs      = filter (CLE.view PPT.static) pos
         gravitatingObjs = filter (CLE.view PPT.gravitating) pos
         nonStaticObjs   = filter (not . (CLE.view PPT.static)) pos
@@ -120,13 +129,16 @@ calculateGravitationalForces g pos = staticObjs ++ newNonStaticObjs
         newNonStaticObjs = fmap (\x -> foldr' (applyForce g) x gravitatingObjs) nonStaticObjs
 
 
--- |Apply the force of the first object to the second
+-- | Calculate the force of the first object on the second
 -- Ignores all static / gravitating modifier but checks that the objects
 -- are not the same
-applyForce :: PPT.GravitationalConstant -> PPT.PhysicalObject -> PPT.PhysicalObject -> PPT.PhysicalObject
-applyForce g o1 o2 =
+applyForce :: PPT.GravitationalConstant
+           -> (PPT.PhysicalObject, PPT.Derivative) -- ^ The object that gravitates
+           -> (PPT.PhysicalObject, PPT.Derivative) -- ^ The object that is pulled on
+           -> (PPT.PhysicalObject, PPT.Derivative)
+applyForce g p1@(o1, _) p2@(o2, PPT.Derivative (v, f)) =
     if o1 /= o2
-        then CLE.over PPT.force (addForce f) o2
-        else o2
+        then (o2, PPT.Derivative (v, (addForce f fnew)))
+        else p2
       where
-        f = gravitationalForce PPC.physicalSize g o2 o1
+        fnew = gravitationalForce PPC.physicalSize g o2 o1

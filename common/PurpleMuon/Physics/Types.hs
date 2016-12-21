@@ -17,8 +17,9 @@ module PurpleMuon.Physics.Types
     , DeltaTime(..)
     , Force(..)
     , GravitationalConstant(..)
-    , PhysicalObject(..), uuid, mass, pos, vel, PurpleMuon.Physics.Types.force, static, gravitating
+    , PhysicalObject(..), uuid, mass, pos, vel, static, gravitating
     , PhysicalSize(..)
+    , Derivative(..)
     ) where
 
 import           Protolude
@@ -48,7 +49,7 @@ newtype DeltaTime = DeltaTime { unDeltaTime :: Float }
 
 -- | A Force
 newtype Force = Force { unForce :: LV2.V2 Float }
-  deriving (Eq, Show)
+  deriving (Eq, Show, Num)
 
 -- | The gravitaional constant
 newtype GravitationalConstant = GravitationalConstant { unGravitationalConstant :: Float }
@@ -61,7 +62,6 @@ data PhysicalObject
     , _mass        :: Mass     -- ^ The mass of the object
     , _pos         :: Position -- ^ The position of the object
     , _vel         :: Velocity -- ^ The velocity of the object
-    , _force       :: Force    -- ^ The current forces applied to this object
     , _static      :: Bool     -- ^ Is this object moving?
     , _gravitating :: Bool     -- ^ Is this object gravitating?
     } deriving (Show)
@@ -74,3 +74,5 @@ CLE.makeLenses ''PhysicalObject
 -- The physical size of the playing board
 newtype PhysicalSize = PhysicalSize { unPhysicalSize :: LV2.V2 Float }
   deriving (Eq, Show)
+
+newtype Derivative = Derivative { unDerivative :: (Velocity, Force) }
