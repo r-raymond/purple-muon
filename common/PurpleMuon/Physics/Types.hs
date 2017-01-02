@@ -22,6 +22,7 @@ module PurpleMuon.Physics.Types
     , Derivatives
     , PhysicalObjects
     , Forces
+    , Derivative(..)
     ) where
 
 import           Protolude
@@ -29,6 +30,8 @@ import           Protolude
 import qualified Control.Lens       as CLE
 import qualified Data.IntMap.Strict as DIS
 import qualified Linear.V2          as LV2
+import qualified Linear.Vector      as LVE
+import qualified Data.AdditiveGroup as DAD
 
 -- | The position of an object
 newtype Position = Position { unPosition :: LV2.V2 Float }
@@ -76,11 +79,26 @@ instance (Eq PhysicalObject) where
 
 CLE.makeLenses ''PhysicalObject
 
--- The physical size of the playing board
+-- |The physical size of the playing board
 newtype PhysicalSize = PhysicalSize { unPhysicalSize :: LV2.V2 Float }
   deriving (Eq, Show)
 
+-- |The derivaties of a physical object numerical integrater
 newtype Derivative = Derivative { unDerviative :: (Velocity, Force) }
-type Derivatives = IntMap (Velocity, Force)
+
+-- |A collection of derivaties, indexed by the `uuid` of the objects
+type Derivatives = IntMap Derivative
+
+-- |A collection of objects, indexed by the `uuid` of the objects
 type PhysicalObjects = DIS.IntMap PhysicalObject
+
+-- |A collection of forces, indexed by the `uuid` of the objects
 type Forces = DIS.IntMap Force
+
+instance (DAD.AdditiveGroup Derivative) where
+    zeroV = Derivative LVE.zero
+    (^+^) (Derivative a) (Derivative b) = Derivative (a LVE.^+^ b)
+    negateV (Derivative a) = Derivative $ LVE.negated a
+
+instance (DVE.VectorSpace Derivative) where
+    (*^) a b = 

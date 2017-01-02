@@ -43,11 +43,7 @@ integrateTimeStep g dt yn ders = undefined
     f2 = calculateGravitationalForces g (integratePhysics dt_half yn (addDer k1 ders))
     f3 = calculateGravitationalForces g (integratePhysics dt_half yn (addDer k2 ders))
     f4 = calculateGravitationalForces g (integratePhysics dt yn (addDer k3 ders))
---
---addDer :: PPT.Derivatives -> PPT.Derivatives -> PPT.Derivatives
---addDer d1 d2 = DIS.unionWith (\(PPT.Derivative (v, f1)) (PPT.Derivative (_, f2)) -> PPT.Derivative (v, (f1 + f2)))
---                             d1 d2
---
+
 -- | Integrate a physical object.
 -- Uses the force saved in the object and applies is to the physical object via
 -- explicit Euler.
@@ -62,12 +58,17 @@ integrateObject dt po (PPT.Derivative (v, f)) =
         vnew = integrateAccel dt a v
         pnew = integrateVel dt v p
 
+
+
+-- | Integrate a complete physical system
+-- Basically just (fmap integrateObject)
 integratePhysics :: PPT.DeltaTime -> PPT.PhysicalObjects -> PPT.Derivatives -> PPT.PhysicalObjects
 integratePhysics dt pos ders = DIS.mapWithKey helper pos
   where
     helper :: Int -> PPT.PhysicalObject -> PPT.PhysicalObject
     helper key obj = integrateObject dt obj (defaultLookup key obj ders)
 
+-- | Lookup the derivative of an object given a key
 defaultLookup :: Int -> PPT.PhysicalObject -> PPT.Derivatives -> PPT.Derivative
 defaultLookup key obj ders = DIS.findWithDefault (zero obj) key ders
   where
