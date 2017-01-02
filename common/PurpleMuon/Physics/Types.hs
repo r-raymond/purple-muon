@@ -15,17 +15,20 @@ module PurpleMuon.Physics.Types
     , Velocity(..)
     , Acceleration(..)
     , DeltaTime(..)
-    , Force(..)
+    , ForceT(..), Force
     , GravitationalConstant(..)
     , PhysicalObject(..), uuid, mass, pos, vel, static, gravitating
     , PhysicalSize(..)
-    , Derivative(..)
+    , Derivatives
+    , PhysicalObjects
+    , Forces
     ) where
 
 import           Protolude
 
-import qualified Control.Lens as CLE
-import qualified Linear.V2    as LV2
+import qualified Control.Lens       as CLE
+import qualified Data.IntMap.Strict as DIS
+import qualified Linear.V2          as LV2
 
 -- | The position of an object
 newtype Position = Position { unPosition :: LV2.V2 Float }
@@ -48,8 +51,10 @@ newtype DeltaTime = DeltaTime { unDeltaTime :: Float }
   deriving (Eq, Show)
 
 -- | A Force
-newtype Force = Force { unForce :: LV2.V2 Float }
-  deriving (Eq, Show, Num)
+newtype ForceT a = Force { unForce :: LV2.V2 a }
+  deriving (Eq, Show, Functor)
+
+type Force = ForceT Float
 
 -- | The gravitaional constant
 newtype GravitationalConstant = GravitationalConstant { unGravitationalConstant :: Float }
@@ -75,4 +80,7 @@ CLE.makeLenses ''PhysicalObject
 newtype PhysicalSize = PhysicalSize { unPhysicalSize :: LV2.V2 Float }
   deriving (Eq, Show)
 
-newtype Derivative = Derivative { unDerivative :: (Velocity, Force) }
+newtype Derivative = Derivative { unDerviative :: (Velocity, Force) }
+type Derivatives = IntMap (Velocity, Force)
+type PhysicalObjects = DIS.IntMap PhysicalObject
+type Forces = DIS.IntMap Force
