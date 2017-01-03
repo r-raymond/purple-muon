@@ -98,14 +98,14 @@ type PhysicalObjects = DIS.IntMap PhysicalObject
 type Forces = DIS.IntMap Force
 
 -- Use CPP to define cumbersome instances
-#define VECTORSPACE(x) \
-    instance (DAD.AdditiveGroup x) where \
-      { zeroV = x LVE.zero \
-      ; (^+^) (x a) (x b) = x (a LVE.^+^ b) \
-      ; negateV (x a) = x $ LVE.negated a  }; \
-    instance (DVE.VectorSpace x) where \
-      { type (Scalar x) = FlType \
-      ; (*^) l (x a) = x (fmap (*l) a) };
+#define VECTORSPACE(TYPE) \
+    instance (DAD.AdditiveGroup TYPE) where \
+      { zeroV = TYPE LVE.zero \
+      ; (^+^) (TYPE a) (TYPE b) = TYPE (a LVE.^+^ b) \
+      ; negateV (TYPE a) = TYPE $ LVE.negated a  }; \
+    instance (DVE.VectorSpace TYPE) where \
+      { type (Scalar TYPE) = FlType \
+      ; (*^) l (TYPE a) = TYPE (fmap (*l) a) };
 
 -- All vector quantities instance vectorspace (note, `Position` does NOT)
 VECTORSPACE(Force)
