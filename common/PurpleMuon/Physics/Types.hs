@@ -33,34 +33,35 @@ import qualified Linear.V2          as LV2
 import qualified Linear.Vector      as LVE
 import qualified Data.AdditiveGroup as DAD
 
+-- |The floating point type used throughout the physics module
+type FlType = Double
+
 -- | The position of an object
-newtype Position = Position { unPosition :: LV2.V2 Float }
+newtype Position = Position { unPosition :: LV2.V2 FlType }
   deriving (Eq, Show)
 
 -- | The mass of an object
-newtype Mass = Mass { unMass :: Float }
+newtype Mass = Mass { unMass :: FlType }
   deriving (Eq, Show)
 
 -- | The velocity of an object
-newtype Velocity = Velocity { unVelocity :: LV2.V2 Float }
+newtype Velocity = Velocity { unVelocity :: LV2.V2 FlType }
   deriving (Eq, Show)
 
 -- | The acceleration of an object
-newtype Acceleration = Acceleration { unAcceleration :: LV2.V2 Float }
+newtype Acceleration = Acceleration { unAcceleration :: LV2.V2 FlType }
   deriving (Eq, Show)
 
 -- | A time delta
-newtype DeltaTime = DeltaTime { unDeltaTime :: Float }
+newtype DeltaTime = DeltaTime { unDeltaTime :: FlType }
   deriving (Eq, Show)
 
 -- | A Force
-newtype ForceT a = Force { unForce :: LV2.V2 a }
+newtype ForceT  = Force { unForce :: LV2.V2 FlType }
   deriving (Eq, Show, Functor)
 
-type Force = ForceT Float
-
 -- | The gravitaional constant
-newtype GravitationalConstant = GravitationalConstant { unGravitationalConstant :: Float }
+newtype GravitationalConstant = GravitationalConstant { unGravitationalConstant :: FlType }
   deriving (Eq, Show)
 
 -- | A physical object
@@ -80,7 +81,7 @@ instance (Eq PhysicalObject) where
 CLE.makeLenses ''PhysicalObject
 
 -- |The physical size of the playing board
-newtype PhysicalSize = PhysicalSize { unPhysicalSize :: LV2.V2 Float }
+newtype PhysicalSize = PhysicalSize { unPhysicalSize :: LV2.V2 FlType }
   deriving (Eq, Show)
 
 -- |The derivaties of a physical object numerical integrater
