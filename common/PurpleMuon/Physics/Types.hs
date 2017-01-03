@@ -107,7 +107,16 @@ type Forces = DIS.IntMap Force
       { type (Scalar x) = FlType \
       ; (*^) l (x a) = x (fmap (*l) a) };
 
+-- All vector quantities instance vectorspace (note, `Position` does NOT)
 VECTORSPACE(Force)
 VECTORSPACE(Velocity)
 VECTORSPACE(Acceleration)
 
+instance (DAD.AdditiveGroup Derivative) where
+    zeroV = Derivative DAD.zeroV
+    (^+^) (Derivative a) (Derivative b) = Derivative (a DAD.^+^ b)
+    negateV (Derivative a) = Derivative $ DAD.negateV a
+
+instance (DVE.VectorSpace Derivative) where
+    type (Scalar Derivative) = FlType
+    (*^) l (Derivative a) = Derivative (l DVE.*^ a)
