@@ -7,7 +7,7 @@ Maintainer  : robin@robinraymond.de
 Portability : POSIX
 -}
 
-{-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE TemplateHaskell, CPP, TypeFamilies #-}
 
 module PurpleMuon.Physics.Types
     ( Position(..)
@@ -15,7 +15,7 @@ module PurpleMuon.Physics.Types
     , Velocity(..)
     , Acceleration(..)
     , DeltaTime(..)
-    , ForceT(..), Force
+    , Force(..)
     , GravitationalConstant(..)
     , PhysicalObject(..), uuid, mass, pos, vel, static, gravitating
     , PhysicalSize(..)
@@ -32,6 +32,7 @@ import qualified Data.IntMap.Strict as DIS
 import qualified Linear.V2          as LV2
 import qualified Linear.Vector      as LVE
 import qualified Data.AdditiveGroup as DAD
+import qualified Data.VectorSpace   as DVE
 
 -- |The floating point type used throughout the physics module
 type FlType = Double
@@ -57,8 +58,8 @@ newtype DeltaTime = DeltaTime { unDeltaTime :: FlType }
   deriving (Eq, Show)
 
 -- | A Force
-newtype ForceT  = Force { unForce :: LV2.V2 FlType }
-  deriving (Eq, Show, Functor)
+newtype Force = Force { unForce :: LV2.V2 FlType }
+  deriving (Eq, Show)
 
 -- | The gravitaional constant
 newtype GravitationalConstant = GravitationalConstant { unGravitationalConstant :: FlType }
@@ -96,10 +97,17 @@ type PhysicalObjects = DIS.IntMap PhysicalObject
 -- |A collection of forces, indexed by the `uuid` of the objects
 type Forces = DIS.IntMap Force
 
-instance (DAD.AdditiveGroup Derivative) where
-    zeroV = Derivative LVE.zero
-    (^+^) (Derivative a) (Derivative b) = Derivative (a LVE.^+^ b)
-    negateV (Derivative a) = Derivative $ LVE.negated a
+-- Use CPP to define cumbersome instances
+#define VECTORSPACE(x) \
+    instance (DAD.AdditiveGroup x) where \
+      { zeroV = x LVE.zero \
+      ; (^+^) (x a) (x b) = x (a LVE.^+^ b) \
+      ; negateV (x a) = x $ LVE.negated a  }; \
+    instance (DVE.VectorSpace x) where \
+      { type (Scalar x) = FlType \
+      ; (*^) l (x a) = x (fmap (*l) a) };
 
-instance (DVE.VectorSpace Derivative) where
-    (*^) a b = 
+VECTORSPACE(Force)
+VECTORSPACE(Velocity)
+VECTORSPACE(Acceleration)
+
