@@ -178,25 +178,6 @@ calculateGravitationalForces g objs = forceMap
         foldForces x = DIS.foldr' (\o facc -> facc DAD.^+^ calculateForce g o x) (PPT.Force $ LVE.zero) gravitatingObjs
         forceMap = DIS.map foldForces nonStaticObjs
 
---lookUpVel :: Int -> PPT.Velocity
---lookUpVel key = CLE.view PPT.vel (objs DIS.! key)
---derMap = DIS.mapWithKey (\k f -> PPT.Derivative ((lookUpVel k), f)) forceMap
-
-
--- | Calculate all forces for a system.
--- Does not reset the forces, needs to be done manually before
---calculateGravitationalForces' :: PPT.GravitationalConstant -- ^ Gravitational Constant
---                             -> [(PPT.PhysicalObject, PPT.Derivative)]      -- ^ The physical objects to integrate
---                             -> [(PPT.PhysicalObject, PPT.Derivative)]
---calculateGravitationalForces' g pos = staticObjs ++ newNonStaticObjs
---      where
---        staticObjs      = (filter ((CLE.view PPT.static) . fst) pos)
---        gravitatingObjs = (filter ((CLE.view PPT.gravitating) . fst) pos)
---        nonStaticObjs   = (filter ((not . (CLE.view PPT.static)) . fst) pos)
---        -- Apply all forces
---        newNonStaticObjs = fmap (\x -> foldr' (applyForce g) x gravitatingObjs) nonStaticObjs
-
-
 -- | Calculate the force of the first object on the second
 -- Ignores all static / gravitating modifier but checks that the objects
 -- are not the same
