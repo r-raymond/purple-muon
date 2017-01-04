@@ -1,10 +1,19 @@
+# Use new container infrastructure to enable caching
 sudo: true
+
+# Do not choose a language; we provide our own build tools.
+language: generic
 
 # Caching so the next build will be fast too.
 cache:
   directories:
   - $HOME/.stack
 
+# Ensure necessary system libraries are present
+addons:
+  apt:
+    packages:
+      - libgmp-dev
 
 before_install:
   # Download and unpack the stack executable
@@ -16,13 +25,10 @@ before_install:
   - curl https://www.libsdl.org/release/SDL2-2.0.5.tar.gz -o SDL2-2.0.5.tar.gz
   - tar -xzvf SDL2-2.0.5.tar.gz
   - (cd SDL2-2.0.5 && ./configure && make && sudo make install)
-  
-addons:
-  apt:
-    sources:
-    - hvr-ghc
-    packages:
-    - ghc-8.0.1
+
+install:
+  # Build dependencies
+  - stack --no-terminal --install-ghc build --only-dependencies
 
 script:
-  - stack --no-terminal --skip-ghc-check build --install-ghc
+  - stack --no-terminal build --haddock --no-haddock-deps
