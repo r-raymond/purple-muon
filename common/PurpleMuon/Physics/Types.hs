@@ -10,7 +10,8 @@ Portability : POSIX
 {-# LANGUAGE TemplateHaskell, CPP, TypeFamilies #-}
 
 module PurpleMuon.Physics.Types
-    ( Position(..)
+    ( FlType
+    , Position(..)
     , Mass(..)
     , Velocity(..)
     , Acceleration(..)

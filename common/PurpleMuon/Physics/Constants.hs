@@ -13,8 +13,6 @@ module PurpleMuon.Physics.Constants
     , minimumDistance
     ) where
 
-import Protolude
-
 import qualified Linear.V2                as LV2
 
 import qualified PurpleMuon.Physics.Types as PPT
@@ -27,5 +25,5 @@ physicalSize = PPT.PhysicalSize (LV2.V2 1 1)
 
 -- | The minimum distance two objects are allowed to have
 -- This makes the integration numerically much more stable
-minimumDistance :: Float
+minimumDistance :: PPT.FlType
 minimumDistance = 0.1

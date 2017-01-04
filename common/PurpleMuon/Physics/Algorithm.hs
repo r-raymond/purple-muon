@@ -14,7 +14,9 @@ module PurpleMuon.Physics.Algorithm
 import           Protolude
 
 import qualified Control.Lens                 as CLE
+import qualified Data.AdditiveGroup           as DAD
 import qualified Data.IntMap.Strict           as DIS
+import qualified Data.VectorSpace             as DVE
 import qualified Linear.Metric                as LME
 import qualified Linear.V2                    as LV2
 import qualified Linear.V4                    as LV4
@@ -35,14 +37,34 @@ newton2nd (PPT.Force f) (PPT.Mass m) = PPT.Acceleration (fmap (/ m) f)
 -- | Integrate a physical object system.
 -- Uses RK4, and the notation from the wikipedia article
 -- https://en.wikipedia.org/wiki/Runge%E2%80%93Kutta_methods
-integrateTimeStep :: PPT.GravitationalConstant -> PPT.DeltaTime -> PPT.PhysicalObjects -> PPT.Derivatives -> PPT.PhysicalObjects
-integrateTimeStep g dt yn ders = undefined
+integrateTimeStep :: PPT.GravitationalConstant
+                  -> PPT.DeltaTime          -- ^ the timestep
+                  -> PPT.PhysicalObjects    -- ^ physical objects of the system
+                  -> PPT.Forces             -- ^ external forces
+                  -> PPT.PhysicalObjects
+integrateTimeStep g dt yn exFor = ynp1
   where
     dt_half = PPT.DeltaTime $ (/2) $ PPT.unDeltaTime dt
-    f1 = calculateGravitationalForces g yn
-    f2 = calculateGravitationalForces g (integratePhysics dt_half yn (addDer k1 ders))
-    f3 = calculateGravitationalForces g (integratePhysics dt_half yn (addDer k2 ders))
-    f4 = calculateGravitationalForces g (integratePhysics dt yn (addDer k3 ders))
+    exDer   = fmap (\x -> PPT.Derivative (DAD.zeroV, x)) exFor
+    k1'     = evaluatePhysics g (PPT.DeltaTime 0) yn DIS.empty
+    k1      = DIS.unionWith (DAD.^+^) k1' exDer
+    k2'     = evaluatePhysics g dt_half yn k1
+    k2      = DIS.unionWith (DAD.^+^) k2' exDer
+    k3'     = evaluatePhysics g dt_half yn k2
+    k3      = DIS.unionWith (DAD.^+^) k3' exDer
+    k4'     = evaluatePhysics g dt yn k3
+    k4      = DIS.unionWith (DAD.^+^) k4' exDer
+    finalD  = DIS.unionWith
+                (DAD.^+^)
+                (fmap ((DVE.*^) (1/6)) k1)
+                (DIS.unionWith
+                    (DAD.^+^)
+                    (fmap ((DVE.*^) (1/3)) k2)
+                    (DIS.unionWith
+                        (DAD.^+^)
+                        (fmap ((DVE.*^) (1/3)) k3)
+                        (fmap ((DVE.*^) (1/6)) k4)))
+    ynp1    = integratePhysics dt yn finalD
 
 -- | Integrate a physical object.
 -- Uses the force saved in the object and applies is to the physical object via
@@ -58,6 +80,23 @@ integrateObject dt po (PPT.Derivative (v, f)) =
         vnew = integrateAccel dt a v
         pnew = integrateVel dt v p
 
+-- | Integrabte a physical system and derive new derivatives
+-- First du a explicit euler integration of the physical objects with respect
+-- to the given derivatives. Then calculate the new derivatives arrising from
+-- the integrated state.
+evaluatePhysics :: PPT.GravitationalConstant
+                -> PPT.DeltaTime
+                -> PPT.PhysicalObjects
+                -> PPT.Derivatives
+                -> PPT.Derivatives
+evaluatePhysics g dt pos ders = newDer
+  where
+    newPos = integratePhysics dt pos ders
+    newVel = fmap (CLE.view PPT.vel) newPos
+    newFor = calculateGravitationalForces g newPos
+    newVe' = fmap (\x -> PPT.Derivative (x, DAD.zeroV)) newVel
+    newFo' = fmap (\x -> PPT.Derivative (DAD.zeroV, x)) newFor
+    newDer = DIS.unionWith (DAD.^+^) newVe' newFo'
 
 
 -- | Integrate a complete physical system
@@ -70,10 +109,10 @@ integratePhysics dt pos ders = DIS.mapWithKey helper pos
 
 -- | Lookup the derivative of an object given a key
 defaultLookup :: Int -> PPT.PhysicalObject -> PPT.Derivatives -> PPT.Derivative
-defaultLookup key obj ders = DIS.findWithDefault (zero obj) key ders
+defaultLookup key obj ders = DIS.findWithDefault (zeroD obj) key ders
   where
-    zero :: PPT.PhysicalObject -> PPT.Derivative
-    zero obj = PPT.Derivative $ (CLE.view PPT.vel obj, PPT.Force LVE.zero)
+    zeroD :: PPT.PhysicalObject -> PPT.Derivative
+    zeroD o = PPT.Derivative $ (CLE.view PPT.vel o, PPT.Force LVE.zero)
 
 
 -- | Calculate the gravitational forces between two objects
@@ -126,21 +165,17 @@ gravitationalForce ps g o1 o2 = PPT.Force $ LV2.V2 projectedForce1 projectedForc
     -- Technically I need to still push back here, i.e. multiply both vectors
     -- with 1/(2*pi). However, let's just compensate this with g.
 
-initialize :: PPT.PhysicalObject -> (PPT.PhysicalObject, PPT.Derivative)
-initialize o@(PPT.PhysicalObject _ _ _ v _ _) = (o, PPT.Derivative (v, PPT.Force (pure 0)))
-
 -- | Calculate all forces for a system.
 calculateGravitationalForces :: PPT.GravitationalConstant -- ^ Gravitational Constant
                              -> PPT.PhysicalObjects
                              -> PPT.Forces
 calculateGravitationalForces g objs = forceMap
       where
-        staticObjs      = (DIS.filter (CLE.view PPT.static) objs)
         gravitatingObjs = (DIS.filter (CLE.view PPT.gravitating) objs)
         nonStaticObjs   = (DIS.filter (not . (CLE.view PPT.static)) objs)
         -- Apply all forces
         foldForces :: PPT.PhysicalObject -> PPT.Force
-        foldForces x = DIS.foldr' (\o facc -> facc + calculateForce g o x) (PPT.Force $ LVE.zero) gravitatingObjs
+        foldForces x = DIS.foldr' (\o facc -> facc DAD.^+^ calculateForce g o x) (PPT.Force $ LVE.zero) gravitatingObjs
         forceMap = DIS.map foldForces nonStaticObjs
 
 --lookUpVel :: Int -> PPT.Velocity
