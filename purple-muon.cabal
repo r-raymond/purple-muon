@@ -49,6 +49,7 @@ executable purple-muon-client
                      , vector-space
                      , linear
                      , lens
+                     , containers
   default-language:    Haskell2010
   other-modules:       Client.Types
                      , Client.Event

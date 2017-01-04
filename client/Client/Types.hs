@@ -24,7 +24,7 @@ type Game a = ReaderT Resources (StateT AppState IO) a
 
 data GameState
     = GameState
-    { _physicalObjects :: [PPT.PhysicalObject]
+    { _physicalObjects :: PPT.PhysicalObjects
     , _dt              :: PPT.DeltaTime
     } deriving (Show)
 

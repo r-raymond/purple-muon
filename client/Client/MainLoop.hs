@@ -4,23 +4,24 @@ module Client.MainLoop
 
 import           Protolude
 
-import qualified Control.Concurrent as CCO
-import qualified Control.Lens       as CLE
-import qualified Data.AdditiveGroup as DAD
-import qualified Data.AffineSpace   as DAF
-import qualified Data.Thyme.Clock   as DTC
-import qualified Foreign.C.Types    as FCT
-import qualified SDL                as SDL
-import qualified SDL.Event          as SEV
-import qualified SDL.Vect           as SVE
-import qualified SDL.Video          as SVI
+import qualified Control.Concurrent           as CCO
+import qualified Control.Lens                 as CLE
+import qualified Data.AdditiveGroup           as DAD
+import qualified Data.AffineSpace             as DAF
+import qualified Data.IntMap.Strict           as DIS
+import qualified Data.Thyme.Clock             as DTC
+import qualified Foreign.C.Types              as FCT
+import qualified SDL                          as SDL
+import qualified SDL.Event                    as SEV
+import qualified SDL.Vect                     as SVE
+import qualified SDL.Video                    as SVI
 
-import qualified PurpleMuon.Physics.Types as PPT
 import qualified PurpleMuon.Physics.Algorithm as PPA
 import qualified PurpleMuon.Physics.Constants as PPC
+import qualified PurpleMuon.Physics.Types     as PPT
 
-import qualified Client.Event       as CEV
-import qualified Client.Types       as CTY
+import qualified Client.Event                 as CEV
+import qualified Client.Types                 as CTY
 
 loop :: CTY.Game ()
 loop = do
@@ -89,27 +90,24 @@ renderPhysicalObject po = do
         p    = fmap FCT.CInt coord
     SVI.fillRect renderer (Just (SVI.Rectangle (SVE.P p) size))
 
-wrap :: Float -> Float -> Float
-wrap bound x
-    | x < 0     = wrap bound (x + bound)
-    | x > bound = wrap bound (x - bound)
-    | otherwise = x
-
-wrapTorus :: PPT.PhysicalObject -> PPT.PhysicalObject
-wrapTorus = CLE.over PPT.pos cutOffP
-  where
-    PPT.PhysicalSize (SVE.V2 xMax yMax) = PPC.physicalSize
-    cutOff :: SVE.V2 Float -> SVE.V2 Float
-    cutOff (SVE.V2 x y) = SVE.V2 (wrap xMax x) (wrap yMax y)
-    cutOffP :: PPT.Position -> PPT.Position
-    cutOffP = PPT.Position . cutOff . PPT.unPosition
+--wrap :: PPT.FlType -> PPT.FlType -> PPT.FlType
+--wrap bound x
+--    | x < 0     = wrap bound (x + bound)
+--    | x > bound = wrap bound (x - bound)
+--    | otherwise = x
+--
+--wrapTorus :: PPT.PhysicalObject -> PPT.PhysicalObject
+--wrapTorus = CLE.over PPT.pos cutOffP
+--  where
+--    PPT.PhysicalSize (SVE.V2 xMax yMax) = PPC.physicalSize
+--    cutOff :: SVE.V2 PPT.FlType -> SVE.V2 PPT.FlType
+--    cutOff (SVE.V2 x y) = SVE.V2 (wrap xMax x) (wrap yMax y)
+--    cutOffP :: PPT.Position -> PPT.Position
+--    cutOffP = PPT.Position . cutOff . PPT.unPosition
 
 advanceGameState :: CTY.Game ()
 advanceGameState = do
   appState <- get
   let dt = CLE.view (CTY.game . CTY.dt) appState
-      f  =  (fmap wrapTorus)
-            . (fmap (PPA.integrateObject dt)) 
-            . (PPA.calculateGravitationalForces PPC.g)
-            . PPA.resetForces
-  modify (CLE.over (CTY.game . CTY.physicalObjects) f)
+  modify (CLE.over (CTY.game . CTY.physicalObjects)
+                   (\x -> (PPA.integrateTimeStep PPC.g dt x DIS.empty)))
