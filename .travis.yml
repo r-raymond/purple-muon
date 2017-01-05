@@ -29,7 +29,7 @@ before_install:
 
 install:
   # Build dependencies
-  - stack --no-terminal --install-ghc build --only-dependencies
+  - stack --no-terminal --install-ghc build --only-dependencies --split-objs
 
 script:
-  - stack --no-terminal build --haddock --no-haddock-deps
+  - stack --no-terminal build --haddock --no-haddock-deps --split-objs
