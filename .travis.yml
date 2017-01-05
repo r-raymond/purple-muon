@@ -25,6 +25,7 @@ before_install:
   - curl https://www.libsdl.org/release/SDL2-2.0.5.tar.gz -o SDL2-2.0.5.tar.gz
   - tar -xzvf SDL2-2.0.5.tar.gz
   - (cd SDL2-2.0.5 && ./configure && make && sudo make install)
+  - sudo ldconfig
 
 install:
   # Build dependencies
