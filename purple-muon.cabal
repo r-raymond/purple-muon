@@ -52,6 +52,7 @@ executable purple-muon-client
                      , containers
                      , formatting
                      , xml
+                     , JuicyPixels
   default-language:    Haskell2010
   other-modules:       Client.Types
                      , Client.Event
