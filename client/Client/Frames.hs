@@ -42,7 +42,7 @@ manageFps = do
     -- set the game dt according to the passed time
     modify (CLE.set (CTY.game . CTY.dt) (PPT.DeltaTime frameTime))
     modify (CLE.over CTY.fps (registerFps frameTime))
-
+    modify (CLE.over (CTY.game . CTY.accumTime) (\(PPT.DeltaTime a) -> PPT.DeltaTime (a + frameTime)))
 
 
 registerFps :: PPT.FlType -> CTY.FpsCounter -> CTY.FpsCounter
@@ -56,7 +56,7 @@ getAvgFrametime :: CTY.FpsCounter -> PPT.FlType
 getAvgFrametime  (CTY.FpsCounter _ f) = (sum f) / (fromIntegral (max (length f) 1))
 
 minFrameTime :: DTC.NominalDiffTime
-minFrameTime = DTC.fromSeconds (1 / 60 :: PPT.FlType)
+minFrameTime = DTC.fromSeconds (1 / 120 :: PPT.FlType)
 
 fpsFormat :: FOR.Format r (PPT.FlType -> r)
 fpsFormat = "Fps : " FOR.% (FOR.fixed 1)

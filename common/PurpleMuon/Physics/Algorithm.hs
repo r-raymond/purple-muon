@@ -34,6 +34,7 @@ integrateVel (PPT.DeltaTime dt) (PPT.Velocity v) (PPT.Position p) = PPT.Position
 newton2nd :: PPT.Force -> PPT.Mass -> PPT.Acceleration
 newton2nd (PPT.Force f) (PPT.Mass m) = PPT.Acceleration (fmap (/ m) f)
 
+
 -- | Integrate a physical object system.
 -- Uses RK4, and the notation from the wikipedia article
 -- https://en.wikipedia.org/wiki/Runge%E2%80%93Kutta_methods

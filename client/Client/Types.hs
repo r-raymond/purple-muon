@@ -3,24 +3,24 @@
 module Client.Types
     ( AppState(..), running, game, fps, frameBegin
     , Game
-    , GameState(..), physicalObjects, dt
+    , GameState(..), physicalObjects, dt, accumTime
     , Resources(..), window, renderer
-    , FpsCounter(..), 
+    , FpsCounter(..),
     ) where
 
-import Protolude
+import           Protolude
 
-import qualified Control.Lens as CLE
-import qualified SDL.Video          as SVI
-import qualified Data.Thyme.Clock             as DTC
+import qualified Control.Lens             as CLE
+import qualified Data.Thyme.Clock         as DTC
+import qualified SDL.Video                as SVI
 
 import qualified PurpleMuon.Physics.Types as PPT
 
 data AppState
     = AppState
-    { _running :: Bool
-    , _game    :: GameState
-    , _fps     :: FpsCounter
+    { _running    :: Bool
+    , _game       :: GameState
+    , _fps        :: FpsCounter
     , _frameBegin :: DTC.UTCTime -- TODO: figure out how to get show back on Appstate
     }
 
@@ -30,11 +30,12 @@ data GameState
     = GameState
     { _physicalObjects :: PPT.PhysicalObjects
     , _dt              :: PPT.DeltaTime
+    , _accumTime       :: PPT.DeltaTime         -- ^ Accumulated time for fixed physics step
     } deriving (Show)
 
 data Resources
-    = Resources 
-    { _window :: SVI.Window
+    = Resources
+    { _window   :: SVI.Window
     , _renderer :: SVI.Renderer
     } deriving (Show)
 

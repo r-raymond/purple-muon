@@ -56,7 +56,7 @@ newtype Acceleration = Acceleration { unAcceleration :: LV2.V2 FlType }
 
 -- | A time delta
 newtype DeltaTime = DeltaTime { unDeltaTime :: FlType }
-  deriving (Eq, Show)
+  deriving (Eq, Show, Ord)
 
 -- | A Force
 newtype Force = Force { unForce :: LV2.V2 FlType }
@@ -121,3 +121,8 @@ instance (DAD.AdditiveGroup Derivative) where
 instance (DVE.VectorSpace Derivative) where
     type (Scalar Derivative) = FlType
     (*^) l (Derivative a) = Derivative (l DVE.*^ a)
+
+instance (DAD.AdditiveGroup DeltaTime) where
+    zeroV = DeltaTime 0
+    (^+^) (DeltaTime a) (DeltaTime b) = DeltaTime (a + b)
+    negateV (DeltaTime a) = DeltaTime ((-1) * a)
