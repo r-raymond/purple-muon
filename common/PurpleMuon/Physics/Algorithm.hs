@@ -78,7 +78,7 @@ integrateObject dt po (PPT.Derivative (v, f)) =
         p = CLE.view PPT.pos po
         a = newton2nd f m
         vnew = integrateAccel dt a v
-        pnew = integrateVel dt v p
+        pnew = wrapTorus $ integrateVel dt v p
 
 -- | Integrabte a physical system and derive new derivatives
 -- First du a explicit euler integration of the physical objects with respect
@@ -191,3 +191,16 @@ calculateForce g o1 o2 =
         else PPT.Force $ LVE.zero
       where
         f = gravitationalForce PPC.physicalSize g o2 o1
+
+wrap :: PPT.FlType -> PPT.FlType -> PPT.FlType
+wrap bound x
+    | x < 0     = wrap bound (x + bound)
+    | x > bound = wrap bound (x - bound)
+    | otherwise = x
+
+wrapTorus :: PPT.Position -> PPT.Position
+wrapTorus = PPT.Position . cutOff . PPT.unPosition
+  where
+    PPT.PhysicalSize (LV2.V2 xMax yMax) = PPC.physicalSize
+    cutOff :: LV2.V2 PPT.FlType -> LV2.V2 PPT.FlType
+    cutOff (LV2.V2 x y) = LV2.V2 (wrap xMax x) (wrap yMax y)
