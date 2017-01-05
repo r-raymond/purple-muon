@@ -50,11 +50,13 @@ executable purple-muon-client
                      , linear
                      , lens
                      , containers
+                     , formatting
   default-language:    Haskell2010
   other-modules:       Client.Types
                      , Client.Event
                      , Client.Init
                      , Client.MainLoop
+                     , Client.Frames
   default-extensions:  OverloadedStrings
                      , NoImplicitPrelude
                      , GeneralizedNewtypeDeriving

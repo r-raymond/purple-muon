@@ -4,12 +4,8 @@ module Client.MainLoop
 
 import           Protolude
 
-import qualified Control.Concurrent           as CCO
 import qualified Control.Lens                 as CLE
-import qualified Data.AdditiveGroup           as DAD
-import qualified Data.AffineSpace             as DAF
 import qualified Data.IntMap.Strict           as DIS
-import qualified Data.Thyme.Clock             as DTC
 import qualified Foreign.C.Types              as FCT
 import qualified SDL                          as SDL
 import qualified SDL.Event                    as SEV
@@ -21,43 +17,26 @@ import qualified PurpleMuon.Physics.Constants as PPC
 import qualified PurpleMuon.Physics.Types     as PPT
 
 import qualified Client.Event                 as CEV
+import qualified Client.Frames                as CTF
 import qualified Client.Types                 as CTY
 
 loop :: CTY.Game ()
 loop = do
+    CTF.frameBegin
+
     res <- ask
     let window   = CLE.view CTY.window   res
-
-    start <- liftIO $ DTC.getCurrentTime
 
     SEV.mapEvents CEV.handleEvent
     render
 
     advanceGameState
 
-    end <- liftIO $ DTC.getCurrentTime
-    let used = end DAF..-. start
+    CTF.manageFps
 
-    when (used < minLoopTime) (waitFor (minLoopTime DAD.^-^ used))
-    final <- liftIO $ DTC.getCurrentTime
-    let elapsed = final DAF..-. start
-
-    SVI.windowTitle window SDL.$= (formatTitle elapsed)
-    modify (CLE.set (CTY.game . CTY.dt) (PPT.DeltaTime $ DTC.toSeconds elapsed))
+    fps <- CTF.formatFps
+    SVI.windowTitle window SDL.$= fps
     whenM (fmap (CLE.view CTY.running) get) loop
-
-minLoopTime :: DTC.NominalDiffTime
-minLoopTime = DTC.fromSeconds (1 / 60 :: Float)
-
-formatTitle :: DTC.NominalDiffTime -> Text
-formatTitle dt = "FPS: " <> (show (1 / ((DTC.toSeconds dt) :: Float)))
-
-waitFor :: MonadIO m => DTC.NominalDiffTime -> m ()
-waitFor dt = liftIO $ CCO.threadDelay dt_ms
-  where
-    dt_s = DTC.toSeconds dt :: Float
-    dt_ms_float = dt_s * 1000000
-    dt_ms = truncate dt_ms_float
 
 render :: CTY.Game ()
 render = do
@@ -89,21 +68,6 @@ renderPhysicalObject po = do
     let size = fmap FCT.CInt (SVE.V2 10 10)
         p    = fmap FCT.CInt coord
     SVI.fillRect renderer (Just (SVI.Rectangle (SVE.P p) size))
-
---wrap :: PPT.FlType -> PPT.FlType -> PPT.FlType
---wrap bound x
---    | x < 0     = wrap bound (x + bound)
---    | x > bound = wrap bound (x - bound)
---    | otherwise = x
---
---wrapTorus :: PPT.PhysicalObject -> PPT.PhysicalObject
---wrapTorus = CLE.over PPT.pos cutOffP
---  where
---    PPT.PhysicalSize (SVE.V2 xMax yMax) = PPC.physicalSize
---    cutOff :: SVE.V2 PPT.FlType -> SVE.V2 PPT.FlType
---    cutOff (SVE.V2 x y) = SVE.V2 (wrap xMax x) (wrap yMax y)
---    cutOffP :: PPT.Position -> PPT.Position
---    cutOffP = PPT.Position . cutOff . PPT.unPosition
 
 advanceGameState :: CTY.Game ()
 advanceGameState = do

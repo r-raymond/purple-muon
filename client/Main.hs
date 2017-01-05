@@ -20,7 +20,10 @@ objs = DIS.fromList
         , (2, PPT.PhysicalObject 2 (PPT.Mass 1) (PPT.Position (LV2.V2 0.75 0.5)) (PPT.Velocity (LV2.V2 0 0.1)) False True)]
 
 initialeState :: CTY.AppState
-initialeState = CTY.AppState True (CTY.GameState objs (PPT.DeltaTime 0))
+initialeState = CTY.AppState True
+                             (CTY.GameState objs (PPT.DeltaTime 0))
+                             (CTY.FpsCounter 60 [])
+                             (toEnum 0)
 
 game :: SVI.Window -> SVI.Renderer -> IO ()
 game w r = evalStateT (runReaderT CMA.loop (CTY.Resources w r)) initialeState
