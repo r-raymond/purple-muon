@@ -3,9 +3,12 @@ module Main where
 import           Protolude
 
 import qualified Control.Concurrent           as CCO
+import qualified Data.AdditiveGroup           as DAD
+import qualified Data.AffineSpace             as DAF
 import qualified Data.Binary                  as DBI
 import qualified Data.ByteString              as DBS
 import qualified Data.IntMap.Strict           as DIS
+import qualified Data.Thyme.Clock             as DTC
 import qualified Linear.V2                    as LV2
 import qualified Network.Socket               as NSO
 import qualified Network.Socket.ByteString    as NSB
@@ -22,7 +25,7 @@ main :: IO ()
 main = do
     (Right ss) <- PNU.serverSocket "7123"
     (m, a) <- NSB.recvFrom ss 1024
-    putStrLn ("Received: " ++ (toS m) ++ " from " ++ (show a))
+    putStrLn ("Received: " ++ toS m ++ " from " ++ show a)
     loop ss a objs
 
 objs :: PPT.PhysicalObjects
@@ -37,10 +40,28 @@ objs = DIS.fromList
 
 loop :: MonadIO m => NSO.Socket -> NSO.SockAddr -> PPT.PhysicalObjects -> m ()
 loop s a o = do
-    liftIO $ CCO.threadDelay 20000
-    let newObjs = PPA.integrateTimeStep PPC.g (PPT.DeltaTime 0.02) o DIS.empty
+    b <- liftIO DTC.getCurrentTime
+    -- Update objs
+    let newObjs = PPA.integrateTimeStep PPC.g PPC.physicsStep o DIS.empty
         toSend  = toS $ DBI.encode $ DIS.toList newObjs
         l       = DBS.length toSend
     liftIO $ print l
     void $ liftIO $ NSB.sendTo s toSend a
+
+    e <- liftIO DTC.getCurrentTime
+
+    let used = e DAF..-. b
+        mft  = DTC.fromSeconds $ PPT.unDeltaTime PPC.physicsStep
+    when (used < mft) (waitFor (mft DAD.^-^ used))
+
     loop s a newObjs
+
+
+
+waitFor :: MonadIO m => DTC.NominalDiffTime -> m ()
+waitFor dt = liftIO $ CCO.threadDelay dt_ms
+  where
+    dt_s = DTC.toSeconds dt :: PPT.FlType
+    dt_ms_float = dt_s * 1000000
+    dt_ms = truncate dt_ms_float
+
