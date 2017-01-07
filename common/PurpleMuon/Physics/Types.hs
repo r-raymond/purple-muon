@@ -7,7 +7,9 @@ Maintainer  : robin@robinraymond.de
 Portability : POSIX
 -}
 
-{-# LANGUAGE TemplateHaskell, CPP, TypeFamilies #-}
+{-# LANGUAGE CPP             #-}
+{-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE TypeFamilies    #-}
 
 module PurpleMuon.Physics.Types
     ( FlType
@@ -31,52 +33,54 @@ module PurpleMuon.Physics.Types
 import           Protolude
 
 import qualified Control.Lens       as CLE
+import qualified Data.AdditiveGroup as DAD
+import qualified Data.Binary        as DBI
 import qualified Data.IntMap.Strict as DIS
+import qualified Data.VectorSpace   as DVE
 import qualified Linear.V2          as LV2
 import qualified Linear.Vector      as LVE
-import qualified Data.AdditiveGroup as DAD
-import qualified Data.VectorSpace   as DVE
 
 -- |The floating point type used throughout the physics module
-type FlType = Double
+type FlType = Float
 
 -- | The position of an object
 newtype Position = Position { unPosition :: LV2.V2 FlType }
-  deriving (Eq, Show)
+  deriving (Eq, Show, Generic)
 
 -- | The mass of an object
 newtype Mass = Mass { unMass :: FlType }
-  deriving (Eq, Show)
+  deriving (Eq, Show, Generic)
 
 -- | The velocity of an object
 newtype Velocity = Velocity { unVelocity :: LV2.V2 FlType }
-  deriving (Eq, Show)
+  deriving (Eq, Show, Generic)
 
 -- | The acceleration of an object
 newtype Acceleration = Acceleration { unAcceleration :: LV2.V2 FlType }
-  deriving (Eq, Show)
+  deriving (Eq, Show, Generic)
 
 -- | A time delta
+-- Meassured in seconds
 newtype DeltaTime = DeltaTime { unDeltaTime :: FlType }
-  deriving (Eq, Show, Ord)
+  deriving (Eq, Show, Ord, Generic)
 
 -- | A Force
 newtype Force = Force { unForce :: LV2.V2 FlType }
-  deriving (Eq, Show)
+  deriving (Eq, Show, Generic)
 
 -- | The gravitaional constant
 newtype GravitationalConstant = GravitationalConstant { unGravitationalConstant :: FlType }
-  deriving (Eq, Show)
+  deriving (Eq, Show, Generic)
 
 -- | The type of a physical object
 data ObjType = Static       -- ^ the objects position is fixed
              | NonStatic    -- ^ the objects position is not fixed
-    deriving (Eq, Show)
+    deriving (Eq, Show, Generic)
 
 -- | The type of a gravitating body
 data ObjGrav = Gravitating      -- ^ the object exerts gravitational forces
              | NonGravitating   -- ^ the object only recerives grav. forces
-    deriving (Eq, Show)
+    deriving (Eq, Show, Generic)
 
 -- | A physical object
 data PhysicalObject
@@ -87,19 +91,28 @@ data PhysicalObject
     , _vel         :: Velocity -- ^ The velocity of the object
     , _static      :: ObjType  -- ^ Is this object moving?
     , _gravitating :: ObjGrav  -- ^ Is this object gravitating?
-    } deriving (Show)
+    } deriving (Show, Generic)
 
 instance (Eq PhysicalObject) where
     (==) a b = (_uuid a) == (_uuid b)
+
+instance DBI.Binary Mass
+instance DBI.Binary Position
+instance DBI.Binary Velocity
+instance DBI.Binary ObjType
+instance DBI.Binary ObjGrav
+instance DBI.Binary PhysicalObject
+
 
 CLE.makeLenses ''PhysicalObject
 
 -- |The physical size of the playing board
 newtype PhysicalSize = PhysicalSize { unPhysicalSize :: LV2.V2 FlType }
-  deriving (Eq, Show)
+  deriving (Eq, Show, Generic)
 
 -- |The derivaties of a physical object numerical integrater
 newtype Derivative = Derivative { unDerviative :: (Velocity, Force) }
+    deriving(Eq, Show, Generic)
 
 -- |A collection of derivaties, indexed by the `uuid` of the objects
 type Derivatives = IntMap Derivative

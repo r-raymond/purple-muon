@@ -31,18 +31,19 @@ library
   ghc-options: -Wall -O -Werror
   build-depends:
       base >= 4.7 && < 5
-    , protolude
+    , binary
     , bytestring
-    , network
-    , linear
-    , lens
     , containers
-    , vector-space
+    , formatting
+    , JuicyPixels
+    , lens
+    , linear
+    , network
+    , protolude
     , sdl2
     , thyme
-    , formatting
+    , vector-space
     , xml
-    , JuicyPixels
   exposed-modules:
       PurpleMuon.Network.Types
       PurpleMuon.Network.Message
@@ -62,18 +63,19 @@ executable pm-client
   ghc-options: -Wall -O -Werror -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       base >= 4.7 && < 5
-    , protolude
+    , binary
     , bytestring
-    , network
-    , linear
-    , lens
     , containers
-    , vector-space
+    , formatting
+    , JuicyPixels
+    , lens
+    , linear
+    , network
+    , protolude
     , sdl2
     , thyme
-    , formatting
+    , vector-space
     , xml
-    , JuicyPixels
     , purple-muon
   other-modules:
       Client.Types
@@ -92,18 +94,19 @@ executable pm-server
   ghc-options: -Wall -O -Werror -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       base >= 4.7 && < 5
-    , protolude
+    , binary
     , bytestring
-    , network
-    , linear
-    , lens
     , containers
-    , vector-space
+    , formatting
+    , JuicyPixels
+    , lens
+    , linear
+    , network
+    , protolude
     , sdl2
     , thyme
-    , formatting
+    , vector-space
     , xml
-    , JuicyPixels
     , purple-muon
   other-modules:
       Server.Types

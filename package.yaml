@@ -21,18 +21,19 @@ default-extensions:
 
 dependencies:
     - base >= 4.7 && < 5
-    - protolude
+    - binary
     - bytestring
-    - network
-    - linear
-    - lens
     - containers
-    - vector-space
+    - formatting
+    - JuicyPixels
+    - lens
+    - linear
+    - network
+    - protolude
     - sdl2
     - thyme
-    - formatting
+    - vector-space
     - xml
-    - JuicyPixels
 
 library:
   source-dirs: common

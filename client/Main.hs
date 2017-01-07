@@ -2,10 +2,11 @@ module Main where
 
 import           Protolude
 
+import qualified Data.IntMap.Strict        as DIS
+import qualified Linear.V2                 as LV2
+import qualified Network.Socket            as NSO
 import           Network.Socket.ByteString
-import qualified Linear.V2    as LV2
 import qualified SDL.Video                 as SVI
-import qualified Data.IntMap.Strict           as DIS
 
 import           PurpleMuon.Network.Util
 import qualified PurpleMuon.Physics.Types  as PPT
@@ -40,14 +41,14 @@ initialeState = CTY.AppState True
                              (CTY.FpsCounter 60 [])
                              (toEnum 0)
 
-game :: SVI.Window -> SVI.Renderer -> IO ()
-game w r = evalStateT (runReaderT CMA.loop (CTY.Resources w r)) initialeState
+game :: NSO.Socket -> SVI.Window -> SVI.Renderer -> IO ()
+game s w r = evalStateT (runReaderT CMA.loop (CTY.Resources w r s)) initialeState
 
 main :: IO ()
 main = do
     (Right cs) <- clientSocket "127.0.0.1" "7123"
     _ <- send cs "Hello World"
-    r <- CIN.withGraphics game
+    r <- CIN.withGraphics (game cs)
     case r of
         Left ex  -> putStrLn ("Error: " <> (show ex) :: Text)
         Right () -> return ()

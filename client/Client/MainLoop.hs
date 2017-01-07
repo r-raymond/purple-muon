@@ -5,15 +5,18 @@ module Client.MainLoop
 import           Protolude
 
 import qualified Control.Lens                 as CLE
+import qualified Data.Binary                  as DBI
+import qualified Data.ByteString              as DBS
 import qualified Data.IntMap.Strict           as DIS
 import qualified Foreign.C.Types              as FCT
+import qualified Network.Socket.ByteString    as NSB
 import qualified SDL                          as SDL
 import qualified SDL.Event                    as SEV
 import qualified SDL.Vect                     as SVE
 import qualified SDL.Video                    as SVI
 
-import qualified PurpleMuon.Physics.Algorithm as PPA
-import qualified PurpleMuon.Physics.Constants as PPC
+--import qualified PurpleMuon.Physics.Algorithm as PPA
+--import qualified PurpleMuon.Physics.Constants as PPC
 import qualified PurpleMuon.Physics.Types     as PPT
 
 import qualified Client.Event                 as CEV
@@ -24,13 +27,15 @@ loop :: CTY.Game ()
 loop = do
     CTF.frameBegin
 
+    network
+
     res <- ask
     let window   = CLE.view CTY.window   res
 
     SEV.mapEvents CEV.handleEvent
     render
 
-    advanceGameState
+    -- advanceGameState
 
     CTF.manageFps
 
@@ -69,9 +74,18 @@ renderPhysicalObject po = do
         p    = fmap FCT.CInt coord
     SVI.fillRect renderer (Just (SVI.Rectangle (SVE.P p) size))
 
-advanceGameState :: CTY.Game ()
-advanceGameState = do
-  appState <- get
-  let dt = CLE.view (CTY.game . CTY.dt) appState
-  modify (CLE.over (CTY.game . CTY.physicalObjects)
-                   (\x -> (PPA.integrateTimeStep PPC.g dt x DIS.empty)))
+--advanceGameState :: CTY.Game ()
+--advanceGameState = do
+--  appState <- get
+--  let dt = CLE.view (CTY.game . CTY.dt) appState
+--  modify (CLE.over (CTY.game . CTY.physicalObjects)
+--                   (\x -> (PPA.integrateTimeStep PPC.g dt x DIS.empty)))
+
+network :: CTY.Game ()
+network = do
+    res <- ask
+    let s = CLE.view CTY.socket res
+    bin <- liftIO $ NSB.recv s 1024
+    liftIO $ print $ DBS.length bin
+    let objs = DBI.decode $ toS bin :: [(Int, PPT.PhysicalObject)]
+    modify (CLE.set (CTY.game . CTY.physicalObjects) (DIS.fromList objs))

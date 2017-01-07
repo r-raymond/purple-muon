@@ -4,7 +4,7 @@ module Client.Types
     ( AppState(..), running, game, fps, frameBegin
     , Game
     , GameState(..), physicalObjects, dt, accumTime
-    , Resources(..), window, renderer
+    , Resources(..), window, renderer, socket
     , FpsCounter(..),
     ) where
 
@@ -12,6 +12,7 @@ import           Protolude
 
 import qualified Control.Lens             as CLE
 import qualified Data.Thyme.Clock         as DTC
+import qualified Network.Socket           as NSO
 import qualified SDL.Video                as SVI
 
 import qualified PurpleMuon.Physics.Types as PPT
@@ -37,6 +38,7 @@ data Resources
     = Resources
     { _window   :: SVI.Window
     , _renderer :: SVI.Renderer
+    , _socket     :: NSO.Socket
     } deriving (Show)
 
 -- TODO: Make this more efficient. Maybe a mutable array?
