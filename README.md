@@ -10,6 +10,5 @@ still in the _very_ early stages.
 TODO
 ----
 
-* Remove boolean blindeness for static and gravitating
 * implement clock synchronization
 * fixTimeStep should be abe to catch up

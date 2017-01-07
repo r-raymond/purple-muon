@@ -172,8 +172,8 @@ calculateGravitationalForces :: PPT.GravitationalConstant -- ^ Gravitational Con
                              -> PPT.Forces
 calculateGravitationalForces g objs = forceMap
       where
-        gravitatingObjs = (DIS.filter (CLE.view PPT.gravitating) objs)
-        nonStaticObjs   = (DIS.filter (not . (CLE.view PPT.static)) objs)
+        gravitatingObjs = (DIS.filter (\x -> CLE.view PPT.gravitating x == PPT.Gravitating) objs)
+        nonStaticObjs   = (DIS.filter (\x -> CLE.view PPT.static x == PPT.NonStatic) objs)
         -- Apply all forces
         foldForces :: PPT.PhysicalObject -> PPT.Force
         foldForces x = DIS.foldr' (\o facc -> facc DAD.^+^ calculateForce g o x) (PPT.Force $ LVE.zero) gravitatingObjs

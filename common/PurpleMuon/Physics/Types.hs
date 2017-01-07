@@ -24,6 +24,8 @@ module PurpleMuon.Physics.Types
     , PhysicalObjects
     , Forces
     , Derivative(..)
+    , ObjGrav(..)
+    , ObjType(..)
     ) where
 
 import           Protolude
@@ -66,6 +68,16 @@ newtype Force = Force { unForce :: LV2.V2 FlType }
 newtype GravitationalConstant = GravitationalConstant { unGravitationalConstant :: FlType }
   deriving (Eq, Show)
 
+-- | The type of a physical object
+data ObjType = Static       -- ^ the objects position is fixed
+             | NonStatic    -- ^ the objects position is not fixed
+    deriving (Eq, Show)
+
+-- | The type of a gravitating body
+data ObjGrav = Gravitating      -- ^ the object exerts gravitational forces
+             | NonGravitating   -- ^ the object only recerives grav. forces
+    deriving (Eq, Show)
+
 -- | A physical object
 data PhysicalObject
     = PhysicalObject
@@ -73,8 +85,8 @@ data PhysicalObject
     , _mass        :: Mass     -- ^ The mass of the object
     , _pos         :: Position -- ^ The position of the object
     , _vel         :: Velocity -- ^ The velocity of the object
-    , _static      :: Bool     -- ^ Is this object moving?
-    , _gravitating :: Bool     -- ^ Is this object gravitating?
+    , _static      :: ObjType  -- ^ Is this object moving?
+    , _gravitating :: ObjGrav  -- ^ Is this object gravitating?
     } deriving (Show)
 
 instance (Eq PhysicalObject) where
