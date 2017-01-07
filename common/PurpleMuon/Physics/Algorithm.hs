@@ -110,10 +110,10 @@ integratePhysics dt pos ders = DIS.mapWithKey helper pos
 
 -- | Lookup the derivative of an object given a key
 defaultLookup :: Int -> PPT.PhysicalObject -> PPT.Derivatives -> PPT.Derivative
-defaultLookup key obj ders = DIS.findWithDefault (zeroD obj) key ders
+defaultLookup key obj = DIS.findWithDefault (zeroD obj) key
   where
     zeroD :: PPT.PhysicalObject -> PPT.Derivative
-    zeroD o = PPT.Derivative $ (CLE.view PPT.vel o, PPT.Force LVE.zero)
+    zeroD o = PPT.Derivative (CLE.view PPT.vel o, PPT.Force LVE.zero)
 
 
 -- | Calculate the gravitational forces between two objects
@@ -133,19 +133,19 @@ gravitationalForce :: PPT.PhysicalSize
                    -> PPT.Force
 gravitationalForce ps g o1 o2 = PPT.Force $ LV2.V2 projectedForce1 projectedForce2
   where
-    p1 = PPT.unPosition $ (CLE.view PPT.pos) o1
-    p2 = PPT.unPosition $ (CLE.view PPT.pos) o2
-    m1 = PPT.unMass $ (CLE.view PPT.mass) o1
-    m2 = PPT.unMass $ (CLE.view PPT.mass) o2
+    p1 = PPT.unPosition $ CLE.view PPT.pos o1
+    p2 = PPT.unPosition $ CLE.view PPT.pos o2
+    m1 = PPT.unMass $ CLE.view PPT.mass o1
+    m2 = PPT.unMass $ CLE.view PPT.mass o2
     gVal = PPT.unGravitationalConstant g
     LV2.V2 xMax yMax = PPT.unPhysicalSize ps
     -- Calculate positions in the 2-torus parametrized by two angles from 0 to
     -- 2*pi
-    phi1 = ((CLE.view LV2._x) p1) * 2 * pi / xMax
-    phi2 = ((CLE.view LV2._y) p1) * 2 * pi / yMax
+    phi1 = CLE.view LV2._x p1 * 2 * pi / xMax
+    phi2 = CLE.view LV2._y p1 * 2 * pi / yMax
 
-    psi1 = ((CLE.view LV2._x) p2) * 2 * pi / xMax
-    psi2 = ((CLE.view LV2._y) p2) * 2 * pi / yMax
+    psi1 = CLE.view LV2._x p2 * 2 * pi / xMax
+    psi2 = CLE.view LV2._y p2 * 2 * pi / yMax
     -- Calculate Position in $\R^4$. Notice that we use the normed two-torus,
     -- because the final push forward cancels the xMax, yMax coefficients
     q1 = LV4.V4 (cos phi1) (sin phi1) (cos phi2) (sin phi2)
@@ -159,10 +159,10 @@ gravitationalForce ps g o1 o2 = PPT.Force $ LV2.V2 projectedForce1 projectedForc
     force1 = LV2.V2 fw fx
     force2 = LV2.V2 fy fz
     -- Project the force onto the torus
-    unitVec1 = LV2.V2 ((-1)*(sin phi1)) (cos phi1)
-    unitVec2 = LV2.V2 ((-1)*(sin phi2)) (cos phi2)
-    projectedForce1 = (force1 `LME.dot` unitVec1)
-    projectedForce2 = (force2 `LME.dot` unitVec2)
+    unitVec1 = LV2.V2 ((-1) * sin phi1) (cos phi1)
+    unitVec2 = LV2.V2 ((-1) * sin phi2) (cos phi2)
+    projectedForce1 = force1 `LME.dot` unitVec1
+    projectedForce2 = force2 `LME.dot` unitVec2
     -- Technically I need to still push back here, i.e. multiply both vectors
     -- with 1/(2*pi). However, let's just compensate this with g.
 
@@ -172,11 +172,11 @@ calculateGravitationalForces :: PPT.GravitationalConstant -- ^ Gravitational Con
                              -> PPT.Forces
 calculateGravitationalForces g objs = forceMap
       where
-        gravitatingObjs = (DIS.filter (\x -> CLE.view PPT.gravitating x == PPT.Gravitating) objs)
-        nonStaticObjs   = (DIS.filter (\x -> CLE.view PPT.static x == PPT.NonStatic) objs)
+        gravitatingObjs = DIS.filter (\x -> CLE.view PPT.gravitating x == PPT.Gravitating) objs
+        nonStaticObjs   = DIS.filter (\x -> CLE.view PPT.static x == PPT.NonStatic) objs
         -- Apply all forces
         foldForces :: PPT.PhysicalObject -> PPT.Force
-        foldForces x = DIS.foldr' (\o facc -> facc DAD.^+^ calculateForce g o x) (PPT.Force $ LVE.zero) gravitatingObjs
+        foldForces x = DIS.foldr' (\o facc -> facc DAD.^+^ calculateForce g o x) (PPT.Force LVE.zero) gravitatingObjs
         forceMap = DIS.map foldForces nonStaticObjs
 
 -- | Calculate the force of the first object on the second
@@ -189,7 +189,7 @@ calculateForce :: PPT.GravitationalConstant
 calculateForce g o1 o2 =
     if o1 /= o2
         then f
-        else PPT.Force $ LVE.zero
+        else PPT.Force LVE.zero
       where
         f = gravitationalForce PPC.physicalSize g o2 o1
 
