@@ -5,3 +5,11 @@ Purple Muon (Working Title)
 
 _Purple Muon_ is a networked two player game written in Haskell. So far it is
 still in the _very_ early stages.
+
+
+TODO
+----
+
+* Remove boolean blindeness for static and gravitating
+* implement clock synchronization
+* fixTimeStep should be abe to catch up
