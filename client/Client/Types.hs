@@ -4,17 +4,18 @@ module Client.Types
     ( AppState(..), running, game, fps, frameBegin
     , Game
     , GameState(..), physicalObjects, dt, accumTime
-    , Resources(..), window, renderer, socket
+    , Resources(..), window, renderer, tbqueue
     , FpsCounter(..),
     ) where
 
 import           Protolude
 
+import qualified Control.Concurrent.STM   as CCS
 import qualified Control.Lens             as CLE
 import qualified Data.Thyme.Clock         as DTC
-import qualified Network.Socket           as NSO
 import qualified SDL.Video                as SVI
 
+import qualified PurpleMuon.Network.Types as PNT
 import qualified PurpleMuon.Physics.Types as PPT
 
 data AppState
@@ -32,14 +33,14 @@ data GameState
     { _physicalObjects :: PPT.PhysicalObjects
     , _dt              :: PPT.DeltaTime
     , _accumTime       :: PPT.DeltaTime         -- ^ Accumulated time for fixed physics step
-    } deriving (Show)
+    }
 
 data Resources
     = Resources
     { _window   :: SVI.Window
     , _renderer :: SVI.Renderer
-    , _socket     :: NSO.Socket
-    } deriving (Show)
+    , _tbqueue  :: CCS.TBQueue PNT.NakedMessage
+    }
 
 -- TODO: Make this more efficient. Maybe a mutable array?
 data FpsCounter
@@ -51,4 +52,3 @@ data FpsCounter
 CLE.makeLenses ''AppState
 CLE.makeLenses ''GameState
 CLE.makeLenses ''Resources
-

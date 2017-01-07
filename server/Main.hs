@@ -13,13 +13,14 @@ import qualified Linear.V2                    as LV2
 import qualified Network.Socket               as NSO
 import qualified Network.Socket.ByteString    as NSB
 
+import qualified PurpleMuon.Network.Types     as PNT
 import qualified PurpleMuon.Network.Util      as PNU
 import qualified PurpleMuon.Physics.Algorithm as PPA
 import qualified PurpleMuon.Physics.Constants as PPC
 import qualified PurpleMuon.Physics.Types     as PPT
 
-clientAddr :: NSO.SockAddr
-clientAddr = NSO.SockAddrInet 7124 (NSO.tupleToHostAddress (127, 0, 0, 1))
+uuid :: PNT.UUID
+uuid = PNT.UUID "Test"
 
 main :: IO ()
 main = do
@@ -46,7 +47,7 @@ loop s a o = do
         toSend  = toS $ DBI.encode $ DIS.toList newObjs
         l       = DBS.length toSend
     liftIO $ print l
-    void $ liftIO $ NSB.sendTo s toSend a
+    void $ liftIO $ NSB.sendTo s (PNT.unUUID uuid <> toSend) a
 
     e <- liftIO DTC.getCurrentTime
 

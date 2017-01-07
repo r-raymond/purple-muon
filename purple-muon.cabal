@@ -41,6 +41,7 @@ library
     , network
     , protolude
     , sdl2
+    , stm
     , thyme
     , vector-space
     , xml
@@ -73,6 +74,7 @@ executable pm-client
     , network
     , protolude
     , sdl2
+    , stm
     , thyme
     , vector-space
     , xml
@@ -104,6 +106,7 @@ executable pm-server
     , network
     , protolude
     , sdl2
+    , stm
     , thyme
     , vector-space
     , xml

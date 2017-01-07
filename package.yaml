@@ -31,6 +31,7 @@ dependencies:
     - network
     - protolude
     - sdl2
+    - stm
     - thyme
     - vector-space
     - xml

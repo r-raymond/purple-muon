@@ -4,24 +4,24 @@ module Client.MainLoop
 
 import           Protolude
 
-import qualified Control.Lens                 as CLE
-import qualified Data.Binary                  as DBI
-import qualified Data.ByteString              as DBS
-import qualified Data.IntMap.Strict           as DIS
-import qualified Foreign.C.Types              as FCT
-import qualified Network.Socket.ByteString    as NSB
-import qualified SDL                          as SDL
-import qualified SDL.Event                    as SEV
-import qualified SDL.Vect                     as SVE
-import qualified SDL.Video                    as SVI
+import qualified Control.Concurrent.STM    as CCS
+import qualified Control.Lens              as CLE
+import qualified Data.Binary               as DBI
+import qualified Data.IntMap.Strict        as DIS
+import qualified Foreign.C.Types           as FCT
+import qualified SDL                       as SDL
+import qualified SDL.Event                 as SEV
+import qualified SDL.Vect                  as SVE
+import qualified SDL.Video                 as SVI
 
 --import qualified PurpleMuon.Physics.Algorithm as PPA
 --import qualified PurpleMuon.Physics.Constants as PPC
-import qualified PurpleMuon.Physics.Types     as PPT
+import qualified PurpleMuon.Network.Types  as PNT
+import qualified PurpleMuon.Physics.Types  as PPT
 
-import qualified Client.Event                 as CEV
-import qualified Client.Frames                as CTF
-import qualified Client.Types                 as CTY
+import qualified Client.Event              as CEV
+import qualified Client.Frames             as CTF
+import qualified Client.Types              as CTY
 
 loop :: CTY.Game ()
 loop = do
@@ -67,7 +67,7 @@ renderPhysicalObject po = do
     windowsize <- SDL.get $ SVI.windowSize window
 
     -- TODO: Fix this with actual physical size
-    let coord = (fmap truncate) (pos * (fmap fromIntegral windowsize))
+    let coord = fmap truncate (pos * fmap fromIntegral windowsize)
 
     SVI.rendererDrawColor renderer SDL.$= SVE.V4 255 0 0 0
     let size = fmap FCT.CInt (SVE.V2 10 10)
@@ -84,8 +84,11 @@ renderPhysicalObject po = do
 network :: CTY.Game ()
 network = do
     res <- ask
-    let s = CLE.view CTY.socket res
-    bin <- liftIO $ NSB.recv s 1024
-    liftIO $ print $ DBS.length bin
-    let objs = DBI.decode $ toS bin :: [(Int, PPT.PhysicalObject)]
-    modify (CLE.set (CTY.game . CTY.physicalObjects) (DIS.fromList objs))
+    let s = CLE.view CTY.tbqueue res
+    bin <- liftIO $ CCS.atomically $ CCS.tryReadTBQueue s
+    case bin of
+        Just n -> do
+            let objs = DBI.decode $ toS $ PNT.unNakedMessage n :: [(Int, PPT.PhysicalObject)]
+            modify (CLE.set (CTY.game . CTY.physicalObjects) (DIS.fromList objs))
+            network
+        Nothing -> return ()
