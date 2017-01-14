@@ -22,6 +22,7 @@ import qualified PurpleMuon.Physics.Types  as PPT
 import qualified Client.Event              as CEV
 import qualified Client.Frames             as CTF
 import qualified Client.Types              as CTY
+import qualified Client.Video.Texture      as CVT
 
 loop :: CTY.Game ()
 loop = do
@@ -68,6 +69,7 @@ renderPhysicalObject po = do
 
     -- TODO: Fix this with actual physical size
     let coord = fmap truncate (pos * fmap fromIntegral windowsize)
+        _     = CVT.newTextureLoader
 
     SVI.rendererDrawColor renderer SDL.$= SVE.V4 255 0 0 0
     let size = fmap FCT.CInt (SVE.V2 10 10)

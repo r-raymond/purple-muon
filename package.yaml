@@ -57,6 +57,8 @@ executables:
             - Client.MainLoop
             - Client.Frames
             - Client.Image
+            - Client.Video.Types
+            - Client.Video.Texture
         dependencies:
             - purple-muon
 
