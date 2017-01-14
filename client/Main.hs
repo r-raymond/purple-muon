@@ -26,7 +26,7 @@ initialeState =
         (toEnum 0)
 
 game :: CCS.TBQueue PNT.NakedMessage -> SVI.Window -> SVI.Renderer -> IO ()
-game tb w r = evalStateT (runReaderT CMA.loop (CTY.Resources w r tb)) initialeState
+game tb w r = evalStateT (runReaderT CMA.initLoop (CTY.Resources w r tb)) initialeState
 
 main :: IO ()
 main = do

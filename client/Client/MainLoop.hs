@@ -1,5 +1,6 @@
 module Client.MainLoop
     ( loop
+    , initLoop
     ) where
 
 import           Protolude
@@ -13,6 +14,7 @@ import qualified SDL                       as SDL
 import qualified SDL.Event                 as SEV
 import qualified SDL.Vect                  as SVE
 import qualified SDL.Video                 as SVI
+import qualified SDL.Video.Renderer        as SVR
 
 --import qualified PurpleMuon.Physics.Algorithm as PPA
 --import qualified PurpleMuon.Physics.Constants as PPC
@@ -24,8 +26,17 @@ import qualified Client.Frames             as CTF
 import qualified Client.Types              as CTY
 import qualified Client.Video.Texture      as CVT
 
-loop :: CTY.Game ()
-loop = do
+initLoop :: CTY.Game()
+initLoop = do
+    (Right s) <- runExceptT $ CVT.loadSurface "res/png/space.png"
+    res <- ask
+    let renderer = CLE.view CTY.renderer res
+    t <- SVR.createTextureFromSurface renderer s
+    loop t
+
+
+loop :: SVR.Texture -> CTY.Game ()
+loop back = do
     CTF.frameBegin
 
     network
@@ -34,7 +45,7 @@ loop = do
     let window   = CLE.view CTY.window   res
 
     SEV.mapEvents CEV.handleEvent
-    render
+    render back
 
     -- advanceGameState
 
@@ -42,14 +53,16 @@ loop = do
 
     fps <- CTF.formatFps
     SVI.windowTitle window SDL.$= fps
-    whenM (fmap (CLE.view CTY.running) get) loop
+    whenM (fmap (CLE.view CTY.running) get) (loop back)
 
-render :: CTY.Game ()
-render = do
+render :: SVR.Texture -> CTY.Game ()
+render back = do
     res <- ask
     let renderer = CLE.view CTY.renderer res
     SVI.rendererDrawColor renderer SDL.$= SVE.V4 0 0 0 0
     SVI.clear renderer
+
+    SVR.copy renderer back Nothing Nothing
 
     appState <- get
     let pos = CLE.view (CTY.game . CTY.physicalObjects) appState
@@ -69,7 +82,6 @@ renderPhysicalObject po = do
 
     -- TODO: Fix this with actual physical size
     let coord = fmap truncate (pos * fmap fromIntegral windowsize)
-        _     = CVT.newTextureLoader
 
     SVI.rendererDrawColor renderer SDL.$= SVE.V4 255 0 0 0
     let size = fmap FCT.CInt (SVE.V2 10 10)

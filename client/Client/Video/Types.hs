@@ -1,7 +1,7 @@
 module Client.Video.Types
-    ( TextureAtlas
+    ( TextureAtlas(..)
     , Texture(..)
-    , TextureLoader
+    , TextureLoader(..)
     , TexUUID(..)
     , Position
     ) where
@@ -10,7 +10,7 @@ module Client.Video.Types
 import Protolude
 
 import qualified SDL.Video.Renderer as SVR
-
+import qualified Data.IntMap.Strict as DIS
 
 newtype TextureAtlas = TextureAtlas { unTextureAtlas :: SVR.Surface }
 

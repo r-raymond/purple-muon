@@ -17,6 +17,7 @@ default-extensions:
     - NoImplicitPrelude
     - GeneralizedNewtypeDeriving
     - DeriveGeneric
+    - FlexibleContexts
 
 dependencies:
     - base >= 4.7 && < 5
@@ -32,6 +33,7 @@ dependencies:
     - sdl2
     - stm
     - thyme
+    - vector
     - vector-space
     - xml
 
