@@ -1,5 +1,6 @@
 module Client.Video.Texture
-    ( newTextureLoader
+    ( parseTextureAtlas
+    , newTextureLoader
     , loadTextureAtlas
     , loadTexture
     , renderTexture
@@ -13,6 +14,7 @@ import qualified Data.Vector.Storable as DVS
 import qualified Foreign.C.Types      as FCT
 import qualified Linear.V2            as LV2
 import qualified SDL.Video.Renderer   as SVR
+import qualified Text.XML.Light as TXL
 
 import qualified Client.Video.Types   as CVT
 
@@ -38,12 +40,22 @@ renderTexture _ _ _ = do
     return ()
 
 
+parseTextureAtlas :: (MonadError Text m, MonadIO m) 
+                  => FilePath
+                  -> m TXL.Element
+parseTextureAtlas p = do
+    c <- liftIO $ readFile p
+    let mXml = TXL.parseXMLDoc c
+    case mXml of
+        Nothing -> throwError ("Error parsing " <> (toS p))
+        Just xm -> return xm
+
 loadSurface :: (MonadError Text m, MonadIO m) => FilePath -> m SVR.Surface
 loadSurface p = do
     mImg <- liftIO $ CPI.readImage p
     case mImg of
-        Left e    -> throwError $ "Could not load file: " <> (toS e)
-        Right img -> loadSurfaceHelper img
+        Left err -> throwError $ "Could not load image: " <> (toS err)
+        Right su -> loadSurfaceHelper su
 
 loadSurfaceHelper :: MonadIO m => CPI.DynamicImage -> m SVR.Surface
 loadSurfaceHelper img = do

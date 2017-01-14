@@ -24,10 +24,12 @@ dependencies:
     - binary
     - bytestring
     - containers
+    - errors
     - formatting
     - JuicyPixels
     - lens
     - linear
+    - mtl
     - network
     - protolude
     - sdl2
