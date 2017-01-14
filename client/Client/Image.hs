@@ -3,7 +3,7 @@ module Client.Image
     , filterAtlas
     ) where
 
-import Protolude
+import           Protolude
 
 import qualified Text.XML.Light as TXL
 
@@ -16,3 +16,15 @@ filterAtlas :: Text -> TXL.Content -> Bool
 filterAtlas t (TXL.Elem (TXL.Element (TXL.QName "SubTexture" Nothing Nothing) attr _ _)) =
     elem (TXL.Attr (TXL.QName "name" Nothing Nothing) (toS t)) attr
 filterAtlas _ _ = False
+
+data TextureAtlas
+
+data Texture
+    = Texture
+    { atlas  :: TextureAtlas
+    , name   :: Text
+    , x      :: Int
+    , y      :: Int
+    , width  :: Int
+    , height :: Int
+    }
