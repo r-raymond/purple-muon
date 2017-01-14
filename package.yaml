@@ -7,7 +7,6 @@ author:              Robin Raymond
 maintainer:          robin@robinraymond.de
 copyright:           2016 Robin Raymond
 category:            Games
-build-type:          Simple
 extra-source-files:  README.md
 github:              r-raymond/purple-muon
 
