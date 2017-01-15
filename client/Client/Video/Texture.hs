@@ -16,6 +16,7 @@ import qualified Linear.V2            as LV2
 import qualified SDL.Video.Renderer   as SVR
 import qualified Text.XML.Light as TXL
 
+import qualified Client.Util          as CUT
 import qualified Client.Video.Types   as CVT
 
 newTextureLoader :: CVT.TextureLoader
@@ -39,23 +40,18 @@ renderTexture _ _ _ = do
     _ <- liftIO $ readFile "Whaat"
     return ()
 
-
 parseTextureAtlas :: (MonadError Text m, MonadIO m) 
                   => FilePath
                   -> m TXL.Element
 parseTextureAtlas p = do
     c <- liftIO $ readFile p
-    let mXml = TXL.parseXMLDoc c
-    case mXml of
-        Nothing -> throwError ("Error parsing " <> (toS p))
-        Just xm -> return xm
+    CUT.liftMaybe ("Error parsing " <> (toS p)) (TXL.parseXMLDoc c)
 
 loadSurface :: (MonadError Text m, MonadIO m) => FilePath -> m SVR.Surface
 loadSurface p = do
     mImg <- liftIO $ CPI.readImage p
-    case mImg of
-        Left err -> throwError $ "Could not load image: " <> (toS err)
-        Right su -> loadSurfaceHelper su
+    img <- CUT.liftEitherWith (\err -> ("Could not load image: " <> (toS err))) mImg
+    loadSurfaceHelper img
 
 loadSurfaceHelper :: MonadIO m => CPI.DynamicImage -> m SVR.Surface
 loadSurfaceHelper img = do

@@ -63,6 +63,7 @@ executables:
             - Client.Image
             - Client.Video.Types
             - Client.Video.Texture
+            - Client.Util
         dependencies:
             - purple-muon
 
