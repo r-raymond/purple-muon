@@ -68,10 +68,14 @@ parseTextureAtlas :: (MonadError Text m, MonadIO m)
                   -> m (CVT.TextureAtlas, [CVT.Texture])
 parseTextureAtlas r k p = do
     xml <- loadTextureAtlas p
-    let texs = TXL.elContent xml
+    let texs = filter contentFilter (TXL.elContent xml)
     header <- parseTextureAtlasHeader r xml
     atts <- sequence (fmap (parseTexture k) texs)
     return (header, atts)
+
+contentFilter :: TXL.Content -> Bool
+contentFilter (TXL.Elem _) = True
+contentFilter _ = False
 
 
 parseTextureAtlasHeader :: (MonadError Text m, MonadIO m)
@@ -105,7 +109,7 @@ parseTexture k (TXL.Elem (TXL.Element (TXL.QName "SubTexture" Nothing Nothing) a
     wInt   <- parseHelper width
     hInt   <- parseHelper height
     return $ CVT.Texture k name (SVR.Rectangle (LAF.P $ LV2.V2 xInt yInt) (LV2.V2 wInt hInt))
-parseTexture _ _ = throwError "Error parsing texture"
+parseTexture _ t = throwError ("Error parsing texture" <> show t)
 
 loadTextureAtlas :: (MonadError Text m, MonadIO m)
                   => FilePath

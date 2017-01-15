@@ -14,7 +14,6 @@ import qualified SDL                       as SDL
 import qualified SDL.Event                 as SEV
 import qualified SDL.Vect                  as SVE
 import qualified SDL.Video                 as SVI
-import qualified SDL.Video.Renderer        as SVR
 
 --import qualified PurpleMuon.Physics.Algorithm as PPA
 --import qualified PurpleMuon.Physics.Constants as PPC
@@ -24,19 +23,21 @@ import qualified PurpleMuon.Physics.Types  as PPT
 import qualified Client.Event              as CEV
 import qualified Client.Frames             as CTF
 import qualified Client.Types              as CTY
+import qualified Client.Video.Types        as CVTY
 import qualified Client.Video.Texture      as CVT
 
 initLoop :: CTY.Game()
 initLoop = do
-    (Right s) <- runExceptT $ CVT.loadSurface "res/png/space.png"
     res <- ask
     let renderer = CLE.view CTY.renderer res
-    t <- SVR.createTextureFromSurface renderer s
-    loop t
+        tl = CVT.newTextureLoader renderer
+    mtl <- runExceptT $  CVT.addTextureAtlas tl "res/png/gravity.xml"
+    case mtl of
+        Right t -> loop t
+        Left er -> putStrLn er
 
-
-loop :: SVR.Texture -> CTY.Game ()
-loop back = do
+loop :: CVTY.TextureLoader -> CTY.Game ()
+loop tl = do
     CTF.frameBegin
 
     network
@@ -45,7 +46,8 @@ loop back = do
     let window   = CLE.view CTY.window   res
 
     SEV.mapEvents CEV.handleEvent
-    render back
+    let (Just u) = CVT.getTexture tl "playerShip1_blue.png"
+    render tl u
 
     -- advanceGameState
 
@@ -53,16 +55,16 @@ loop back = do
 
     fps <- CTF.formatFps
     SVI.windowTitle window SDL.$= fps
-    whenM (fmap (CLE.view CTY.running) get) (loop back)
+    whenM (fmap (CLE.view CTY.running) get) (loop tl)
 
-render :: SVR.Texture -> CTY.Game ()
-render back = do
+render :: CVTY.TextureLoader -> CVTY.TexUUID -> CTY.Game ()
+render tl u = do
     res <- ask
     let renderer = CLE.view CTY.renderer res
     SVI.rendererDrawColor renderer SDL.$= SVE.V4 0 0 0 0
     SVI.clear renderer
 
-    SVR.copy renderer back Nothing Nothing
+    CVT.renderTexture tl u Nothing
 
     appState <- get
     let pos = CLE.view (CTY.game . CTY.physicalObjects) appState
