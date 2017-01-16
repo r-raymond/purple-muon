@@ -1,11 +1,12 @@
 {-# LANGUAGE TemplateHaskell #-}
 
 module Client.Types
-    ( AppState(..), running, game, fps, frameBegin
+    ( AppState(..), running, game, fps, frameBegin, textures
     , Game
     , GameState(..), physicalObjects, dt, accumTime
     , Resources(..), window, renderer, tbqueue
-    , FpsCounter(..),
+    , FpsCounter(..)
+    , TextureUUIDs(..)
     ) where
 
 import           Protolude
@@ -15,6 +16,7 @@ import qualified Control.Lens             as CLE
 import qualified Data.Thyme.Clock         as DTC
 import qualified SDL.Video                as SVI
 
+import qualified Client.Video.Types       as CVT
 import qualified PurpleMuon.Network.Types as PNT
 import qualified PurpleMuon.Physics.Types as PPT
 
@@ -24,6 +26,7 @@ data AppState
     , _game       :: GameState
     , _fps        :: FpsCounter
     , _frameBegin :: DTC.UTCTime -- TODO: figure out how to get show back on Appstate
+    , _textures   :: CVT.TextureLoader
     }
 
 type Game a = ReaderT Resources (StateT AppState IO) a
@@ -48,6 +51,12 @@ data FpsCounter
     { maxFrames :: Int
     , fpsL      :: [PPT.FlType]
     } deriving (Show)
+
+data TextureUUIDs
+    = TextureUUIDs
+    { background :: CVT.TexUUID
+    , stones     :: CVT.TexUUID
+    }
 
 CLE.makeLenses ''AppState
 CLE.makeLenses ''GameState

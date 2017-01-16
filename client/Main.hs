@@ -14,19 +14,21 @@ import qualified PurpleMuon.Physics.Types  as PPT
 import qualified Client.Init               as CIN
 import qualified Client.MainLoop           as CMA
 import qualified Client.Types              as CTY
+import qualified Client.Video.Texture      as CVT
 
 uuid :: PNT.UUID
 uuid = PNT.UUID "Test"
 
-initialeState :: CTY.AppState
-initialeState =
+initialeState :: SVI.Renderer -> CTY.AppState
+initialeState r =
     CTY.AppState True
         (CTY.GameState DIS.empty (PPT.DeltaTime 0) (PPT.DeltaTime 0))
         (CTY.FpsCounter 60 [])
         (toEnum 0)
+        (CVT.newTextureLoader r)
 
 game :: CCS.TBQueue PNT.NakedMessage -> SVI.Window -> SVI.Renderer -> IO ()
-game tb w r = evalStateT (runReaderT CMA.initLoop (CTY.Resources w r tb)) initialeState
+game tb w r = evalStateT (runReaderT CMA.initLoop (CTY.Resources w r tb)) (initialeState r)
 
 main :: IO ()
 main = do

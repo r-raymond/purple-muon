@@ -28,17 +28,26 @@ import qualified Client.Video.Texture      as CVT
 
 initLoop :: CTY.Game()
 initLoop = do
-    res <- ask
-    let renderer = CLE.view CTY.renderer res
-        tl = CVT.newTextureLoader renderer
-    (Right mtl) <- runExceptT $  CVT.addTextureAtlas tl "res/png/gravity.xml"
-    mtl2 <- runExceptT $  CVT.addTextureAtlas mtl "res/png/space.xml"
-    case mtl2 of
-        Right t -> loop t
-        Left er -> putStrLn er
+    sta <- get
+    let tl = CLE.view CTY.textures sta
+        f = texLoadHelper "res/png/gravity.xml"
+            >=> texLoadHelper "res/png/space.xml"
+    newTl <- f tl
+    modify (CLE.set CTY.textures newTl)
 
-loop :: CVTY.TextureLoader -> CTY.Game ()
-loop tl = do
+    let (Just s) = CVT.getTexture newTl "meteorBrown_big1.png"
+        (Just b) = CVT.getTexture newTl "background.png"
+    loop (CTY.TextureUUIDs b s)
+
+texLoadHelper :: MonadIO m => FilePath -> CVTY.TextureLoader -> m CVTY.TextureLoader
+texLoadHelper p l = do
+    nl <- runExceptT $ CVT.addTextureAtlas l p
+    case nl of
+        Right t -> return t
+        Left e -> panic $ "Could not load " <> (toS p) <> "\n" <> e
+
+loop :: CTY.TextureUUIDs -> CTY.Game ()
+loop tuu = do
     CTF.frameBegin
 
     network
@@ -47,8 +56,7 @@ loop tl = do
     let window   = CLE.view CTY.window   res
 
     SEV.mapEvents CEV.handleEvent
-    let (Just u) = CVT.getTexture tl "background.png"
-    render tl u
+    render tuu
 
     -- advanceGameState
 
@@ -56,47 +64,44 @@ loop tl = do
 
     fps <- CTF.formatFps
     SVI.windowTitle window SDL.$= fps
-    whenM (fmap (CLE.view CTY.running) get) (loop tl)
+    whenM (fmap (CLE.view CTY.running) get) (loop tuu)
 
-render :: CVTY.TextureLoader -> CVTY.TexUUID -> CTY.Game ()
-render tl u = do
+render :: CTY.TextureUUIDs -> CTY.Game ()
+render tuu = do
     res <- ask
+    sta <- get
     let renderer = CLE.view CTY.renderer res
+        texload  = CLE.view CTY.textures sta
     SVI.rendererDrawColor renderer SDL.$= SVE.V4 0 0 0 0
     SVI.clear renderer
 
-    CVT.renderTexture tl u Nothing
+    CVT.renderTexture texload (CTY.background tuu) Nothing
 
     appState <- get
     let pos = CLE.view (CTY.game . CTY.physicalObjects) appState
 
-    sequence_ (fmap renderPhysicalObject pos)
+    sequence_ (fmap (renderPhysicalObject (CTY.stones tuu)) pos)
 
     SVI.present renderer
 
 
-renderPhysicalObject :: PPT.PhysicalObject -> CTY.Game ()
-renderPhysicalObject po = do
+renderPhysicalObject :: CVTY.TexUUID -> PPT.PhysicalObject -> CTY.Game ()
+renderPhysicalObject t po = do
     res <- ask
+    sta <- get
     let pos = PPT.unPosition $ CLE.view PPT.pos po
         window = CLE.view CTY.window res
-        renderer = CLE.view CTY.renderer res
+        texload = CLE.view CTY.textures sta
     windowsize <- SDL.get $ SVI.windowSize window
 
     -- TODO: Fix this with actual physical size
     let coord = fmap truncate (pos * fmap fromIntegral windowsize)
-
-    SVI.rendererDrawColor renderer SDL.$= SVE.V4 255 0 0 0
-    let size = fmap FCT.CInt (SVE.V2 10 10)
+        size = fmap FCT.CInt (SVE.V2 10 10)
         p    = fmap FCT.CInt coord
-    SVI.fillRect renderer (Just (SVI.Rectangle (SVE.P p) size))
+        bb   = Just $ SVI.Rectangle (SVE.P p) size
 
---advanceGameState :: CTY.Game ()
---advanceGameState = do
---  appState <- get
---  let dt = CLE.view (CTY.game . CTY.dt) appState
---  modify (CLE.over (CTY.game . CTY.physicalObjects)
---                   (\x -> (PPA.integrateTimeStep PPC.g dt x DIS.empty)))
+    CVT.renderTexture texload t bb
+
 
 network :: CTY.Game ()
 network = do
