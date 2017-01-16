@@ -31,8 +31,9 @@ initLoop = do
     res <- ask
     let renderer = CLE.view CTY.renderer res
         tl = CVT.newTextureLoader renderer
-    mtl <- runExceptT $  CVT.addTextureAtlas tl "res/png/gravity.xml"
-    case mtl of
+    (Right mtl) <- runExceptT $  CVT.addTextureAtlas tl "res/png/gravity.xml"
+    mtl2 <- runExceptT $  CVT.addTextureAtlas mtl "res/png/space.xml"
+    case mtl2 of
         Right t -> loop t
         Left er -> putStrLn er
 
@@ -46,7 +47,7 @@ loop tl = do
     let window   = CLE.view CTY.window   res
 
     SEV.mapEvents CEV.handleEvent
-    let (Just u) = CVT.getTexture tl "playerShip1_blue.png"
+    let (Just u) = CVT.getTexture tl "background.png"
     render tl u
 
     -- advanceGameState
