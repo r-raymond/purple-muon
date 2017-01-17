@@ -12,6 +12,9 @@ github:              r-raymond/purple-muon
 
 ghc-options: -Wall -O -Werror
 
+data-files:
+    - res/png/*
+
 default-extensions:
     - OverloadedStrings
     - NoImplicitPrelude
