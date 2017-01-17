@@ -1,6 +1,7 @@
 name:                purple-muon
 synopsis:            A multiplayer space game
 description:         Please see README.md
+build-type:          Custom
 license:             GPL-3
 license-file:        LICENSE
 author:              Robin Raymond
@@ -45,6 +46,7 @@ dependencies:
 library:
   source-dirs: common
   exposed-modules:
+    - Version
     - PurpleMuon.Network.Types
     - PurpleMuon.Network.Message
     - PurpleMuon.Network.Util

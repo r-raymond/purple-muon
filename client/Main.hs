@@ -2,6 +2,8 @@ module Main where
 
 import           Protolude
 
+import           Version
+
 import qualified Control.Concurrent.STM    as CCS
 import qualified Data.IntMap.Strict        as DIS
 import           Network.Socket.ByteString
@@ -32,6 +34,8 @@ game tb w r = evalStateT (runReaderT CMA.initLoop (CTY.Resources w r tb)) (initi
 
 main :: IO ()
 main = do
+    putStrLn ("Purple Muon " <> gitTag <> "\nbuild for "
+            <> platform <> " by " <> compiler)
     (Right cs) <- PNU.clientSocket "127.0.0.1" "7123"
     _ <- send cs "Hello World"
     tb <- CCS.atomically $ CCS.newTBQueue 128

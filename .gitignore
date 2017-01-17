@@ -1,4 +1,5 @@
 purple-muon.cabal
+common/Version.hs
 dist
 dist-*
 cabal-dev

@@ -6,27 +6,28 @@ module Client.MainLoop
 import           Protolude
 
 import           Paths_purple_muon
+import           Version
 
-import qualified Control.Concurrent.STM    as CCS
-import qualified Control.Lens              as CLE
-import qualified Data.Binary               as DBI
-import qualified Data.IntMap.Strict        as DIS
-import qualified Foreign.C.Types           as FCT
-import qualified SDL                       as SDL
-import qualified SDL.Event                 as SEV
-import qualified SDL.Vect                  as SVE
-import qualified SDL.Video                 as SVI
+import qualified Control.Concurrent.STM   as CCS
+import qualified Control.Lens             as CLE
+import qualified Data.Binary              as DBI
+import qualified Data.IntMap.Strict       as DIS
+import qualified Foreign.C.Types          as FCT
+import qualified SDL                      as SDL
+import qualified SDL.Event                as SEV
+import qualified SDL.Vect                 as SVE
+import qualified SDL.Video                as SVI
 
 --import qualified PurpleMuon.Physics.Algorithm as PPA
 --import qualified PurpleMuon.Physics.Constants as PPC
-import qualified PurpleMuon.Network.Types  as PNT
-import qualified PurpleMuon.Physics.Types  as PPT
+import qualified PurpleMuon.Network.Types as PNT
+import qualified PurpleMuon.Physics.Types as PPT
 
-import qualified Client.Event              as CEV
-import qualified Client.Frames             as CTF
-import qualified Client.Types              as CTY
-import qualified Client.Video.Types        as CVTY
-import qualified Client.Video.Texture      as CVT
+import qualified Client.Event             as CEV
+import qualified Client.Frames            as CTF
+import qualified Client.Types             as CTY
+import qualified Client.Video.Texture     as CVT
+import qualified Client.Video.Types       as CVTY
 
 initLoop :: CTY.Game()
 initLoop = do
@@ -48,7 +49,7 @@ texLoadHelper p l = do
     nl <- runExceptT $ CVT.addTextureAtlas l p
     case nl of
         Right t -> return t
-        Left e -> panic $ "Could not load " <> (toS p) <> "\n" <> e
+        Left e  -> panic $ "Could not load " <> (toS p) <> "\n" <> e
 
 loop :: CTY.TextureUUIDs -> CTY.Game ()
 loop tuu = do
@@ -67,7 +68,7 @@ loop tuu = do
     CTF.manageFps
 
     fps <- CTF.formatFps
-    SVI.windowTitle window SDL.$= fps
+    SVI.windowTitle window SDL.$= ("PM " <> gitTag <> " (" <> fps <> ")")
     whenM (fmap (CLE.view CTY.running) get) (loop tuu)
 
 render :: CTY.TextureUUIDs -> CTY.Game ()
