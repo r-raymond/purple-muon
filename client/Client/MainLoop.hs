@@ -5,6 +5,8 @@ module Client.MainLoop
 
 import           Protolude
 
+import           Paths_purple_muon
+
 import qualified Control.Concurrent.STM    as CCS
 import qualified Control.Lens              as CLE
 import qualified Data.Binary               as DBI
@@ -29,9 +31,11 @@ import qualified Client.Video.Texture      as CVT
 initLoop :: CTY.Game()
 initLoop = do
     sta <- get
+    gravity <- liftIO $ getDataFileName "res/png/gravity.xml"
+    space   <- liftIO $ getDataFileName "res/png/space.xml"
     let tl = CLE.view CTY.textures sta
-        f = texLoadHelper "res/png/gravity.xml"
-            >=> texLoadHelper "res/png/space.xml"
+        f = texLoadHelper gravity
+            >=> texLoadHelper space
     newTl <- f tl
     modify (CLE.set CTY.textures newTl)
 

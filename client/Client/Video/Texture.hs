@@ -13,6 +13,8 @@ module Client.Video.Texture
 
 import           Protolude
 
+import           Paths_purple_muon
+
 import qualified Codec.Picture        as CPI
 import qualified Data.IntMap.Strict   as DIS
 import qualified Data.Vector.Storable as DVS
@@ -123,7 +125,8 @@ surfaceToTexture = SVR.createTextureFromSurface
 
 loadSurface :: (MonadError Text m, MonadIO m) => FilePath -> m SVR.Surface
 loadSurface p = do
-    mImg <- liftIO $ CPI.readImage p
+    realPath <- liftIO $ getDataFileName p
+    mImg <- liftIO $ CPI.readImage realPath
     img <- CUT.liftEitherWith (\err -> "Could not load image: " <> toS err) mImg
     loadSurfaceHelper img
 
