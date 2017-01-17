@@ -11,7 +11,7 @@ category:            Games
 extra-source-files:  README.md
 github:              r-raymond/purple-muon
 
-ghc-options: -Wall -O -Werror
+ghc-options: -Wall
 
 data-files:
     - res/png/*
