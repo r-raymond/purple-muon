@@ -43,7 +43,7 @@ postConfHook _ _ _ buildInfo = do
                 _                     -> "UNREGISTERED"
         versionModule = template1 ++ ve ++ template2 ++ hp ++ template3 ++ cc
                         ++ template4
-    writeFile "common/Version.hs" versionModule
+    writeFile "src/Version.hs" versionModule
 
 template1 = "\
 \module Version\n\
