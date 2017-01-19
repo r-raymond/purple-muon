@@ -16,8 +16,11 @@
 --  along with Purple Muon.  If not, see <http://www.gnu.org/licenses/>.
 
 module Server.Types
-    (
+    ( ServerState(..)
+    , GameState(..)
     ) where
+
+import qualified PurpleMuon.Physics.Types as PPT
 
 data ServerState
     = Idle

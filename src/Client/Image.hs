@@ -18,6 +18,8 @@
 module Client.Image
     ( parseTextureAtlas
     , filterAtlas
+    , Texture(..)
+    , TextureAtlas
     ) where
 
 import           Protolude

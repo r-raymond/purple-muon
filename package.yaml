@@ -44,7 +44,7 @@ dependencies:
     - xml
 
 library:
-  source-dirs: common
+  source-dirs: src
   exposed-modules:
     - Version
     - PurpleMuon.Network.Types
@@ -63,6 +63,9 @@ library:
     - Client.Util
     - Client.Video.Texture
     - Client.Video.Types
+    - Client.Main
+
+    - Server.Main
 
 executables:
     pm-client:
