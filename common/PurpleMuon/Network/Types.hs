@@ -34,11 +34,15 @@ module PurpleMuon.Network.Types
     , NetworkConfig(..)
     , NetworkState(..)
     , ConnectionState(..)
+    , ServerToClientMsg(..)
+    , ClientToServerMsg(..)
     ) where
 
 import Protolude
 
 import qualified Network.Socket     as NSO
+
+import qualified PurpleMuon.Physics.Types as PPT
 
 -- | A binary message that is send over the network
 newtype RawMessage = RawMessage { unRawMessage :: ByteString }
@@ -80,3 +84,15 @@ data ConnectionState
     , latestCounter :: MessageCount
     }
 
+
+-- | Messages the Server sends to the Clients
+data ServerToClientMsg
+    = Ping              -- ^ A simple ping package to determine network latency
+    | Update PPT.PhysicalObjects -- ^ An update the server sends to the clients
+                                 -- TODO: Also send which physical step the
+                                 -- updates are for
+
+-- | Messages the Clients send to the Server
+data ClientToServerMsg
+    = Pong MessageCount -- ^ Answer to a ping command. The `MessageCount` indicates which
+                        -- `Ping` is answered
