@@ -54,21 +54,21 @@ library:
     - PurpleMuon.Physics.Algorithm
     - PurpleMuon.Physics.Constants
 
+    - Client.Event
+    - Client.Frames
+    - Client.Image
+    - Client.Init
+    - Client.MainLoop
+    - Client.Types
+    - Client.Util
+    - Client.Video.Texture
+    - Client.Video.Types
+
 executables:
     pm-client:
         source-dirs: client
         main: Main.hs
         ghc-options: -threaded -rtsopts -with-rtsopts=-N
-        other-modules:
-            - Client.Types
-            - Client.Event
-            - Client.Init
-            - Client.MainLoop
-            - Client.Frames
-            - Client.Image
-            - Client.Video.Types
-            - Client.Video.Texture
-            - Client.Util
         dependencies:
             - purple-muon
 
