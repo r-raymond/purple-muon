@@ -15,6 +15,39 @@
 --  You should have received a copy of the GNU General Public License
 --  along with Purple Muon.  If not, see <http://www.gnu.org/licenses/>.
 
+{-|
+Module      : Client.Video.Texture
+Description : Texture handling utitlities.
+Copyright   : (c) Robin Raymond, 2016
+License     : GPL-3
+Maintainer  : robin@robinraymond.de
+Portability : POSIX
+
+This module uses SDL2 and JuicyPixels to work with textures. JuicyPixels is used
+to load arbitrary image formats. These are then converted to RGBA8 images which
+SDL2 uses to upload to the video card.
+
+All image files need to have an accompanying texture atlas file. This file needs
+to satisfy the following criteria:
+
+    * it needs to be a valid xml file
+    * it has to consist of a single outer xml element which has the property
+    `imagePath`, with value the path of the actual image file (specified from
+    the root of the git repository)
+    * the content of the single outer xml element has to be more xml elements,
+    which have the following properties:
+
+        * `name`: The name that is used to load this file
+        * `x`: The `x` offset in the image specified by `imagePath`
+        * `y`: The `y` offset in the image specified by `imagePath`
+        * `width`: The width of the texture
+        * `height`: The height of the texture
+
+The names of the xml elements are arbitrary. Anything besides the above
+mentioned will be ignored and can safely be used to encode additional
+information.
+-}
+
 {-# LANGUAGE FlexibleContexts      #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 module Client.Video.Texture
