@@ -7,7 +7,7 @@ module Version
 import Protolude
  
 gitTag :: Text
-gitTag = "v0.0-101-gb4632c5"
+gitTag = "v0.0-102-gb2f77b6"
  
 platform :: Text
 platform = "x86_64-linux"

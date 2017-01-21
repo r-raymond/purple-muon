@@ -42,6 +42,7 @@ dependencies:
     - vector
     - vector-space
     - xml
+    - zlib
 
 library:
   source-dirs: src

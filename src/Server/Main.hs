@@ -19,6 +19,8 @@ module Server.Main where
 
 import           Protolude
 
+import qualified Codec.Compression.GZip       as CCG
+import qualified Codec.Compression.Zlib       as CCZ
 import qualified Control.Concurrent           as CCO
 import qualified Data.AdditiveGroup           as DAD
 import qualified Data.AffineSpace             as DAF
@@ -63,7 +65,9 @@ loop s a o = do
     let newObjs = PPA.integrateTimeStep PPC.g PPC.physicsStep o DIS.empty
         toSend  = toS $ DBI.encode $ DIS.toList newObjs
         l       = DBS.length toSend
-    liftIO $ print l
+        gl      = DBS.length $ toS $ CCG.compress $ toS $ toSend
+        zl      = DBS.length $ toS $ CCZ.compress $ toS $ toSend
+    liftIO $ putStrLn (("Length: " :: Text) <> show l <> "; GZIP: " <> show gl <> "; ZIP: " <> show zl)
     void $ liftIO $ NSB.sendTo s (PNT.unUUID uuid <> toSend) a
 
     e <- liftIO DTC.getCurrentTime
