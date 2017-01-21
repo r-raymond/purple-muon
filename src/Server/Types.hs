@@ -19,7 +19,7 @@
 
 module Server.Types
     ( ServerState(..)
-    , GameState(..), pObjs
+    , GameState(..), pObjs, frameBegin
     , Server
     , Resources(..), tbqueue
     ) where
@@ -28,17 +28,19 @@ import           Protolude
 
 import qualified Control.Concurrent.STM   as CCS
 import qualified Control.Lens             as CLE
+import qualified Data.Thyme.Clock         as DTC
 
 import qualified PurpleMuon.Network.Types as PNT
 import qualified PurpleMuon.Physics.Types as PPT
 
 data ServerState
-    = WaitingForConnections
+    = WaitingForConnections DTC.UTCTime
     | InGame GameState
 
 data GameState
     = GameState
-    { _pObjs     :: PPT.PhysicalObjects
+    { _pObjs      :: PPT.PhysicalObjects
+    , _frameBegin :: DTC.UTCTime -- TODO: figure out how to get show back on Appstate
     }
 
 data Resources
