@@ -4,13 +4,34 @@ module Server.MainLoop
 
 import           Protolude
 
-import qualified Server.Types as STY
+import qualified Server.Frames as SFR
+import qualified Server.Types  as STY
 
 initLoop :: STY.Server ()
 initLoop = loop
 
 loop :: STY.Server ()
-loop = loop
+loop = do
+    SFR.frameBegin
+
+    modify update
+
+    sendNetwork
+
+    SFR.manageFps
+
+update :: STY.ServerState -> STY.ServerState
+update (STY.WaitingForConnections t) = STY.WaitingForConnections t
+update (STY.InGame gs) = STY.InGame $
+    CLE.over STY.pObjs
+             (\x -> PPC.integrateTimeStep PPC.g PPC.physicsStep x DIS.empty)
+             gs
+
+sendNetwork :: STY.Server ()
+sendNetwork = do
+    st <- get
+    case st of
+      -- TODO
 
 loop :: MonadIO m => NSO.Socket -> NSO.SockAddr -> PPT.PhysicalObjects -> m ()
 loop s a o = do

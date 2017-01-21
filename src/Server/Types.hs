@@ -40,12 +40,14 @@ data ServerState
 data GameState
     = GameState
     { _pObjs      :: PPT.PhysicalObjects
-    , _frameBegin :: DTC.UTCTime -- TODO: figure out how to get show back on Appstate
+    , _frameBegin :: DTC.UTCTime
+    , _clients    :: [NSO.SockAddr]
     }
 
 data Resources
     = Resources
     { _tbqueue  :: CCS.TBQueue PNT.NakedMessage
+    , _socket   :: NSO.Socket
     }
 
 type Server a = ReaderT Resources (StateT ServerState IO) a
