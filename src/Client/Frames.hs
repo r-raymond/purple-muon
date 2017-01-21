@@ -23,12 +23,12 @@ module Client.Frames
 
 import           Protolude
 
-import qualified Formatting as FOR
 import qualified Control.Concurrent       as CCO
 import qualified Control.Lens             as CLE
 import qualified Data.AdditiveGroup       as DAD
 import qualified Data.AffineSpace         as DAF
 import qualified Data.Thyme.Clock         as DTC
+import qualified Formatting               as FOR
 
 import qualified PurpleMuon.Physics.Types as PPT
 

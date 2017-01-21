@@ -29,6 +29,7 @@ dependencies:
     - bytestring
     - containers
     - errors
+    - fast-logger
     - formatting
     - JuicyPixels
     - lens

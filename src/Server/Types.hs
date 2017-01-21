@@ -15,18 +15,38 @@
 --  You should have received a copy of the GNU General Public License
 --  along with Purple Muon.  If not, see <http://www.gnu.org/licenses/>.
 
+{-# LANGUAGE TemplateHaskell #-}
+
 module Server.Types
     ( ServerState(..)
-    , GameState(..)
+    , GameState(..), pObjs
+    , Server
+    , Resources(..), tbqueue
     ) where
 
+import           Protolude
+
+import qualified Control.Concurrent.STM   as CCS
+import qualified Control.Lens             as CLE
+
+import qualified PurpleMuon.Network.Types as PNT
 import qualified PurpleMuon.Physics.Types as PPT
 
 data ServerState
-    = Idle
-    | Connected
+    = WaitingForConnections
+    | InGame GameState
 
 data GameState
     = GameState
-    { pObjs     :: PPT.PhysicalObjects
+    { _pObjs     :: PPT.PhysicalObjects
     }
+
+data Resources
+    = Resources
+    { _tbqueue  :: CCS.TBQueue PNT.NakedMessage
+    }
+
+type Server a = ReaderT Resources (StateT ServerState IO) a
+
+CLE.makeLenses ''GameState
+CLE.makeLenses ''Resources

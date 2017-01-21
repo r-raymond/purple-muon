@@ -38,9 +38,10 @@ module PurpleMuon.Network.Types
     , ClientToServerMsg(..)
     ) where
 
-import Protolude
+import           Protolude
 
-import qualified Network.Socket     as NSO
+import qualified Data.Binary              as DBI
+import qualified Network.Socket           as NSO
 
 import qualified PurpleMuon.Physics.Types as PPT
 
@@ -60,6 +61,7 @@ newtype UUID = UUID { unUUID :: ByteString }
 
 -- | A counter to count both the remote and local messages
 newtype MessageCount = MessageCount { unMessageCounter :: Word32 }
+    deriving (Generic)
 
 -- | A field indicating which of the last 32 messages have arrived.
 newtype AckField = AckField { unAckField :: Word32 }
@@ -89,10 +91,18 @@ data ConnectionState
 data ServerToClientMsg
     = Ping              -- ^ A simple ping package to determine network latency
     | Update PPT.PhysicalObjects -- ^ An update the server sends to the clients
-                                 -- TODO: Also send which physical step the
+        deriving (Generic)       -- TODO: Also send which physical step the
                                  -- updates are for
 
 -- | Messages the Clients send to the Server
 data ClientToServerMsg
-    = Pong MessageCount -- ^ Answer to a ping command. The `MessageCount` indicates which
-                        -- `Ping` is answered
+    = RequestConnection -- ^ Request a connection to the server. The sever will
+                        -- answer with ping commands to establish the network
+                        -- latency if the request is granted
+    | Pong MessageCount -- ^ Answer to a ping command. The `MessageCount` indicates which
+        deriving (Generic) -- `Ping` is answered
+
+
+instance DBI.Binary MessageCount
+instance DBI.Binary ServerToClientMsg
+instance DBI.Binary ClientToServerMsg
