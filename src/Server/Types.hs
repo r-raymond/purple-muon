@@ -19,7 +19,7 @@
 
 module Server.Types
     ( WaitingState(..)
-    , GameState(..), pObjs, frameBegin, clients
+    , GameState(..), pObjs, frameBegin, clients, logger
     , WaitingServer
     , Server
     , Resources(..), tbqueue, socket
@@ -31,6 +31,7 @@ import qualified Control.Concurrent.STM   as CCS
 import qualified Control.Lens             as CLE
 import qualified Data.Thyme.Clock         as DTC
 import qualified Network.Socket           as NSO
+import qualified System.Log.FastLogger    as SLF
 
 import qualified PurpleMuon.Network.Types as PNT
 import qualified PurpleMuon.Physics.Types as PPT
@@ -49,6 +50,7 @@ data Resources
     = Resources
     { _tbqueue :: CCS.TBQueue PNT.NakedMessage
     , _socket  :: NSO.Socket
+    , _logger  :: SLF.LoggerSet
     }
 
 type WaitingServer a = ReaderT Resources (StateT WaitingState IO) a
