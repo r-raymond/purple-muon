@@ -17,18 +17,12 @@ import qualified Server.Types             as STY
 frameBegin :: STY.Server ()
 frameBegin = PUF.frameBegin storeFb
   where
-    storeHelp :: DTC.UTCTime -> STY.ServerState -> STY.ServerState
-    storeHelp t (STY.WaitingForConnections _) = STY.WaitingForConnections t
-    storeHelp t (STY.InGame gs)               = STY.InGame $ CLE.set STY.frameBegin t gs
-    storeFb x = modify (storeHelp x)
+    storeFb t = modify $ CLE.set STY.frameBegin t
 
 manageFps :: STY.Server ()
 manageFps = PUF.manageFps minFrameTime getFb storeDt
   where
-    getFbHelper :: STY.ServerState -> DTC.UTCTime
-    getFbHelper (STY.WaitingForConnections t) = t
-    getFbHelper (STY.InGame gs)               = CLE.view STY.frameBegin gs
-    getFb = fmap getFbHelper get
+    getFb = fmap (CLE.view STY.frameBegin) get
     storeDt _ = return ()
 
 minFrameTime :: DTC.NominalDiffTime

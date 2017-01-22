@@ -25,6 +25,7 @@ import           Protolude
 import           Paths_purple_muon
 import           Version
 
+import qualified Codec.Compression.Zlib   as CCZ
 import qualified Control.Concurrent.STM   as CCS
 import qualified Control.Lens             as CLE
 import qualified Data.Binary              as DBI
@@ -132,7 +133,7 @@ network = do
     bin <- liftIO $ CCS.atomically $ CCS.tryReadTBQueue s
     case bin of
         Just n -> do
-            let objs = DBI.decode $ toS $ PNT.unNakedMessage n :: [(Int, PPT.PhysicalObject)]
+            let objs = DBI.decode $ CCZ.decompress $ toS $ PNT.unNakedMessage n :: [(Int, PPT.PhysicalObject)]
             modify (CLE.set (CTY.game . CTY.physicalObjects) (DIS.fromList objs))
             network
         Nothing -> return ()

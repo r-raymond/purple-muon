@@ -39,8 +39,8 @@ import qualified PurpleMuon.Network.Message as PNM
 import qualified PurpleMuon.Network.Types   as PNT
 
 -- | Open a UDP Socket on a specific port
-serverSocket :: Text -> IO (Either SomeException NSO.Socket)
-serverSocket port = try $ do
+serverSocket :: MonadIO m => Text -> m (Either SomeException NSO.Socket)
+serverSocket port = liftIO $ try $ do
     -- Note that getAddrInfo either gives a nonempty list or raises an exception
     a:_ <- NSO.getAddrInfo
                 (Just $ NSO.defaultHints { NSO.addrFlags = [NSO.AI_PASSIVE] })
@@ -52,10 +52,11 @@ serverSocket port = try $ do
 
 
 -- | Connect an UDP socket to a specific port
-clientSocket :: Text -- ^ The host to connect to
+clientSocket :: MonadIO m
+             => Text -- ^ The host to connect to
              -> Text -- ^ The port to connect to
-             -> IO (Either SomeException NSO.Socket)
-clientSocket host port = try $ do
+             -> m (Either SomeException NSO.Socket)
+clientSocket host port = liftIO $ try $ do
     a:_ <- NSO.getAddrInfo Nothing (Just $ toS host) (Just $ toS port)
     sock <- NSO.socket (NSO.addrFamily a) NSO.Datagram NSO.defaultProtocol
     NSO.connect sock (NSO.addrAddress a)

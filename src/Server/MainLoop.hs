@@ -4,11 +4,38 @@ module Server.MainLoop
 
 import           Protolude
 
-import qualified Server.Frames as SFR
-import qualified Server.Types  as STY
+import qualified Codec.Compression.Zlib       as CCZ
+import qualified Control.Concurrent.STM       as CCS
+import qualified Control.Lens                 as CLE
+import qualified Data.Binary                  as DBI
+import qualified Data.IntMap.Strict           as DIS
+import qualified Network.Socket.ByteString    as NSB
 
-initLoop :: STY.Server ()
-initLoop = loop
+import qualified PurpleMuon.Network.Types     as PNT
+import qualified PurpleMuon.Network.Util      as PNU
+import qualified PurpleMuon.Physics.Algorithm as PPA
+import qualified PurpleMuon.Physics.Constants as PPC
+
+import qualified Server.Config                as SCO
+import qualified Server.Frames                as SFR
+import qualified Server.Types                 as STY
+
+uuid :: PNT.UUID
+uuid = PNT.UUID "Test"
+
+initLoop :: MonadIO m => m ()
+initLoop = do
+    (Right ss) <- PNU.serverSocket "7123"
+    tb <- liftIO $ CCS.atomically $ CCS.newTBQueue 128
+    let res = STY.Resources tb ss
+    liftIO $ evalStateT (runReaderT waitingLoop res) STY.WaitingState
+
+waitingLoop :: STY.WaitingServer ()
+waitingLoop = do
+    res <- ask
+    let s = CLE.view STY.socket res
+    (_, a) <- liftIO $ NSB.recvFrom s 1024
+    liftIO $ evalStateT (runReaderT loop res) (STY.GameState SCO.initialObjs (toEnum 0) [a])
 
 loop :: STY.Server ()
 loop = do
@@ -19,31 +46,20 @@ loop = do
     sendNetwork
 
     SFR.manageFps
+    
+    loop
 
-update :: STY.ServerState -> STY.ServerState
-update (STY.WaitingForConnections t) = STY.WaitingForConnections t
-update (STY.InGame gs) = STY.InGame $
-    CLE.over STY.pObjs
-             (\x -> PPC.integrateTimeStep PPC.g PPC.physicsStep x DIS.empty)
-             gs
+update :: STY.GameState -> STY.GameState
+update = CLE.over STY.pObjs
+             (\x -> PPA.integrateTimeStep PPC.g PPC.physicsStep x DIS.empty)
 
 sendNetwork :: STY.Server ()
 sendNetwork = do
     st <- get
-    case st of
-      -- TODO
+    res <- ask
+    let toSend = toS $ CCZ.compress $ DBI.encode $ DIS.toList (CLE.view STY.pObjs st)
+        socket = CLE.view STY.socket res
+        send a = liftIO $ NSB.sendTo socket (PNT.unUUID uuid <> toSend) a
+        clients = CLE.view STY.clients st
 
-loop :: MonadIO m => NSO.Socket -> NSO.SockAddr -> PPT.PhysicalObjects -> m ()
-loop s a o = do
-    STF.frameBegin
-
-    -- Update objs
-    let newObjs = PPA.integrateTimeStep PPC.g PPC.physicsStep o DIS.empty
-        toSend  = toS $ CCZ.compress $ DBI.encode $ DIS.toList newObjs
-        l       = DBS.length toSend
-
-    void $ liftIO $ NSB.sendTo s (PNT.unUUID uuid <> toSend) a
-
-    STF.manageFps
-
-    loop s a newObjs
+    sequence_ (fmap send clients)

@@ -18,10 +18,11 @@
 {-# LANGUAGE TemplateHaskell #-}
 
 module Server.Types
-    ( ServerState(..)
-    , GameState(..), pObjs, frameBegin
+    ( WaitingState(..)
+    , GameState(..), pObjs, frameBegin, clients
+    , WaitingServer
     , Server
-    , Resources(..), tbqueue
+    , Resources(..), tbqueue, socket
     ) where
 
 import           Protolude
@@ -29,13 +30,13 @@ import           Protolude
 import qualified Control.Concurrent.STM   as CCS
 import qualified Control.Lens             as CLE
 import qualified Data.Thyme.Clock         as DTC
+import qualified Network.Socket           as NSO
 
 import qualified PurpleMuon.Network.Types as PNT
 import qualified PurpleMuon.Physics.Types as PPT
 
-data ServerState
-    = WaitingForConnections DTC.UTCTime
-    | InGame GameState
+data WaitingState
+    = WaitingState
 
 data GameState
     = GameState
@@ -46,11 +47,12 @@ data GameState
 
 data Resources
     = Resources
-    { _tbqueue  :: CCS.TBQueue PNT.NakedMessage
-    , _socket   :: NSO.Socket
+    { _tbqueue :: CCS.TBQueue PNT.NakedMessage
+    , _socket  :: NSO.Socket
     }
 
-type Server a = ReaderT Resources (StateT ServerState IO) a
+type WaitingServer a = ReaderT Resources (StateT WaitingState IO) a
+type Server a = ReaderT Resources (StateT GameState IO) a
 
 CLE.makeLenses ''GameState
 CLE.makeLenses ''Resources
