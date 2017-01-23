@@ -29,7 +29,8 @@ Portability : POSIX
 {-# LANGUAGE TypeFamilies    #-}
 
 module PurpleMuon.Physics.Types
-    ( FlType
+    ( -- * Basic types
+       FlType
     , Position(..)
     , Mass(..)
     , Velocity(..)
@@ -37,12 +38,15 @@ module PurpleMuon.Physics.Types
     , DeltaTime(..)
     , Force(..)
     , GravitationalConstant(..)
+    -- * Combined types
     , PhysicalObject(..), uuid, mass, pos, vel, static, gravitating
     , PhysicalSize(..)
+    , Derivative(..)
+    -- * IntMap types
     , Derivatives
     , PhysicalObjects
     , Forces
-    , Derivative(..)
+    -- * Boolean types
     , ObjGrav(..)
     , ObjType(..)
     ) where
