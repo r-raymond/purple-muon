@@ -36,6 +36,7 @@ module PurpleMuon.Network.Types
     , ConnectionState(..)
     , ServerToClientMsg(..)
     , ClientToServerMsg(..)
+    , PlayerName(..)
     ) where
 
 import           Protolude
@@ -94,9 +95,15 @@ data ServerToClientMsg
         deriving (Generic)       -- TODO: Also send which physical step the
                                  -- updates are for
 
+-- | A player name
+newtype PlayerName = PlayerName { unPlayerName :: Text }
+    deriving (Generic)
+
+
 -- | Messages the Clients send to the Server
 data ClientToServerMsg
-    = RequestConnection -- ^ Request a connection to the server. The sever will
+    = RequestConnection PlayerName
+                        -- ^ Request a connection to the server. The sever will
                         -- answer with ping commands to establish the network
                         -- latency if the request is granted
     | Pong MessageCount -- ^ Answer to a ping command. The `MessageCount` indicates which
@@ -104,5 +111,6 @@ data ClientToServerMsg
 
 
 instance DBI.Binary MessageCount
+instance DBI.Binary PlayerName
 instance DBI.Binary ServerToClientMsg
 instance DBI.Binary ClientToServerMsg

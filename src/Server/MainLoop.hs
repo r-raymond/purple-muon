@@ -38,10 +38,22 @@ waitingLoop = do
     res <- ask
     let s = CLE.view STY.socket res
         l = CLE.view STY.logger res
-    (_, a) <- liftIO $ NSB.recvFrom s 1024
-    liftIO $ SLF.pushLogStrLn l "Client connected"
-    liftIO $ evalStateT (runReaderT loop res)
-                        (STY.GameState SCO.initialObjs (toEnum 0) [a])
+    (m, a) <- liftIO $ NSB.recvFrom s 1024
+    let result = DBI.decodeOrFail $ toS $ m
+    case result of
+        Left _ -> do
+            liftIO $ SLF.pushLogStrLn l "Discarding invalid package"
+            waitingLoop
+        Right (_, _, mes) ->
+            case mes of
+                (PNT.RequestConnection (PNT.PlayerName name)) -> liftIO $ do
+                    SLF.pushLogStrLn l (SLF.toLogStr $ "Player " <> name <> " connected")
+                    evalStateT (runReaderT loop res)
+                               (STY.GameState SCO.initialObjs (toEnum 0) [a])
+                _ -> do
+                    liftIO $ SLF.pushLogStrLn l "Discard valid but inappropriate package"
+                    waitingLoop
+
 
 loop :: STY.Server ()
 loop = do

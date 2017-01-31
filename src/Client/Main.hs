@@ -25,6 +25,7 @@ import qualified Control.Concurrent.STM    as CCS
 import qualified Data.IntMap.Strict        as DIS
 import           Network.Socket.ByteString
 import qualified SDL.Video                 as SVI
+import qualified Data.Binary              as DBI
 
 import qualified PurpleMuon.Network.Types  as PNT
 import qualified PurpleMuon.Network.Util   as PNU
@@ -54,7 +55,8 @@ main = do
     putStrLn ("Purple Muon " <> gitTag <> "\nbuild for "
             <> platform <> " by " <> compiler)
     (Right cs) <- PNU.clientSocket "127.0.0.1" "7123"
-    _ <- send cs "Hello World"
+    let cRe = PNT.RequestConnection (PNT.PlayerName "Chopstick WarrioR")
+    _ <- send cs (toS (DBI.encode cRe))
     tb <- CCS.atomically $ CCS.newTBQueue 128
     _ <- forkIO $ PNU.endlessRecv uuid 1400 cs tb
     r <- CIN.withGraphics (game tb)
