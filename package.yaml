@@ -55,6 +55,7 @@ library:
     - PurpleMuon.Physics.Types
     - PurpleMuon.Physics.Algorithm
     - PurpleMuon.Physics.Constants
+    - PurpleMuon.Util.MonadError
 
     - Client.Event
     - Client.Frames
@@ -62,7 +63,6 @@ library:
     - Client.Init
     - Client.MainLoop
     - Client.Types
-    - Client.Util
     - Client.Video.Texture
     - Client.Video.Types
     - Client.Main

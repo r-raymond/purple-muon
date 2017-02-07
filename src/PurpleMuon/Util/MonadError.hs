@@ -15,7 +15,17 @@
 --  You should have received a copy of the GNU General Public License
 --  along with Purple Muon.  If not, see <http://www.gnu.org/licenses/>.
 
-module Client.Util
+{-|
+Module      : PurpleMuon.Util.MonadError
+Description : MonadError utitilies
+Copyright   : (c) Robin Raymond, 2016
+License     : GPL-3
+Maintainer  : robin@robinraymond.de
+Portability : POSIX
+
+This module defines common lifting operations into MonadError.
+-}
+module PurpleMuon.Util.MonadError
     ( liftMaybe
     , liftEitherWith
     , liftEither
@@ -23,14 +33,25 @@ module Client.Util
 
 import Protolude
 
-liftMaybe :: (MonadError e m) => e -> Maybe a -> m a
+-- | Lift a Maybe into an error monad
+liftMaybe :: (MonadError e m) => e          -- ^ Error to be thrown if Nothing
+                              -> Maybe a    -- ^ Value that has to be Just
+                              -> m a
 liftMaybe err Nothing = throwError err
 liftMaybe _ (Just s) = return s
 
-liftEitherWith :: (MonadError e m) => (f -> e) -> Either f a -> m a
+-- | Lift Either into error monad
+-- This version additionally allows to specify a transformation for the `Left`
+-- value.
+liftEitherWith :: (MonadError e m)
+               => (f -> e)      -- ^ Transformation for left value
+               -> Either f a    -- ^ Value that has to be Right
+               -> m a
 liftEitherWith g (Left e) = throwError $ g e
 liftEitherWith _ (Right s) = return s
 
+-- | Lift Either into error monad
+-- Throws error on `Left` Value.
 liftEither :: (MonadError e m) => Either e a -> m a
 liftEither = liftEitherWith identity
 

@@ -65,19 +65,19 @@ import           Protolude
 
 import           Paths_purple_muon
 
-import qualified Codec.Picture        as CPI
-import qualified Data.IntMap.Strict   as DIS
-import qualified Data.Vector.Storable as DVS
-import qualified Foreign.C.Types      as FCT
-import qualified Linear.Affine        as LAF
-import qualified Linear.V2            as LV2
-import qualified SDL                  as SDL
-import qualified SDL.Vect             as SVE
-import qualified SDL.Video.Renderer   as SVR
-import qualified Text.XML.Light       as TXL
+import qualified Codec.Picture              as CPI
+import qualified Data.IntMap.Strict         as DIS
+import qualified Data.Vector.Storable       as DVS
+import qualified Foreign.C.Types            as FCT
+import qualified Linear.Affine              as LAF
+import qualified Linear.V2                  as LV2
+import qualified SDL                        as SDL
+import qualified SDL.Vect                   as SVE
+import qualified SDL.Video.Renderer         as SVR
+import qualified Text.XML.Light             as TXL
 
-import qualified Client.Util          as CUT
-import qualified Client.Video.Types   as CVT
+import qualified Client.Video.Types         as CVT
+import qualified PurpleMuon.Util.MonadError as PUM
 
 renderTexture :: (MonadIO m) => CVT.TextureLoader -> CVT.TexUUID -> Maybe (SVR.Rectangle FCT.CInt) -> m ()
 renderTexture (CVT.TextureLoader at te r _) (CVT.TexUUID u) mr =
@@ -127,7 +127,7 @@ parseTextureAtlas r k p = do
 
 contentFilter :: TXL.Content -> Bool
 contentFilter (TXL.Elem _) = True
-contentFilter _ = False
+contentFilter _            = False
 
 
 parseTextureAtlasHeader :: (MonadError Text m, MonadIO m)
@@ -136,7 +136,7 @@ parseTextureAtlasHeader :: (MonadError Text m, MonadIO m)
                         -> m CVT.TextureAtlas
 parseTextureAtlasHeader r x = do
     let atts = TXL.elAttribs x
-    path <- CUT.liftMaybe "Error parsing Texture atlas header" (xmlAttrHelper atts "imagePath")
+    path <- PUM.liftMaybe "Error parsing Texture atlas header" (xmlAttrHelper atts "imagePath")
     surf <- loadSurface (toS path)
     tex  <- surfaceToTexture r surf
     return $ CVT.TextureAtlas tex
@@ -149,8 +149,8 @@ xmlAttrHelper atts key =
 
 parseTexture :: (MonadError Text m) => CVT.AtlasUUID -> TXL.Content -> m CVT.Texture
 parseTexture k (TXL.Elem (TXL.Element (TXL.QName "SubTexture" Nothing Nothing) attr _ _)) = do
-    let liftHelper x = CUT.liftMaybe ("Error parsing attribute " <> x) $ xmlAttrHelper attr x
-        parseHelper x = CUT.liftMaybe ("Error parsing attribute " <> x) $ readMaybe $ toS x 
+    let liftHelper x = PUM.liftMaybe ("Error parsing attribute " <> x) $ xmlAttrHelper attr x
+        parseHelper x = PUM.liftMaybe ("Error parsing attribute " <> x) $ readMaybe $ toS x
     name   <- liftHelper "name"
     x      <- liftHelper "x"
     y      <- liftHelper "y"
@@ -168,7 +168,7 @@ loadTextureAtlas :: (MonadError Text m, MonadIO m)
                   -> m TXL.Element
 loadTextureAtlas p = do
     c <- liftIO $ readFile p
-    CUT.liftMaybe ("Error parsing " <> toS p) (TXL.parseXMLDoc c)
+    PUM.liftMaybe ("Error parsing " <> toS p) (TXL.parseXMLDoc c)
 
 surfaceToTexture :: MonadIO m => SVR.Renderer -> SVR.Surface -> m SVR.Texture
 surfaceToTexture = SVR.createTextureFromSurface
@@ -177,7 +177,7 @@ loadSurface :: (MonadError Text m, MonadIO m) => FilePath -> m SVR.Surface
 loadSurface p = do
     realPath <- liftIO $ getDataFileName p
     mImg <- liftIO $ CPI.readImage realPath
-    img <- CUT.liftEitherWith (\err -> "Could not load image: " <> toS err) mImg
+    img <- PUM.liftEitherWith (\err -> "Could not load image: " <> toS err) mImg
     loadSurfaceHelper img
 
 loadSurfaceHelper :: MonadIO m => CPI.DynamicImage -> m SVR.Surface
