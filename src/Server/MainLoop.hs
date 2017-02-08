@@ -31,7 +31,7 @@ initLoop = do
     tb <- liftIO $ CCS.atomically $ CCS.newTBQueue 128
     ls <- liftIO $ SLF.newStdoutLoggerSet SLF.defaultBufSize
     let res = STY.Resources tb ss ls
-    liftIO $ evalStateT (runReaderT waitingLoop res) STY.WaitingState
+    liftIO $ evalStateT (runReaderT waitingLoop res) (STY.WaitingState [])
 
 waitingLoop :: STY.WaitingServer ()
 waitingLoop = do

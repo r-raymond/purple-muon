@@ -22,6 +22,7 @@ module Client.Video.Types
     , TexUUID(..)
     , Position
     , AtlasUUID
+    , RenderTexture(..)
     ) where
 
 
@@ -52,4 +53,10 @@ type AtlasUUID = Int
 
 newtype TexUUID = TexUUID { unTexUUID :: Int }
 
-type Position = (Int, Int)
+type Position = (Word16, Word16)
+
+data RenderTexture
+    = RenderTexture
+    { uuid :: TexUUID
+    , pos  :: Position
+    }

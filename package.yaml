@@ -24,6 +24,7 @@ default-extensions:
     - FlexibleContexts
 
 dependencies:
+    - array
     - base >= 4.7 && < 5
     - binary
     - bytestring

@@ -20,32 +20,48 @@
 module Server.Types
     ( WaitingState(..)
     , GameState(..), pObjs, frameBegin, clients, logger
-    , WaitingServer
+    , WaitingServer, clientsConnected
     , Server
     , Resources(..), tbqueue, socket
+    , ClientConnection(..), addr, name, gameObj
     ) where
 
 import           Protolude
 
 import qualified Control.Concurrent.STM   as CCS
 import qualified Control.Lens             as CLE
+import qualified Data.Array.MArray        as DMA
 import qualified Data.Thyme.Clock         as DTC
 import qualified Network.Socket           as NSO
 import qualified System.Log.FastLogger    as SLF
 
+import qualified PurpleMuon.Game.Types    as PGT
 import qualified PurpleMuon.Network.Types as PNT
-import qualified PurpleMuon.Physics.Types as PPT
 
-data WaitingState
-    = WaitingState
-
-data GameState
-    = GameState
-    { _pObjs      :: PPT.PhysicalObjects
-    , _frameBegin :: DTC.UTCTime
-    , _clients    :: [NSO.SockAddr]
+-- | A client connection saves all the data the server knows about
+-- a client
+data ClientConnection
+    = ClientConnection
+    { _addr    :: NSO.SockAddr
+    , _name    :: Text
+    , _gameObj :: PGT.GameObjUUID
     }
 
+-- | The state of a server waiting for connections
+data WaitingState
+    = WaitingState
+    { _clientsConnected :: [ClientConnection]
+    }
+
+-- | The state of a server in game
+data GameState
+    = GameState
+    { _pObjs      :: DAM.MArray PGT.GameObject
+    , _frameBegin :: DTC.UTCTime
+    , _clients    :: [ClientConnection]
+    }
+
+-- | Read only resources that the server has access to
 data Resources
     = Resources
     { _tbqueue :: CCS.TBQueue PNT.NakedMessage
@@ -56,5 +72,7 @@ data Resources
 type WaitingServer a = ReaderT Resources (StateT WaitingState IO) a
 type Server a = ReaderT Resources (StateT GameState IO) a
 
+CLE.makeLenses ''ClientConnection
+CLE.makeLenses ''WaitingState
 CLE.makeLenses ''GameState
 CLE.makeLenses ''Resources

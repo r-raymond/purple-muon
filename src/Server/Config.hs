@@ -2,13 +2,14 @@ module Server.Config
     ( initialObjs
     ) where
 
-import qualified Data.IntMap.Strict           as DIS
-import qualified Linear.V2                    as LV2
+import qualified Data.Array.MArray        as DAM
+import qualified Linear.V2                as LV2
 
+import qualified PurpleMuon.Game.Types    as PGT
 import qualified PurpleMuon.Physics.Types as PPT
 
-initialObjs :: PPT.PhysicalObjects
-initialObjs = DIS.fromList
+initialObjs :: IO (DAM.MArray PGT.GameObject)
+initialObjs = DAM.newListArray
         [ (1, PPT.PhysicalObject 1 (PPT.Mass 1) (PPT.Position (LV2.V2 0.5 0.5)) (PPT.Velocity (LV2.V2 0 (-0.1)))  PPT.NonStatic PPT.Gravitating)
         , (2, PPT.PhysicalObject 2 (PPT.Mass 1) (PPT.Position (LV2.V2 0.75 0.5)) (PPT.Velocity (LV2.V2 0 0.1)) PPT.NonStatic PPT.Gravitating)
         , (3, PPT.PhysicalObject 3 (PPT.Mass 1) (PPT.Position (LV2.V2 0.75 0.15)) (PPT.Velocity (LV2.V2 0 0.1)) PPT.NonStatic PPT.Gravitating)
