@@ -1,4 +1,4 @@
-module PurpleMuon.Game.Types
+module PurpleMuon.Game.
     (
     ) where
 

@@ -30,8 +30,8 @@ import           Protolude
 
 import qualified Control.Concurrent.STM   as CCS
 import qualified Control.Lens             as CLE
-import qualified Data.Array.MArray        as DMA
 import qualified Data.Thyme.Clock         as DTC
+import qualified Data.Vector.Mutable      as DVM
 import qualified Network.Socket           as NSO
 import qualified System.Log.FastLogger    as SLF
 
@@ -56,7 +56,7 @@ data WaitingState
 -- | The state of a server in game
 data GameState
     = GameState
-    { _pObjs      :: DAM.MArray PGT.GameObject
+    { _pObjs      :: DVM.IOVector PGT.GameObject
     , _frameBegin :: DTC.UTCTime
     , _clients    :: [ClientConnection]
     }
