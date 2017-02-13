@@ -57,7 +57,7 @@ newtype Payload = Payload { unPayload :: ByteString }
 
 -- | A uuid is a header that the server and client prepends to
 -- every message. A message that does not have such a header is
--- discarded immidieately
+-- discarded immediately
 newtype UUID = UUID { unUUID :: ByteString }
 
 -- | A counter to count both the remote and local messages
