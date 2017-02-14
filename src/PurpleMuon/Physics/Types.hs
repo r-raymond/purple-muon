@@ -40,7 +40,7 @@ module PurpleMuon.Physics.Types
     , Force(..)
     , GravitationalConstant(..)
     -- * Combined types
-    , PhysicalObject(..), uuid, mass, pos, vel, static, gravitating
+    , PhysicalObject(..), mass, pos, vel, static, gravitating
     , PhysicalSize(..)
     , Derivative(..)
     -- * IntMap types
@@ -112,16 +112,12 @@ data ObjGrav = Gravitating      -- ^ the object exerts gravitational forces
 -- | A physical object
 data PhysicalObject
     = PhysicalObject
-    { _uuid        :: Int      -- ^ A unique id of this object
-    , _mass        :: Mass     -- ^ The mass of the object
+    { _mass        :: Mass     -- ^ The mass of the object
     , _pos         :: Position -- ^ The position of the object
     , _vel         :: Velocity -- ^ The velocity of the object
     , _static      :: ObjType  -- ^ Is this object moving?
     , _gravitating :: ObjGrav  -- ^ Is this object gravitating?
     } deriving (Show, Generic)
-
-instance (Eq PhysicalObject) where
-    (==) a b = (_uuid a) == (_uuid b)
 
 instance DBI.Binary Mass
 instance DBI.Binary Position

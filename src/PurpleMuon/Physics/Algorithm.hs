@@ -193,19 +193,19 @@ calculateGravitationalForces g objs = forceMap
         gravitatingObjs = DIS.filter (\x -> CLE.view PPT.gravitating x == PPT.Gravitating) objs
         nonStaticObjs   = DIS.filter (\x -> CLE.view PPT.static x == PPT.NonStatic) objs
         -- Apply all forces
-        foldForces :: PPT.PhysicalObject -> PPT.Force
-        foldForces x = DIS.foldr' (\o facc -> facc DAD.^+^ calculateForce g o x) (PPT.Force LVE.zero) gravitatingObjs
-        forceMap = DIS.map foldForces nonStaticObjs
+        foldForces :: DIS.Key -> PPT.PhysicalObject -> PPT.Force
+        foldForces xKey x = DIS.foldrWithKey' (\k o facc -> facc DAD.^+^ calculateForce g (k, o) (xKey, x)) (PPT.Force LVE.zero) gravitatingObjs
+        forceMap = DIS.mapWithKey foldForces nonStaticObjs
 
 -- | Calculate the force of the first object on the second
 -- Ignores all static / gravitating modifier but checks that the objects
 -- are not the same
 calculateForce :: PPT.GravitationalConstant
-               -> PPT.PhysicalObject -- ^ The object that gravitates
-               -> PPT.PhysicalObject -- ^ The object that is pulled on
+               -> (Int, PPT.PhysicalObject) -- ^ The object that gravitates
+               -> (Int, PPT.PhysicalObject) -- ^ The object that is pulled on
                -> PPT.Force
-calculateForce g o1 o2 =
-    if o1 /= o2
+calculateForce g (k1, o1) (k2, o2) =
+    if k1 /= k2
         then f
         else PPT.Force LVE.zero
       where

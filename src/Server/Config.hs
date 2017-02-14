@@ -25,43 +25,43 @@ initialObjs = DIS.fromList
 
 initialPhyObjs :: PPT.PhysicalObjects
 initialPhyObjs = DIS.fromList
-        [ (1, PPT.PhysicalObject 1
+        [ (1, PPT.PhysicalObject
                 (PPT.Mass 1)
                 (PPT.Position (LV2.V2 0.5 0.5))
                 (PPT.Velocity (LV2.V2 0 (-0.1)))
                 PPT.NonStatic
                 PPT.Gravitating)
-        , (2, PPT.PhysicalObject 2
+        , (2, PPT.PhysicalObject
                 (PPT.Mass 1)
                 (PPT.Position (LV2.V2 0.75 0.5))
                 (PPT.Velocity (LV2.V2 0 0.1))
                 PPT.NonStatic
                 PPT.Gravitating)
-        , (3, PPT.PhysicalObject 3
+        , (3, PPT.PhysicalObject
                 (PPT.Mass 1)
                 (PPT.Position (LV2.V2 0.75 0.15))
                 (PPT.Velocity (LV2.V2 0 0.1))
                 PPT.NonStatic
                 PPT.Gravitating)
-        , (4, PPT.PhysicalObject 4
+        , (4, PPT.PhysicalObject
                 (PPT.Mass 1)
                 (PPT.Position (LV2.V2 0.75 0.25))
                 (PPT.Velocity (LV2.V2 0 0.1))
                 PPT.NonStatic
                 PPT.Gravitating)
-        , (5, PPT.PhysicalObject 5
+        , (5, PPT.PhysicalObject
                 (PPT.Mass 1)
                 (PPT.Position (LV2.V2 0.75 0.35))
                 (PPT.Velocity (LV2.V2 0 0.1))
                 PPT.NonStatic
                 PPT.Gravitating)
-        , (6, PPT.PhysicalObject 6
+        , (6, PPT.PhysicalObject
                 (PPT.Mass 1)
                 (PPT.Position (LV2.V2 0.75 0.45))
                 (PPT.Velocity (LV2.V2 0 0.1))
                 PPT.NonStatic
                 PPT.Gravitating)
-        , (7, PPT.PhysicalObject 7
+        , (7, PPT.PhysicalObject
                 (PPT.Mass 1)
                 (PPT.Position (LV2.V2 0.75 0.55))
                 (PPT.Velocity (LV2.V2 0 0.1))
