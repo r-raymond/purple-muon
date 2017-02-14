@@ -38,7 +38,7 @@ import qualified Linear.V2                as LV2
 import qualified PurpleMuon.Physics.Types as PPT
 
 g :: PPT.GravitationalConstant
-g = PPT.GravitationalConstant 0.1
+g = PPT.GravitationalConstant 0.01
 
 physicalSize :: PPT.PhysicalSize
 physicalSize = PPT.PhysicalSize (LV2.V2 1 1)
