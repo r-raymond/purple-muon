@@ -19,7 +19,7 @@
 
 module Server.Types
     ( WaitingState(..)
-    , GameState(..), pObjs, frameBegin, clients, logger
+    , GameState(..), gObjs, pObjs, frameBegin, clients, logger
     , WaitingServer, clientsConnected
     , Server
     , Resources(..), tbqueue, socket
@@ -30,13 +30,14 @@ import           Protolude
 
 import qualified Control.Concurrent.STM   as CCS
 import qualified Control.Lens             as CLE
+import qualified Data.IntMap.Strict       as DIS
 import qualified Data.Thyme.Clock         as DTC
-import qualified Data.Vector.Mutable      as DVM
 import qualified Network.Socket           as NSO
 import qualified System.Log.FastLogger    as SLF
 
 import qualified PurpleMuon.Game.Types    as PGT
 import qualified PurpleMuon.Network.Types as PNT
+import qualified PurpleMuon.Physics.Types as PPT
 
 -- | A client connection saves all the data the server knows about
 -- a client
@@ -56,7 +57,8 @@ data WaitingState
 -- | The state of a server in game
 data GameState
     = GameState
-    { _pObjs      :: DVM.IOVector PGT.GameObject
+    { _gObjs      :: DIS.IntMap PGT.GameObject
+    , _pObjs      :: PPT.PhysicalObjects
     , _frameBegin :: DTC.UTCTime
     , _clients    :: [ClientConnection]
     }

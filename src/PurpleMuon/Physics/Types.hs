@@ -30,7 +30,8 @@ Portability : POSIX
 
 module PurpleMuon.Physics.Types
     ( -- * Basic types
-       FlType
+      PhyObjUUID(..)
+    , FlType
     , Position(..)
     , Mass(..)
     , Velocity(..)
@@ -60,6 +61,11 @@ import qualified Data.IntMap.Strict as DIS
 import qualified Data.VectorSpace   as DVE
 import qualified Linear.V2          as LV2
 import qualified Linear.Vector      as LVE
+
+
+-- | A physical object identifier
+newtype PhyObjUUID = PhyObjUUID { unPhyObjUUID :: Word16 }
+    deriving (Eq, Ord)
 
 -- |The floating point type used throughout the physics module
 type FlType = Float

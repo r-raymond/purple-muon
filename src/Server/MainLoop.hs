@@ -13,6 +13,7 @@ import qualified Data.IntMap.Strict           as DIS
 import qualified Network.Socket.ByteString    as NSB
 import qualified System.Log.FastLogger        as SLF
 
+import qualified PurpleMuon.Game.Types        as PGT
 import qualified PurpleMuon.Network.Types     as PNT
 import qualified PurpleMuon.Network.Util      as PNU
 import qualified PurpleMuon.Physics.Algorithm as PPA
@@ -49,11 +50,10 @@ waitingLoop = do
                 (PNT.RequestConnection (PNT.PlayerName name)) -> liftIO $ do
                     SLF.pushLogStrLn l (SLF.toLogStr $ "Player " <> name <> " connected")
                     evalStateT (runReaderT loop res)
-                               (STY.GameState SCO.initialObjs (toEnum 0) [a])
+                               (STY.GameState SCO.initialObjs SCO.initialPhyObjs (toEnum 0) [STY.ClientConnection a name (PGT.GameObjUUID 0)])
                 _ -> do
                     liftIO $ SLF.pushLogStrLn l "Discard valid but inappropriate package"
                     waitingLoop
-
 
 loop :: STY.Server ()
 loop = do
@@ -85,4 +85,4 @@ sendNetwork = do
                                     <> (show $ DBY.length toSend)
                                     <> "; Clients: "
                                     ++  (show $ length clients)))
-    sequence_ (fmap send clients)
+    sequence_ (fmap send (fmap (CLE.view STY.addr) clients))
