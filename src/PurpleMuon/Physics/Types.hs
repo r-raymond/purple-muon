@@ -65,7 +65,7 @@ import qualified Linear.Vector      as LVE
 
 -- | A physical object identifier
 newtype PhyObjUUID = PhyObjUUID { unPhyObjUUID :: Word16 }
-    deriving (Eq, Ord)
+    deriving (Eq, Ord, Num, Real, Enum, Integral)
 
 -- |The floating point type used throughout the physics module
 type FlType = Float
