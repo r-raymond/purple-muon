@@ -26,21 +26,27 @@ Portability : POSIX
 
 module PurpleMuon.Game.Types
     ( GameObject(..)
+    , GameObjectData(..)
     , GameObjUUID(..)
     ) where
 
-import Protolude
+import           Protolude
 
 import qualified PurpleMuon.Physics.Types as PPT
 
 newtype GameObjUUID = GameObjUUID { unGameObjUUID :: Word16 }
     deriving (Eq, Ord)
 
+-- | The type of the game object and the data that goes with it.
+data GameObjectData
+    = PlayerShip
+    | Comet
 
 -- | A game object.
 -- Has optionally a name and a `PhysicalObject`.
 data GameObject
     = GameObject
-    { _mName :: Maybe Text
-    , _mPhOb :: Maybe PPT.PhyObjUUID
+    { _goData :: GameObjectData
+    , _mName  :: Maybe Text
+    , _mPhOb  :: Maybe PPT.PhyObjUUID
     }

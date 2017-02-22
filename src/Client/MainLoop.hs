@@ -30,20 +30,18 @@ import qualified Control.Concurrent.STM   as CCS
 import qualified Control.Lens             as CLE
 import qualified Data.Binary              as DBI
 import qualified Data.IntMap.Strict       as DIS
-import qualified Foreign.C.Types          as FCT
 import qualified SDL                      as SDL
 import qualified SDL.Event                as SEV
 import qualified SDL.Vect                 as SVE
 import qualified SDL.Video                as SVI
 
---import qualified PurpleMuon.Physics.Algorithm as PPA
---import qualified PurpleMuon.Physics.Constants as PPC
 import qualified PurpleMuon.Network.Types as PNT
 import qualified PurpleMuon.Physics.Types as PPT
 
 import qualified Client.Event             as CEV
 import qualified Client.Frames            as CTF
 import qualified Client.Types             as CTY
+import qualified Client.Video.Render      as CVR
 import qualified Client.Video.Texture     as CVT
 import qualified Client.Video.Types       as CVTY
 
@@ -103,27 +101,10 @@ render tuu = do
     appState <- get
     let pos = CLE.view (CTY.game . CTY.physicalObjects) appState
 
-    sequence_ (fmap (renderPhysicalObject (CTY.stones tuu)) pos)
+    sequence_ (fmap (CVR.renderGameObjects (CTY.stones tuu)) pos)
 
     SVI.present renderer
 
-
-renderPhysicalObject :: CVTY.TexUUID -> PPT.PhysicalObject -> CTY.Game ()
-renderPhysicalObject t po = do
-    res <- ask
-    sta <- get
-    let pos = PPT.unPosition $ CLE.view PPT.pos po
-        window = CLE.view CTY.window res
-        texload = CLE.view CTY.textures sta
-    windowsize <- SDL.get $ SVI.windowSize window
-
-    -- TODO: Fix this with actual physical size
-    let coord = fmap truncate (pos * fmap fromIntegral windowsize)
-        size = fmap FCT.CInt (SVE.V2 10 10)
-        p    = fmap FCT.CInt coord
-        bb   = Just $ SVI.Rectangle (SVE.P p) size
-
-    CVT.renderTexture texload t bb
 
 
 network :: CTY.Game ()
