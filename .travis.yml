@@ -33,6 +33,12 @@ before_install:
   - (cd SDL2_mixer-2.0.1 && ./configure && make && sudo make install)
   - sudo ldconfig
 
+  # sdl2-ttf
+  - curl https://www.libsdl.org/projects/SDL_ttf/release/SDL2_ttf-2.0.14.tar.gz -o SDL2_ttf-2.0.14.tar.gz
+  - tar -xzvf SDL2_ttf-2.0.14.tar.gz
+  - (cd SDL2_ttf-2.0.14 && ./configure && make && sudo make install)
+  - sudo ldconfig
+
 install:
   # Build dependencies
   - stack --no-terminal --install-ghc build --only-dependencies --split-objs

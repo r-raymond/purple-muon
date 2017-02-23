@@ -41,6 +41,7 @@ dependencies:
     - protolude
     - sdl2
     - sdl2-mixer
+    - sdl2-ttf
     - stm
     - thyme
     - vector
