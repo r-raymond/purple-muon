@@ -23,6 +23,8 @@ module Client.Assets.Util
 
 import           Protolude
 
+import           Paths_purple_muon
+
 import qualified SDL as SDL
 
 import qualified Client.Video.Texture as CVT
@@ -32,13 +34,13 @@ import qualified Client.Video.Types    as CVTY
 -- If this list gets too long, maybe it should be split into assets for
 -- different stages of the game.
 pngAssets :: [FilePath]
-pngAssets = [ "res/png/blueSheet.xml"
+pngAssets = [ "res/png/gravity.xml"
+            , "res/png/space.xml"
+            , "res/png/blueSheet.xml"
             , "res/png/greenSheet.xml"
             , "res/png/redSheet.xml"
             , "res/png/greySheet.xml"
-            , "res/png/yellowSheet.xml"
-            , "res/png/gravity.xml"
-            , "res/png/space.xml"
+            --, "res/png/yellowSheet.xml"
             , "res/png/spaceShooter2_spritesheet.xml"
             , "res/png/spaceShooter2_spritesheet_2X.xml"
             , "res/png/uipackSpace_sheet.xml"
@@ -63,11 +65,12 @@ loadPngAssets :: (MonadError Text m, MonadIO m)
               => CVTY.TextureLoader
               -> [FilePath]
               -> m CVTY.TextureLoader
-loadPngAssets tl paths = foldl' (>>=) (return tl) loadAll
-  where
-    loadA :: (MonadError Text m, MonadIO m)
-          => FilePath -> CVTY.TextureLoader -> m CVTY.TextureLoader
-    loadA = \x y -> CVT.addTextureAtlas y x 
-    loadAll :: (MonadError Text m, MonadIO m)
-            => [CVTY.TextureLoader -> m CVTY.TextureLoader]
-    loadAll = fmap loadA paths
+loadPngAssets tl paths = do
+    ps <- liftIO $ sequence (fmap getDataFileName paths)
+    let loadA :: (MonadError Text m, MonadIO m)
+              => FilePath -> CVTY.TextureLoader -> m CVTY.TextureLoader
+        loadA = \x y -> CVT.addTextureAtlas y x 
+        loadAll :: (MonadError Text m, MonadIO m)
+                => [CVTY.TextureLoader -> m CVTY.TextureLoader]
+        loadAll = fmap loadA ps
+    foldl' (>>=) (return tl) loadAll

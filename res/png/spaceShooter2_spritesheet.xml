@@ -1,4 +1,4 @@
-<TextureAtlas imagePath="spaceShooter2_spritesheet.png">
+<TextureAtlas imagePath="res/png/spaceShooter2_spritesheet.png">
 	<SubTexture name="spaceAstronauts_001.png" x="998" y="847" width="34" height="44"/>
 	<SubTexture name="spaceAstronauts_002.png" x="919" y="142" width="37" height="44"/>
 	<SubTexture name="spaceAstronauts_003.png" x="824" y="0" width="50" height="44"/>

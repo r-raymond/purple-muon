@@ -22,7 +22,6 @@ module Client.MainLoop
 
 import           Protolude
 
-import           Paths_purple_muon
 import           Version
 
 import qualified Codec.Compression.Zlib   as CCZ
@@ -38,6 +37,7 @@ import qualified SDL.Video                as SVI
 import qualified PurpleMuon.Network.Types as PNT
 import qualified PurpleMuon.Physics.Types as PPT
 
+import qualified Client.Assets.Util       as CAU
 import qualified Client.Event             as CEV
 import qualified Client.Frames            as CTF
 import qualified Client.Types             as CTY
@@ -47,25 +47,18 @@ import qualified Client.Video.Types       as CVTY
 
 initLoop :: CTY.Game()
 initLoop = do
-    sta <- get
-    gravity <- liftIO $ getDataFileName "res/png/gravity.xml"
-    space   <- liftIO $ getDataFileName "res/png/space.xml"
-    let tl = CLE.view CTY.textures sta
-        f = texLoadHelper gravity
-            >=> texLoadHelper space
-    newTl <- f tl
-    modify (CLE.set CTY.textures newTl)
+    res <- ask
+    let ren = CLE.view CTY.renderer res
 
-    let (Just s) = CVT.getTexture newTl "meteorBrown_big1.png"
-        (Just b) = CVT.getTexture newTl "background.png"
-    loop (CTY.TextureUUIDs b s)
+    etl <- runExceptT $ CAU.loadAllPngAssets ren
+    case etl of
+        Right tl -> do
+            modify (CLE.set CTY.textures tl)
 
-texLoadHelper :: MonadIO m => FilePath -> CVTY.TextureLoader -> m CVTY.TextureLoader
-texLoadHelper p l = do
-    nl <- runExceptT $ CVT.addTextureAtlas l p
-    case nl of
-        Right t -> return t
-        Left e  -> panic $ "Could not load " <> (toS p) <> "\n" <> e
+            let (Just s) = CVT.getTexture tl "meteorBrown_big1.png"
+                (Just b) = CVT.getTexture tl "background.png"
+            loop (CTY.TextureUUIDs b s)
+        Left e -> panic $ "Could not load assets: " <> e
 
 loop :: CTY.TextureUUIDs -> CTY.Game ()
 loop tuu = do
