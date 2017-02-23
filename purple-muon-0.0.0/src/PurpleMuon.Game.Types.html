@@ -1,0 +1,53 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span class="hs-comment">--  Copyright 2016, 2017 Robin Raymond</span><span>
+</span><a name="line-2"></a><span class="hs-comment">--</span><span>
+</span><a name="line-3"></a><span class="hs-comment">--  This file is part of Purple Muon</span><span>
+</span><a name="line-4"></a><span class="hs-comment">--</span><span>
+</span><a name="line-5"></a><span class="hs-comment">--  Purple Muon is free software: you can redistribute it and/or modify</span><span>
+</span><a name="line-6"></a><span class="hs-comment">--  it under the terms of the GNU General Public License as published by</span><span>
+</span><a name="line-7"></a><span class="hs-comment">--  the Free Software Foundation, either version 3 of the License, or</span><span>
+</span><a name="line-8"></a><span class="hs-comment">--  (at your option) any later version.</span><span>
+</span><a name="line-9"></a><span class="hs-comment">--</span><span>
+</span><a name="line-10"></a><span class="hs-comment">--  Purple Muon is distributed in the hope that it will be useful,</span><span>
+</span><a name="line-11"></a><span class="hs-comment">--  but WITHOUT ANY WARRANTY; without even the implied warranty of</span><span>
+</span><a name="line-12"></a><span class="hs-comment">--  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the</span><span>
+</span><a name="line-13"></a><span class="hs-comment">--  GNU General Public License for more details.</span><span>
+</span><a name="line-14"></a><span class="hs-comment">--</span><span>
+</span><a name="line-15"></a><span class="hs-comment">--  You should have received a copy of the GNU General Public License</span><span>
+</span><a name="line-16"></a><span class="hs-comment">--  along with Purple Muon.  If not, see &lt;http://www.gnu.org/licenses/&gt;.</span><span>
+</span><a name="line-17"></a><span>
+</span><a name="line-18"></a><span class="hs-comment">{-|
+Module      : PurpleMuon.Network.Types
+Description : Collection of game object types
+Copyright   : (c) Robin Raymond, 2016
+License     : GPL-3
+Maintainer  : robin@robinraymond.de
+Portability : POSIX
+-}</span><span>
+</span><a name="line-26"></a><span>
+</span><a name="line-27"></a><span class="hs-keyword">module</span><span> </span><span class="hs-identifier">PurpleMuon</span><span class="hs-operator">.</span><span class="hs-identifier">Game</span><span class="hs-operator">.</span><span class="hs-identifier">Types</span><span>
+</span><a name="line-28"></a><span>    </span><span class="hs-special">(</span><span> </span><a href="PurpleMuon.Game.Types.html#GameObject"><span class="hs-identifier hs-type">GameObject</span></a><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span>
+</span><a name="line-29"></a><span>    </span><span class="hs-special">,</span><span> </span><a href="PurpleMuon.Game.Types.html#GameObjectData"><span class="hs-identifier hs-type">GameObjectData</span></a><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span>
+</span><a name="line-30"></a><span>    </span><span class="hs-special">,</span><span> </span><a href="PurpleMuon.Game.Types.html#GameObjUUID"><span class="hs-identifier hs-type">GameObjUUID</span></a><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span>
+</span><a name="line-31"></a><span>    </span><span class="hs-special">)</span><span> </span><span class="hs-keyword">where</span><span>
+</span><a name="line-32"></a><span>
+</span><a name="line-33"></a><span class="hs-keyword">import</span><span>           </span><span class="hs-identifier">Protolude</span><span>
+</span><a name="line-34"></a><span>
+</span><a name="line-35"></a><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><a href="PurpleMuon.Physics.Types.html"><span class="hs-identifier">PurpleMuon</span><span class="hs-operator">.</span><span class="hs-identifier">Physics</span><span class="hs-operator">.</span><span class="hs-identifier">Types</span></a><span> </span><span class="hs-keyword">as</span><span> </span><span class="hs-identifier">PPT</span><span>
+</span><a name="line-36"></a><span>
+</span><a name="line-37"></a><span class="hs-keyword">newtype</span><span> </span><a name="GameObjUUID"><a href="PurpleMuon.Game.Types.html#GameObjUUID"><span class="hs-identifier">GameObjUUID</span></a></a><span> </span><span class="hs-glyph">=</span><span> </span><a name="GameObjUUID"><a href="PurpleMuon.Game.Types.html#GameObjUUID"><span class="hs-identifier">GameObjUUID</span></a></a><span> </span><span class="hs-special">{</span><span> </span><a name="unGameObjUUID"><a href="PurpleMuon.Game.Types.html#unGameObjUUID"><span class="hs-identifier">unGameObjUUID</span></a></a><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-identifier hs-type">Word16</span><span> </span><span class="hs-special">}</span><span>
+</span><a name="line-38"></a><span>    </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span class="hs-identifier hs-type">Eq</span><span class="hs-special">,</span><span> </span><span class="hs-identifier hs-type">Ord</span><span class="hs-special">)</span><span>
+</span><a name="line-39"></a><span>
+</span><a name="line-40"></a><span class="hs-comment">-- | The type of the game object and the data that goes with it.</span><span>
+</span><a name="line-41"></a><span class="hs-keyword">data</span><span> </span><a name="GameObjectData"><a href="PurpleMuon.Game.Types.html#GameObjectData"><span class="hs-identifier">GameObjectData</span></a></a><span>
+</span><a name="line-42"></a><span>    </span><span class="hs-glyph">=</span><span> </span><a name="PlayerShip"><a href="PurpleMuon.Game.Types.html#PlayerShip"><span class="hs-identifier">PlayerShip</span></a></a><span>
+</span><a name="line-43"></a><span>    </span><span class="hs-glyph">|</span><span> </span><a name="Comet"><a href="PurpleMuon.Game.Types.html#Comet"><span class="hs-identifier">Comet</span></a></a><span>
+</span><a name="line-44"></a><span>
+</span><a name="line-45"></a><span class="hs-comment">-- | A game object.</span><span>
+</span><a name="line-46"></a><span class="hs-comment">-- Has optionally a name and a `PhysicalObject`.</span><span>
+</span><a name="line-47"></a><span class="hs-keyword">data</span><span> </span><a name="GameObject"><a href="PurpleMuon.Game.Types.html#GameObject"><span class="hs-identifier">GameObject</span></a></a><span>
+</span><a name="line-48"></a><span>    </span><span class="hs-glyph">=</span><span> </span><a name="GameObject"><a href="PurpleMuon.Game.Types.html#GameObject"><span class="hs-identifier">GameObject</span></a></a><span>
+</span><a name="line-49"></a><span>    </span><span class="hs-special">{</span><span> </span><a name="_goData"><a href="PurpleMuon.Game.Types.html#_goData"><span class="hs-identifier">_goData</span></a></a><span> </span><span class="hs-glyph">::</span><span> </span><a href="PurpleMuon.Game.Types.html#GameObjectData"><span class="hs-identifier hs-type">GameObjectData</span></a><span>
+</span><a name="line-50"></a><span>    </span><span class="hs-special">,</span><span> </span><a name="_mName"><a href="PurpleMuon.Game.Types.html#_mName"><span class="hs-identifier">_mName</span></a></a><span>  </span><span class="hs-glyph">::</span><span> </span><span class="hs-identifier hs-type">Maybe</span><span> </span><span class="hs-identifier hs-type">Text</span><span>
+</span><a name="line-51"></a><span>    </span><span class="hs-special">,</span><span> </span><a name="_mPhOb"><a href="PurpleMuon.Game.Types.html#_mPhOb"><span class="hs-identifier">_mPhOb</span></a></a><span>  </span><span class="hs-glyph">::</span><span> </span><span class="hs-identifier hs-type">Maybe</span><span> </span><a href="PurpleMuon.Physics.Types.html#PhyObjUUID"><span class="hs-identifier hs-type">PPT</span><span class="hs-operator hs-type">.</span><span class="hs-identifier hs-type">PhyObjUUID</span></a><span>
+</span><a name="line-52"></a><span>    </span><span class="hs-special">}</span><span>
+</span><a name="line-53"></a></pre></body></html>
