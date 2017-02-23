@@ -47,6 +47,5 @@ script:
   - stack --no-terminal build --haddock --no-haddock-deps --split-objs
 
 after_success:
-  - stack path
   - chmod +x script/deploy.sh
   - ./script/deploy.sh

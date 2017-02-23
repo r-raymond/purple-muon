@@ -1,5 +1,5 @@
-mkdir ../doc
-cd ../doc
+mkdir doc
+cd doc
 
 git clone -b gh-pages https://github.com/r-raymond/purple-muon.git
 
