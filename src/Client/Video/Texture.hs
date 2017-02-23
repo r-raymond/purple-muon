@@ -51,12 +51,8 @@ information.
 {-# LANGUAGE FlexibleContexts      #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 module Client.Video.Texture
-    ( parseTextureAtlas
-    , newTextureLoader
-    , loadTextureAtlas
+    ( newTextureLoader
     , renderTexture
-    , loadSurface
-    , surfaceToTexture
     , addTextureAtlas
     , getTexture
     ) where
@@ -79,6 +75,7 @@ import qualified Text.XML.Light             as TXL
 import qualified Client.Video.Types         as CVT
 import qualified PurpleMuon.Util.MonadError as PUM
 
+-- | Render a texture specified by a `CVT.TexUUID`.
 renderTexture :: (MonadIO m) => CVT.TextureLoader -> CVT.TexUUID -> Maybe (SVR.Rectangle FCT.CInt) -> m ()
 renderTexture (CVT.TextureLoader at te r _) (CVT.TexUUID u) mr =
     case DIS.lookup u te of
@@ -89,13 +86,16 @@ renderTexture (CVT.TextureLoader at te r _) (CVT.TexUUID u) mr =
                               (Just $ CVT.rect t) mr
 
 
+-- |Find the `CVT.TexUUID` of a texture.
 getTexture :: CVT.TextureLoader -> Text -> Maybe CVT.TexUUID
 getTexture (CVT.TextureLoader _ t _ _)  p =
     fmap (CVT.TexUUID . fst) (find (\(_, x) -> CVT.name x == p) (DIS.assocs t))
 
+-- |Create a new texture loader.
 newTextureLoader :: SVR.Renderer -> CVT.TextureLoader
 newTextureLoader r = CVT.TextureLoader DIS.empty DIS.empty r 0
 
+-- |Add an texture atlas to a texture loader
 addTextureAtlas :: (MonadError Text m, MonadIO m)
                 => CVT.TextureLoader
                 -> FilePath
@@ -112,7 +112,7 @@ addTextureAtlas (CVT.TextureLoader at te r k) p = do
         newTeMap  = foldr (\x y -> x y) te h3
     return $ CVT.TextureLoader newAtMap newTeMap r (k+1)
 
-
+-- |Helper function for addTextureAtlas
 parseTextureAtlas :: (MonadError Text m, MonadIO m)
                   => SVR.Renderer
                   -> CVT.AtlasUUID
@@ -129,7 +129,7 @@ contentFilter :: TXL.Content -> Bool
 contentFilter (TXL.Elem _) = True
 contentFilter _            = False
 
-
+-- |Helper function for parseTextureAtlas
 parseTextureAtlasHeader :: (MonadError Text m, MonadIO m)
                         => SVR.Renderer
                         -> TXL.Element
