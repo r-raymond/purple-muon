@@ -11,7 +11,7 @@ git config user.email "travis@travis-ci.org"
 
 rm -rf *
 
-DOC_DIR=stack path | grep local-doc-root | awk '{print $2}'
+DOC_DIR=$(stack path | grep local-doc-root | awk '{print $2}')
 
 mv ${DOC_DIR}/* .
 
