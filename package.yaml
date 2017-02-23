@@ -38,6 +38,7 @@ dependencies:
     - network
     - protolude
     - sdl2
+    - sdl2-mixer
     - stm
     - thyme
     - vector
