@@ -39,3 +39,8 @@ install:
 
 script:
   - stack --no-terminal build --haddock --no-haddock-deps --split-objs
+
+after_success:
+  - cd $TRAVIS_BUILD_DIR
+  - chmod +x script/deploy.sh
+  - ./script/deploy.sh
