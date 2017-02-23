@@ -1,4 +1,4 @@
-<TextureAtlas imagePath="sheet.png">
+<TextureAtlas imagePath="res/png/gameicons_extended/sheet_white1x.png">
 	<SubTexture name="DPAD.png" x="350" y="150" width="50" height="50"/>
 	<SubTexture name="DPAD_all.png" x="350" y="100" width="50" height="50"/>
 	<SubTexture name="DPAD_down.png" x="350" y="50" width="50" height="50"/>

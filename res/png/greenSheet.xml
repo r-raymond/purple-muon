@@ -1,4 +1,4 @@
-<TextureAtlas imagePath="sheet.png">
+<TextureAtlas imagePath="res/png/greenSheet.png">
 	<SubTexture name="green_boxCheckmark.png" x="380" y="0" width="38" height="36"/>
 	<SubTexture name="green_boxCross.png" x="380" y="36" width="38" height="36"/>
 	<SubTexture name="green_boxTick.png" x="386" y="210" width="36" height="36"/>

@@ -1,4 +1,4 @@
-<TextureAtlas imagePath="sheet.png">
+<TextureAtlas imagePath="res/png/gameicons_extended/sheet_colored2x.png">
 	<SubTexture name="fightJoy_00.png" x="0" y="0" width="100" height="100"/>
 	<SubTexture name="fightJoy_01.png" x="100" y="300" width="100" height="100"/>
 	<SubTexture name="fightJoy_02.png" x="300" y="0" width="100" height="100"/>

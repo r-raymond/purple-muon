@@ -1,4 +1,4 @@
-<TextureAtlas imagePath="sheet.png">
+<TextureAtlas imagePath="res/png/gameicons/sheet_black1x.png">
 	<SubTexture name="arrowDown.png" x="50" y="50" width="50" height="50"/>
 	<SubTexture name="arrowLeft.png" x="50" y="0" width="50" height="50"/>
 	<SubTexture name="arrowRight.png" x="0" y="450" width="50" height="50"/>
