@@ -447,7 +447,8 @@ instance GHC.Show.Show Client.Types.FpsCounter
 
 module Client.Init
 
--- | Run a computation with SDL, SDL window and SDL renderer
+-- | Run a computation with SDL, SDL window and SDL renderer, SDL-ttf and
+--   SDL-mixer.
 withGraphics :: (Window -> Renderer -> IO ()) -> IO (Either SomeException ())
 
 module Client.Image
