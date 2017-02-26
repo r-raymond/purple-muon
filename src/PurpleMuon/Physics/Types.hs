@@ -57,6 +57,7 @@ import           Protolude
 import qualified Control.Lens       as CLE
 import qualified Data.AdditiveGroup as DAD
 import qualified Data.Binary        as DBI
+import qualified Data.Binary        as DBI
 import qualified Data.IntMap.Strict as DIS
 import qualified Data.VectorSpace   as DVE
 import qualified Linear.V2          as LV2
@@ -65,7 +66,7 @@ import qualified Linear.Vector      as LVE
 
 -- | A physical object identifier
 newtype PhyObjUUID = PhyObjUUID { unPhyObjUUID :: Word16 }
-    deriving (Eq, Ord, Num, Real, Enum, Integral)
+    deriving (Eq, Ord, Num, Real, Enum, Integral, Generic)
 
 -- |The floating point type used throughout the physics module
 type FlType = Float
@@ -174,3 +175,5 @@ instance (DAD.AdditiveGroup DeltaTime) where
     zeroV = DeltaTime 0
     (^+^) (DeltaTime a) (DeltaTime b) = DeltaTime (a + b)
     negateV (DeltaTime a) = DeltaTime ((-1) * a)
+
+instance DBI.Binary PhyObjUUID

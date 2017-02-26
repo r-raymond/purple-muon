@@ -32,6 +32,7 @@ module PurpleMuon.Game.Types
 
 import           Protolude
 
+import qualified Data.Binary              as DBI
 import qualified PurpleMuon.Physics.Types as PPT
 
 newtype GameObjUUID = GameObjUUID { unGameObjUUID :: Word16 }
@@ -41,6 +42,7 @@ newtype GameObjUUID = GameObjUUID { unGameObjUUID :: Word16 }
 data GameObjectData
     = PlayerShip
     | Comet
+    deriving (Generic)
 
 -- | A game object.
 -- Has optionally a name and a `PhysicalObject`.
@@ -49,4 +51,7 @@ data GameObject
     { _goData :: GameObjectData
     , _mName  :: Maybe Text
     , _mPhOb  :: Maybe PPT.PhyObjUUID
-    }
+    } deriving (Generic)
+
+instance DBI.Binary GameObjectData
+instance DBI.Binary GameObject

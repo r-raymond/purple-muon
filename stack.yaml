@@ -5,6 +5,7 @@ packages:
 - location:
     git: https://github.com/sbidin/sdl2-ttf.git
     commit: 408cc505fd4a514ea9fd943565d5cd6617234a97
+  extra-dep: true
 
 extra-deps: []
 

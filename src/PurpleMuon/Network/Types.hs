@@ -44,6 +44,7 @@ import           Protolude
 import qualified Data.Binary              as DBI
 import qualified Network.Socket           as NSO
 
+import qualified PurpleMuon.Game.Types    as PGT
 import qualified PurpleMuon.Physics.Types as PPT
 
 -- | A binary message that is send over the network
@@ -87,18 +88,17 @@ data ConnectionState
     , latestCounter :: MessageCount
     }
 
-
 -- | Messages the Server sends to the Clients
 data ServerToClientMsg
     = Ping              -- ^ A simple ping package to determine network latency
-    | Update PPT.PhysicalObjects -- ^ An update the server sends to the clients
-        deriving (Generic)       -- TODO: Also send which physical step the
-                                 -- updates are for
+    | CreateGameObject PGT.GameObject          -- ^ Create a new game object
+    | Update PPT.PhysicalObjects               -- ^ The physical objects in the system
+    -- TODO: Pack this better. Also send the generation of the data
+    deriving (Generic)
 
 -- | A player name
 newtype PlayerName = PlayerName { unPlayerName :: Text }
     deriving (Generic)
-
 
 -- | Messages the Clients send to the Server
 data ClientToServerMsg
