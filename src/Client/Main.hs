@@ -42,7 +42,7 @@ uuid = PNT.UUID "Test"
 initialeState :: SVI.Renderer -> CTY.AppState
 initialeState r =
     CTY.AppState True
-        (CTY.GameState DIS.empty (PPT.DeltaTime 0) (PPT.DeltaTime 0))
+        (CTY.InGameState DIS.empty (PPT.DeltaTime 0) (PPT.DeltaTime 0))
         (CTY.FpsCounter 60 [])
         (toEnum 0)
         (CVT.newTextureLoader r)

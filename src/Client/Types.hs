@@ -49,11 +49,12 @@ data AppState
 type Game a = ReaderT Resources (StateT AppState IO) a
 
 data GameState
-    = GameState
+    = InGameState
     { _physicalObjects :: PPT.PhysicalObjects
     , _dt              :: PPT.DeltaTime
     , _accumTime       :: PPT.DeltaTime         -- ^ Accumulated time for fixed physics step
     }
+    | MenuState
 
 data Resources
     = Resources
