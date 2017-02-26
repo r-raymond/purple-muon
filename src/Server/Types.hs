@@ -19,7 +19,7 @@
 
 module Server.Types
     ( WaitingState(..)
-    , GameState(..), gObjs, pObjs, frameBegin, clients, logger
+    , GameState(..), gObjs, pObjs, frameBegin, clients, logger, intStep
     , WaitingServer, clientsConnected
     , Server
     , Resources(..), tbqueue, socket
@@ -61,6 +61,7 @@ data GameState
     , _pObjs      :: PPT.PhysicalObjects
     , _frameBegin :: DTC.UTCTime
     , _clients    :: [ClientConnection]
+    , _intStep    :: Word32                     -- ^ Count of integration steps
     }
 
 -- | Read only resources that the server has access to

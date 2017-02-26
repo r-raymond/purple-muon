@@ -72,11 +72,12 @@ renderGameObject go@(PGT.GameObject PGT.Comet _ _) = do
             -- TODO: Fix this with actual physical size
             let coord = fmap truncate (pos * fmap fromIntegral windowsize)
                 size = fmap FCT.CInt (SDL.V2 10 10)
-                p    = fmap FCT.CInt coord
-                bb   = Just $ SDL.Rectangle (SDL.P p) size
+                poi  = fmap FCT.CInt coord
+                bb   = Just $ SDL.Rectangle (SDL.P poi) size
                 (Just t) = CVT.getTexture texload "meteorBrown_big1.png"
 
             CVT.renderTexture texload t bb
         Nothing -> -- wtf, can't render a comet without a physical position
-            error "error: comet without phyiscal object"
-
+            -- todo: log error
+            return ()
+renderGameObject (PGT.GameObject PGT.PlayerShip _ _) = return ()

@@ -66,9 +66,9 @@ clientSocket host port = liftIO $ try $ do
 -- forkIO this and give it a STM object to write stuff to. It will block on UDP
 -- recv and as soon as something arrives write it to the output
 endlessRecv :: MonadIO m
-            => PNT.UUID     -- ^ the uuid used for filtering
-            -> Int          -- ^ max number of bytes
-            -> NSO.Socket   -- ^ socket to listen to
+            => PNT.ProtocolUUID    -- ^ the uuid used for filtering
+            -> Int                  -- ^ max number of bytes
+            -> NSO.Socket           -- ^ socket to listen to
             -> CCS.TBQueue PNT.NakedMessage -- ^ stm tbqueue
             -> m ()
 endlessRecv uuid m sock tb = do

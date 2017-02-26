@@ -23,8 +23,8 @@ import qualified Server.Config                as SCO
 import qualified Server.Frames                as SFR
 import qualified Server.Types                 as STY
 
-uuid :: PNT.UUID
-uuid = PNT.UUID "Test"
+uuid :: PNT.ProtocolUUID
+uuid = "Test"
 
 initLoop :: MonadIO m => m ()
 initLoop = do
@@ -50,10 +50,11 @@ waitingLoop = do
                 (PNT.RequestConnection (PNT.PlayerName name)) -> liftIO $ do
                     SLF.pushLogStrLn l (SLF.toLogStr $ "Player " <> name <> " connected")
                     evalStateT (runReaderT loop res)
-                               (STY.GameState SCO.initialObjs SCO.initialPhyObjs (toEnum 0) [STY.ClientConnection a name (PGT.GameObjUUID 0)])
+                               (STY.GameState SCO.initialObjs SCO.initialPhyObjs (toEnum 0) [STY.ClientConnection a name (PGT.GameObjUUID 0)] 0)
                 _ -> do
                     liftIO $ SLF.pushLogStrLn l "Discard valid but inappropriate package"
                     waitingLoop
+
 
 loop :: STY.Server ()
 loop = do
@@ -68,8 +69,9 @@ loop = do
     loop
 
 update :: STY.GameState -> STY.GameState
-update = CLE.over STY.pObjs
-             (\x -> PPA.integrateTimeStep PPC.g PPC.physicsStep x DIS.empty)
+update = (CLE.over STY.pObjs
+             (\x -> PPA.integrateTimeStep PPC.g PPC.physicsStep x DIS.empty)) .
+             (CLE.over STY.intStep (+1))
 
 sendNetwork :: STY.Server ()
 sendNetwork = do
@@ -78,7 +80,7 @@ sendNetwork = do
     let toSend = toS $ CCZ.compress $ DBI.encode $ DIS.toList (CLE.view STY.pObjs st)
         socket = CLE.view STY.socket res
         logger = CLE.view STY.logger res
-        send a = liftIO $ NSB.sendTo socket (PNT.unUUID uuid <> toSend) a
+        send a = liftIO $ NSB.sendTo socket (uuid <> toSend) a
         clients = CLE.view STY.clients st
 
     liftIO $ SLF.pushLogStrLn logger (SLF.toLogStr ("Sending update package. Size: "

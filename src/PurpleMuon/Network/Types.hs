@@ -26,7 +26,7 @@ Portability : POSIX
 module PurpleMuon.Network.Types
     ( RawMessage(..)
     , NakedMessage(..)
-    , UUID(..)
+    , ProtocolUUID
     , Payload(..)
     , MessageCount(..)
     , AckField(..)
@@ -59,7 +59,7 @@ newtype Payload = Payload { unPayload :: ByteString }
 -- | A uuid is a header that the server and client prepends to
 -- every message. A message that does not have such a header is
 -- discarded immediately
-newtype UUID = UUID { unUUID :: ByteString }
+type ProtocolUUID = ByteString
 
 -- | A counter to count both the remote and local messages
 newtype MessageCount = MessageCount { unMessageCounter :: Word32 }

@@ -30,6 +30,7 @@ dependencies:
     - binary
     - bytestring
     - containers
+    - digest
     - errors
     - fast-logger
     - formatting
