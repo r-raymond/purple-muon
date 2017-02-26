@@ -149,6 +149,7 @@ instance Data.VectorSpace.VectorSpace PurpleMuon.Physics.Types.Acceleration
 instance Data.AdditiveGroup.AdditiveGroup PurpleMuon.Physics.Types.Derivative
 instance Data.VectorSpace.VectorSpace PurpleMuon.Physics.Types.Derivative
 instance Data.AdditiveGroup.AdditiveGroup PurpleMuon.Physics.Types.DeltaTime
+instance Data.Binary.Class.Binary PurpleMuon.Physics.Types.PhyObjUUID
 instance GHC.Generics.Generic PurpleMuon.Physics.Types.PhysicalObject
 instance GHC.Show.Show PurpleMuon.Physics.Types.PhysicalObject
 instance GHC.Generics.Generic PurpleMuon.Physics.Types.ObjGrav
@@ -179,6 +180,7 @@ instance GHC.Classes.Eq PurpleMuon.Physics.Types.Mass
 instance GHC.Generics.Generic PurpleMuon.Physics.Types.Position
 instance GHC.Show.Show PurpleMuon.Physics.Types.Position
 instance GHC.Classes.Eq PurpleMuon.Physics.Types.Position
+instance GHC.Generics.Generic PurpleMuon.Physics.Types.PhyObjUUID
 instance GHC.Real.Integral PurpleMuon.Physics.Types.PhyObjUUID
 instance GHC.Enum.Enum PurpleMuon.Physics.Types.PhyObjUUID
 instance GHC.Real.Real PurpleMuon.Physics.Types.PhyObjUUID
@@ -270,7 +272,11 @@ data ServerToClientMsg
 -- | A simple ping package to determine network latency
 Ping :: ServerToClientMsg
 
--- | An update the server sends to the clients
+-- | Create a new game object
+CreateGameObject :: GameObject -> ServerToClientMsg
+
+-- | The physical objects in the system TODO: Pack this better. Also send
+--   the generation of the data
 Update :: PhysicalObjects -> ServerToClientMsg
 
 -- | Messages the Clients send to the Server
@@ -418,15 +424,16 @@ frameBegin :: Lens' AppState UTCTime
 textures :: Lens' AppState TextureLoader
 type Game a = ReaderT Resources (StateT AppState IO) a
 data GameState
-GameState :: PhysicalObjects -> DeltaTime -> DeltaTime -> GameState
+InGameState :: PhysicalObjects -> DeltaTime -> DeltaTime -> GameState
 [_physicalObjects] :: GameState -> PhysicalObjects
 [_dt] :: GameState -> DeltaTime
 
 -- | Accumulated time for fixed physics step
 [_accumTime] :: GameState -> DeltaTime
-physicalObjects :: Lens' GameState PhysicalObjects
-dt :: Lens' GameState DeltaTime
-accumTime :: Lens' GameState DeltaTime
+MenuState :: GameState
+physicalObjects :: Traversal' GameState PhysicalObjects
+dt :: Traversal' GameState DeltaTime
+accumTime :: Traversal' GameState DeltaTime
 data Resources
 Resources :: Window -> Renderer -> TBQueue NakedMessage -> Resources
 [_window] :: Resources -> Window
