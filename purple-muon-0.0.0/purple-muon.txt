@@ -230,9 +230,7 @@ NakedMessage :: ByteString -> NakedMessage
 -- | A uuid is a header that the server and client prepends to every
 --   message. A message that does not have such a header is discarded
 --   immediately
-newtype UUID
-UUID :: ByteString -> UUID
-[unUUID] :: UUID -> ByteString
+type ProtocolUUID = ByteString
 
 -- | The payload of a Message
 newtype Payload
@@ -305,12 +303,12 @@ instance Data.Binary.Class.Binary PurpleMuon.Network.Types.ClientToServerMsg
 
 module PurpleMuon.Network.Message
 
--- | Prepend a message with an uuid.
-prepend :: UUID -> NakedMessage -> RawMessage
+-- | Prepend a message with an crc32 checksum.
+prepend :: ProtocolUUID -> NakedMessage -> RawMessage
 
--- | strip an uuid off of a message. Returns Just (stripped message) if the
---   message contains the correct uuid and Nothing otherwise
-strip :: UUID -> RawMessage -> Maybe NakedMessage
+-- | strip an crc32 off of a message. Returns Just (stripped message) if
+--   the message contains the correct uuid and Nothing otherwise
+strip :: ProtocolUUID -> RawMessage -> Maybe NakedMessage
 
 -- | Calculate the next message count
 nextMC :: MessageCount -> MessageCount
@@ -339,7 +337,7 @@ clientSocket :: MonadIO m => Text -> Text -> m (Either SomeException Socket)
 -- | Endless receiving queue forkIO this and give it a STM object to write
 --   stuff to. It will block on UDP recv and as soon as something arrives
 --   write it to the output
-endlessRecv :: MonadIO m => UUID -> Int -> Socket -> TBQueue NakedMessage -> m ()
+endlessRecv :: MonadIO m => ProtocolUUID -> Int -> Socket -> TBQueue NakedMessage -> m ()
 
 module Server.Main
 main :: IO ()
@@ -484,7 +482,7 @@ loop :: TextureUUIDs -> Game ()
 initLoop :: Game ()
 
 module Client.Main
-uuid :: UUID
+uuid :: ProtocolUUID
 initialeState :: Renderer -> AppState
 game :: TBQueue NakedMessage -> Window -> Renderer -> IO ()
 main :: IO ()
