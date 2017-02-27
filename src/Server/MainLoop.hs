@@ -31,7 +31,7 @@ initLoop = do
     (Right ss) <- PNU.serverSocket "7123"
     tb <- liftIO $ CCS.atomically $ CCS.newTBQueue 128
     ls <- liftIO $ SLF.newStdoutLoggerSet SLF.defaultBufSize
-    let res = STY.Resources tb ss ls
+    let res = STY.Resources tb ss ls uuid
     liftIO $ evalStateT (runReaderT waitingLoop res) (STY.WaitingState [])
 
 waitingLoop :: STY.WaitingServer ()

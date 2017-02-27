@@ -46,6 +46,7 @@ dependencies:
     - stm
     - thyme
     - vector
+    - optparse-applicative
     - vector-space
     - xml
     - zlib

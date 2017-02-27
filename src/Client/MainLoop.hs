@@ -24,6 +24,7 @@ import           Protolude
 
 import           Version
 
+import qualified Options.Applicative      as OAP
 import qualified Codec.Compression.Zlib   as CCZ
 import qualified Control.Concurrent.STM   as CCS
 import qualified Control.Lens             as CLE
@@ -43,7 +44,19 @@ import qualified Client.Frames            as CTF
 import qualified Client.Types             as CTY
 import qualified Client.Video.Render      as CVR
 import qualified Client.Video.Texture     as CVT
-import qualified Client.Video.Types       as CVTY
+
+data CommandLineOptions
+    = CommandLineOptions
+    { uuid :: Word32
+    }
+
+parser :: OAP.Parser CommandLineOptions
+parser = CommandLineOptions
+    OAP.<$> OAP.option OAP.auto
+        (OAP.long "uuid"
+       <> OAP.short 'u'
+       <> OAP.metavar "WORD32"
+       <> OAP.help "magic number for network communication")
 
 initLoop :: CTY.Game()
 initLoop = do

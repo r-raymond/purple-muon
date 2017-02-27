@@ -22,7 +22,7 @@ module Server.Types
     , GameState(..), gObjs, pObjs, frameBegin, clients, logger, intStep
     , WaitingServer, clientsConnected
     , Server
-    , Resources(..), tbqueue, socket
+    , Resources(..), tbqueue, socket, uuid
     , ClientConnection(..), addr, name, gameObj
     ) where
 
@@ -70,6 +70,7 @@ data Resources
     { _tbqueue :: CCS.TBQueue PNT.NakedMessage
     , _socket  :: NSO.Socket
     , _logger  :: SLF.LoggerSet
+    , _uuid    :: PNT.ProtocolUUID
     }
 
 type WaitingServer a = ReaderT Resources (StateT WaitingState IO) a

@@ -17,7 +17,7 @@
 --  along with Purple Muon.  If not, see <http://www.gnu.org/licenses/>.
 
 module Server.Network
-    (
+    ( sendPackage
     ) where
 
 import           Protolude
@@ -40,10 +40,11 @@ sendPackage pkg = do
     st <- get
     res <- ask
     let bin = toS $ DBI.encode pkg
+        protocolUUID = CLE.view STY.uuid res
         message = (toS $ DBI.encode $ DDC.crc32 (protocolUUID <> bin)) <> bin
         socket = CLE.view STY.socket res
         logger = CLE.view STY.logger res
-        send = liftIO $ NSB.sendTo socket message
+        send a = liftIO $ NSB.sendTo socket message a
         clients = CLE.view STY.clients st
 
 

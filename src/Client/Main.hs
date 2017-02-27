@@ -36,8 +36,8 @@ import qualified Client.MainLoop           as CMA
 import qualified Client.Types              as CTY
 import qualified Client.Video.Texture      as CVT
 
-uuid :: PNT.UUID
-uuid = PNT.UUID "Test"
+uuid :: PNT.ProtocolUUID
+uuid = "Test"
 
 initialeState :: SVI.Renderer -> CTY.AppState
 initialeState r =
