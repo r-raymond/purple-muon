@@ -18,7 +18,7 @@
 {-|
 Module      : Client.Video.Texture
 Description : Texture handling utitlities.
-Copyright   : (c) Robin Raymond, 2016
+Copyright   : (c) Robin Raymond, 2016-2017
 License     : GPL-3
 Maintainer  : robin@robinraymond.de
 Portability : POSIX

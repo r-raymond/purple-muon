@@ -18,7 +18,7 @@
 {-|
 Module      : PurpleMuon.Network.Types
 Description : Collection of game object types
-Copyright   : (c) Robin Raymond, 2016
+Copyright   : (c) Robin Raymond, 2016-2017
 License     : GPL-3
 Maintainer  : robin@robinraymond.de
 Portability : POSIX

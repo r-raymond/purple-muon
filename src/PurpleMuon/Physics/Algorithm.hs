@@ -19,7 +19,7 @@
 {-|
 Module      : PurpleMuon.Physics.Algorithm
 Description : Algorithms used by the Physics module of PurpleMuon
-Copyright   : (c) Robin Raymond, 2016
+Copyright   : (c) Robin Raymond, 2016-2017
 License     : GPL-3
 Maintainer  : robin@robinraymond.de
 Portability : POSIX

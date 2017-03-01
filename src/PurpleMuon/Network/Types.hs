@@ -18,7 +18,7 @@
 {-|
 Module      : PurpleMuon.Network.Types
 Description : A collection of all types used in PupleMuon's Network Code
-Copyright   : (c) Robin Raymond, 2016
+Copyright   : (c) Robin Raymond, 2016-2017
 License     : GPL-3
 Maintainer  : robin@robinraymond.de
 Portability : POSIX

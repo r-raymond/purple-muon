@@ -6,7 +6,7 @@ license:             GPL-3
 license-file:        LICENSE
 author:              Robin Raymond
 maintainer:          robin@robinraymond.de
-copyright:           2016 Robin Raymond
+copyright:           2016-2017 Robin Raymond
 category:            Games
 extra-source-files:  README.md
 github:              r-raymond/purple-muon
