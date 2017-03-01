@@ -22,12 +22,14 @@ module Client.MainLoop
 
 import           Protolude
 
+import           Paths_purple_muon
 import           Version
 
 import qualified Control.Concurrent.STM   as CCS
 import qualified Control.Lens             as CLE
 import qualified SDL                      as SDL
 import qualified SDL.Event                as SEV
+import qualified SDL.Mixer                as SMI
 import qualified SDL.Vect                 as SVE
 import qualified SDL.Video                as SVI
 
@@ -40,11 +42,18 @@ import qualified Client.Types             as CTY
 import qualified Client.Video.Render      as CVR
 import qualified Client.Video.Texture     as CVT
 
+playBackgroundMusic :: MonadIO m => m ()
+playBackgroundMusic = do
+    path <- liftIO $ getDataFileName "res/wav/game-loop.wav"
+    back <- SMI.load path
+    SMI.playMusic SMI.Forever back
+
 initLoop :: CTY.Game()
 initLoop = do
     res <- ask
     let ren = CLE.view CTY.renderer res
 
+    playBackgroundMusic
     etl <- runExceptT $ CAU.loadAllPngAssets ren
     case etl of
         Right tl -> do

@@ -51,7 +51,7 @@ withSDLTtf comp = CEX.bracket_ SFO.initialize SFO.quit comp
 
 -- | Run a computation with SDL-mixer
 withSDLMixer :: IO () -> IO ()
-withSDLMixer = SMI.withAudio SMI.defaultAudio 1024
+withSDLMixer = SMI.withAudio SMI.defaultAudio 4096
 
 -- | Run a computation with SDL, SDL window and SDL renderer, SDL-ttf and
 -- SDL-mixer.

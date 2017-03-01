@@ -17,6 +17,7 @@ data-files:
     - res/png/*
     - res/png/gameicons/*
     - res/png/gameicons_extended/*
+    - res/wav/*
 
 default-extensions:
     - OverloadedStrings

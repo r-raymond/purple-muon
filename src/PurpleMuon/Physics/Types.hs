@@ -57,7 +57,6 @@ import           Protolude
 import qualified Control.Lens       as CLE
 import qualified Data.AdditiveGroup as DAD
 import qualified Data.Binary        as DBI
-import qualified Data.Binary        as DBI
 import qualified Data.IntMap.Strict as DIS
 import qualified Data.VectorSpace   as DVE
 import qualified Linear.V2          as LV2

@@ -81,5 +81,5 @@ endlessRecv uuid m sock tb = do
                 case res of
                     Right (_, _, ms) -> CCS.writeTBQueue tb ms
                     Left _          -> return ()
-            _      -> traceM "Discarding message"
+            _      -> return ()
     endlessRecv uuid m sock tb
