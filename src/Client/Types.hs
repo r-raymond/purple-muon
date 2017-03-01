@@ -60,7 +60,7 @@ data Resources
     = Resources
     { _window   :: SVI.Window
     , _renderer :: SVI.Renderer
-    , _tbqueue  :: CCS.TBQueue PNT.NakedMessage
+    , _tbqueue  :: CCS.TBQueue PNT.ServerToClientMsg
     }
 
 -- TODO: Make this more efficient. Maybe a mutable array?

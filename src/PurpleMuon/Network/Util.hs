@@ -32,6 +32,7 @@ module PurpleMuon.Network.Util
 import           Protolude
 
 import qualified Control.Concurrent.STM     as CCS
+import qualified Data.Binary                as DBI
 import qualified Network.Socket             as NSO
 import qualified Network.Socket.ByteString  as NSB
 
@@ -69,12 +70,16 @@ endlessRecv :: MonadIO m
             => PNT.ProtocolUUID    -- ^ the uuid used for filtering
             -> Int                  -- ^ max number of bytes
             -> NSO.Socket           -- ^ socket to listen to
-            -> CCS.TBQueue PNT.NakedMessage -- ^ stm tbqueue
+            -> CCS.TBQueue PNT.ServerToClientMsg -- ^ stm tbqueue
             -> m ()
 endlessRecv uuid m sock tb = do
     bin <- liftIO $ NSB.recv sock m
     liftIO $ CCS.atomically $
         case PNM.strip uuid (PNT.RawMessage bin) of
-            Just n -> CCS.writeTBQueue tb n
-            _      -> return ()
+            Just n -> do
+                let res = DBI.decodeOrFail (toS $ PNT.unNakedMessage n)
+                case res of
+                    Right (_, _, ms) -> CCS.writeTBQueue tb ms
+                    Left _          -> return ()
+            _      -> traceM "Discarding message"
     endlessRecv uuid m sock tb

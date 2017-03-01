@@ -15,22 +15,25 @@
 --  You should have received a copy of the GNU General Public License
 --  along with Purple Muon.  If not, see <http://www.gnu.org/licenses/>.
 
-module Server.Main
-    ( main
+module Server.CommandLine
+    ( CommandLineOptions(..)
+    , parser
     ) where
 
 import           Protolude
 
 import qualified Options.Applicative as OAP
 
-import qualified Server.CommandLine  as SCO
-import qualified Server.MainLoop     as SMA
+data CommandLineOptions
+    = CommandLineOptions
+    { uuid :: Word32
+    }
 
+parser :: OAP.Parser CommandLineOptions
+parser = CommandLineOptions
+    OAP.<$> OAP.option OAP.auto
+        (OAP.long "uuid"
+       <> OAP.short 'u'
+       <> OAP.metavar "WORD32"
+       <> OAP.help "magic number for network communication")
 
-main :: IO ()
-main = OAP.execParser opts >>= SMA.initLoop
-  where
-    opts = OAP.info (OAP.helper OAP.<*> SCO.parser)
-        ( OAP.fullDesc
-       <> OAP.progDesc "Run a purple muon server"
-       <> OAP.header "pm-server (C) 2017 Robin Raymond GPL-3")

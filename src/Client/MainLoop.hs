@@ -24,19 +24,14 @@ import           Protolude
 
 import           Version
 
-import qualified Options.Applicative      as OAP
-import qualified Codec.Compression.Zlib   as CCZ
 import qualified Control.Concurrent.STM   as CCS
 import qualified Control.Lens             as CLE
-import qualified Data.Binary              as DBI
-import qualified Data.IntMap.Strict       as DIS
 import qualified SDL                      as SDL
 import qualified SDL.Event                as SEV
 import qualified SDL.Vect                 as SVE
 import qualified SDL.Video                as SVI
 
 import qualified PurpleMuon.Network.Types as PNT
-import qualified PurpleMuon.Physics.Types as PPT
 
 import qualified Client.Assets.Util       as CAU
 import qualified Client.Event             as CEV
@@ -44,19 +39,6 @@ import qualified Client.Frames            as CTF
 import qualified Client.Types             as CTY
 import qualified Client.Video.Render      as CVR
 import qualified Client.Video.Texture     as CVT
-
-data CommandLineOptions
-    = CommandLineOptions
-    { uuid :: Word32
-    }
-
-parser :: OAP.Parser CommandLineOptions
-parser = CommandLineOptions
-    OAP.<$> OAP.option OAP.auto
-        (OAP.long "uuid"
-       <> OAP.short 'u'
-       <> OAP.metavar "WORD32"
-       <> OAP.help "magic number for network communication")
 
 initLoop :: CTY.Game()
 initLoop = do
@@ -119,8 +101,9 @@ network = do
     let s = CLE.view CTY.tbqueue res
     bin <- liftIO $ CCS.atomically $ CCS.tryReadTBQueue s
     case bin of
-        Just n -> do
-            let objs = DBI.decode $ CCZ.decompress $ toS $ PNT.unNakedMessage n :: [(Int, PPT.PhysicalObject)]
-            modify (CLE.set (CTY.game . CTY.physicalObjects) (DIS.fromList objs))
+        Just (PNT.Update objs) -> do
+            modify (CLE.set (CTY.game . CTY.physicalObjects) objs)
             network
+        Just (PNT.Ping) -> network                  -- < TODO
+        Just (PNT.CreateGameObject _) -> network    -- < TODO
         Nothing -> return ()
