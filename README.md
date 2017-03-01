@@ -24,7 +24,7 @@ Clone the library. Make sure `stack` is installed.
 First start the server
 
 ```
-stack exec pm-server
+stack exec pm-server -- -u 1337
 ```
 
 Then start the client
