@@ -337,7 +337,7 @@ clientSocket :: MonadIO m => Text -> Text -> m (Either SomeException Socket)
 -- | Endless receiving queue forkIO this and give it a STM object to write
 --   stuff to. It will block on UDP recv and as soon as something arrives
 --   write it to the output
-endlessRecv :: MonadIO m => ProtocolUUID -> Int -> Socket -> TBQueue NakedMessage -> m ()
+endlessRecv :: MonadIO m => ProtocolUUID -> Int -> Socket -> TBQueue ServerToClientMsg -> m ()
 
 module Server.Main
 main :: IO ()
@@ -433,13 +433,13 @@ physicalObjects :: Traversal' GameState PhysicalObjects
 dt :: Traversal' GameState DeltaTime
 accumTime :: Traversal' GameState DeltaTime
 data Resources
-Resources :: Window -> Renderer -> TBQueue NakedMessage -> Resources
+Resources :: Window -> Renderer -> TBQueue ServerToClientMsg -> Resources
 [_window] :: Resources -> Window
 [_renderer] :: Resources -> Renderer
-[_tbqueue] :: Resources -> TBQueue NakedMessage
+[_tbqueue] :: Resources -> TBQueue ServerToClientMsg
 window :: Lens' Resources Window
 renderer :: Lens' Resources Renderer
-tbqueue :: Lens' Resources (TBQueue NakedMessage)
+tbqueue :: Lens' Resources (TBQueue ServerToClientMsg)
 data FpsCounter
 FpsCounter :: Int -> [FlType] -> FpsCounter
 [maxFrames] :: FpsCounter -> Int
@@ -484,5 +484,5 @@ initLoop :: Game ()
 module Client.Main
 uuid :: ProtocolUUID
 initialeState :: Renderer -> AppState
-game :: TBQueue NakedMessage -> Window -> Renderer -> IO ()
+game :: TBQueue ServerToClientMsg -> Window -> Renderer -> IO ()
 main :: IO ()
