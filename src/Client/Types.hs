@@ -54,6 +54,7 @@ data GameState
     , _dt              :: PPT.DeltaTime
     , _accumTime       :: PPT.DeltaTime         -- ^ Accumulated time for fixed physics step
     }
+    | MenuState
 
 data Resources
     = Resources
