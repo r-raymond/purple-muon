@@ -27,6 +27,8 @@ import qualified Linear.V2 as LV2
 
 type Position = LV2.V2 Float
 
+
+
 data MenuItem
     = MenuItem
     { _position :: Position
