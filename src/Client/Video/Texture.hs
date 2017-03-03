@@ -85,6 +85,9 @@ renderTexture (CVT.TextureLoader at te r _ _) (CVT.TexUUID u) mr =
         Just t  -> SVR.copy r (CVT.unTextureAtlas (at DIS.! CVT.atlas t))
                               (Just $ CVT.rect t) mr
 
+-- | Delete all textures saved in the given texture atlas
+deleteAllTextures :: (MonadIO m) => CVT.TextureLoader -> m ()
+deleteAllTextures = underfined
 
 -- |Find the `CVT.TexUUID` of a texture.
 getTexture :: CVT.TextureLoader -> Text -> Maybe CVT.TexUUID
@@ -169,8 +172,12 @@ loadTextureAtlas p = do
     c <- liftIO $ readFile p
     PUM.liftMaybe ("Error parsing " <> toS p) (TXL.parseXMLDoc c)
 
+-- | Turn a surface into a texture. Also delete the surface
 surfaceToTexture :: MonadIO m => SVR.Renderer -> SVR.Surface -> m SVR.Texture
-surfaceToTexture = SVR.createTextureFromSurface
+surfaceToTexture r s = do
+    tex <- SVR.createTextureFromSurface r s
+    SDL.freeSurface s
+    return tex
 
 loadSurface :: (MonadError Text m, MonadIO m) => FilePath -> m SVR.Surface
 loadSurface p = do
