@@ -15,7 +15,7 @@
 --  You should have received a copy of the GNU General Public License
 --  along with Purple Muon.  If not, see <http://www.gnu.org/licenses/>.
 
-module PurpleMuon.Video.Menu
+module Client.Video.Menu
     ( Position
     , MenuItem(..), position, mType
     , MenuType(..), labelText, labelSize, buttonText, buttonSize, inputFieldText, inputFieldSize
