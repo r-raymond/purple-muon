@@ -49,7 +49,7 @@ data AppState
 type Game a = ReaderT Resources (StateT AppState IO) a
 
 data GameState
-    = GameState
+    = InGameState
     { _physicalObjects :: PPT.PhysicalObjects
     , _dt              :: PPT.DeltaTime
     , _accumTime       :: PPT.DeltaTime         -- ^ Accumulated time for fixed physics step
@@ -60,7 +60,7 @@ data Resources
     = Resources
     { _window   :: SVI.Window
     , _renderer :: SVI.Renderer
-    , _tbqueue  :: CCS.TBQueue PNT.NakedMessage
+    , _tbqueue  :: CCS.TBQueue PNT.ServerToClientMsg
     }
 
 -- TODO: Make this more efficient. Maybe a mutable array?

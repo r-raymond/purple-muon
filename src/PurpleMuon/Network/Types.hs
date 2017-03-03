@@ -18,7 +18,7 @@
 {-|
 Module      : PurpleMuon.Network.Types
 Description : A collection of all types used in PupleMuon's Network Code
-Copyright   : (c) Robin Raymond, 2016
+Copyright   : (c) Robin Raymond, 2016-2017
 License     : GPL-3
 Maintainer  : robin@robinraymond.de
 Portability : POSIX
@@ -26,7 +26,7 @@ Portability : POSIX
 module PurpleMuon.Network.Types
     ( RawMessage(..)
     , NakedMessage(..)
-    , UUID(..)
+    , ProtocolUUID
     , Payload(..)
     , MessageCount(..)
     , AckField(..)
@@ -44,6 +44,7 @@ import           Protolude
 import qualified Data.Binary              as DBI
 import qualified Network.Socket           as NSO
 
+import qualified PurpleMuon.Game.Types    as PGT
 import qualified PurpleMuon.Physics.Types as PPT
 
 -- | A binary message that is send over the network
@@ -58,7 +59,7 @@ newtype Payload = Payload { unPayload :: ByteString }
 -- | A uuid is a header that the server and client prepends to
 -- every message. A message that does not have such a header is
 -- discarded immediately
-newtype UUID = UUID { unUUID :: ByteString }
+type ProtocolUUID = ByteString
 
 -- | A counter to count both the remote and local messages
 newtype MessageCount = MessageCount { unMessageCounter :: Word32 }
@@ -87,18 +88,17 @@ data ConnectionState
     , latestCounter :: MessageCount
     }
 
-
 -- | Messages the Server sends to the Clients
 data ServerToClientMsg
     = Ping              -- ^ A simple ping package to determine network latency
-    | Update PPT.PhysicalObjects -- ^ An update the server sends to the clients
-        deriving (Generic)       -- TODO: Also send which physical step the
-                                 -- updates are for
+    | CreateGameObject PGT.GameObject          -- ^ Create a new game object
+    | Update PPT.PhysicalObjects               -- ^ The physical objects in the system
+    -- TODO: Pack this better. Also send the generation of the data
+    deriving (Generic)
 
 -- | A player name
 newtype PlayerName = PlayerName { unPlayerName :: Text }
     deriving (Generic)
-
 
 -- | Messages the Clients send to the Server
 data ClientToServerMsg

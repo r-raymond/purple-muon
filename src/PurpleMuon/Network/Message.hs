@@ -18,7 +18,7 @@
 {-|
 Module      : PurpleMuon.Network.Message
 Description : Functions that evolve around (dis)assembly of network messages
-Copyright   : (c) Robin Raymond, 2016
+Copyright   : (c) Robin Raymond, 2016-2017
 License     : GPL-3
 Maintainer  : robin@robinraymond.de
 Portability : POSIX
@@ -31,25 +31,30 @@ module PurpleMuon.Network.Message
     , moveMC
     ) where
 
-import Protolude
+import           Protolude
 
-import Data.ByteString as DBS
+import qualified Data.Binary              as DBI
+import qualified Data.ByteString          as DBS
+import qualified Data.Digest.CRC32        as DDC
 
-import PurpleMuon.Network.Types as PNT
+import qualified PurpleMuon.Network.Types as PNT
 
--- | Prepend a message with an uuid.
-prepend :: PNT.UUID -> PNT.NakedMessage -> PNT.RawMessage
-prepend uuid m = PNT.RawMessage ((PNT.unUUID uuid) <> (PNT.unNakedMessage m))
+-- | Prepend a message with an crc32 checksum.
+prepend :: PNT.ProtocolUUID -> PNT.NakedMessage -> PNT.RawMessage
+prepend uuid m = PNT.RawMessage prepMsg
+  where
+    crc32 = toS $ DBI.encode $ DDC.crc32 (uuid <> (PNT.unNakedMessage m))
+    prepMsg = crc32 <> (PNT.unNakedMessage m)
 
--- | strip an uuid off of a message.
+-- | strip an crc32 off of a message.
 -- Returns Just (stripped message) if the message contains the correct uuid
 -- and Nothing otherwise
-strip :: PNT.UUID -> PNT.RawMessage -> Maybe PNT.NakedMessage
-strip uuid m = if (u == h) then (Just $ PNT.NakedMessage t) else Nothing
+strip :: PNT.ProtocolUUID -> PNT.RawMessage -> Maybe PNT.NakedMessage
+strip uuid m = if (crc32 == h) then (Just $ PNT.NakedMessage t) else Nothing
   where
-    u = (PNT.unUUID uuid)
-    l = DBS.length u
+    l = DBS.length uuid
     (h, t) = DBS.splitAt l (PNT.unRawMessage m)
+    crc32 = toS $ DBI.encode $ DDC.crc32 (uuid <> t)
 
 -- | Calculate the next message count
 nextMC :: PNT.MessageCount -> PNT.MessageCount

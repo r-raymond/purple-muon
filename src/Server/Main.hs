@@ -15,11 +15,22 @@
 --  You should have received a copy of the GNU General Public License
 --  along with Purple Muon.  If not, see <http://www.gnu.org/licenses/>.
 
-module Server.Main where
+module Server.Main
+    ( main
+    ) where
 
 import           Protolude
 
-import qualified Server.MainLoop as SMA
+import qualified Options.Applicative as OAP
+
+import qualified Server.CommandLine  as SCO
+import qualified Server.MainLoop     as SMA
+
 
 main :: IO ()
-main = SMA.initLoop
+main = OAP.execParser opts >>= SMA.initLoop
+  where
+    opts = OAP.info (OAP.helper OAP.<*> SCO.parser)
+        ( OAP.fullDesc
+       <> OAP.progDesc "Run a purple muon server"
+       <> OAP.header "pm-server (C) 2017 Robin Raymond GPL-3")

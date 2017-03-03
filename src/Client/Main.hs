@@ -36,18 +36,18 @@ import qualified Client.MainLoop           as CMA
 import qualified Client.Types              as CTY
 import qualified Client.Video.Texture      as CVT
 
-uuid :: PNT.UUID
-uuid = PNT.UUID "Test"
+uuid :: PNT.ProtocolUUID
+uuid = toS $ DBI.encode (1337 :: Word32)
 
 initialeState :: SVI.Renderer -> CTY.AppState
 initialeState r =
     CTY.AppState True
-        (CTY.GameState DIS.empty (PPT.DeltaTime 0) (PPT.DeltaTime 0))
+        (CTY.InGameState DIS.empty (PPT.DeltaTime 0) (PPT.DeltaTime 0))
         (CTY.FpsCounter 60 [])
         (toEnum 0)
         (CVT.newTextureLoader r)
 
-game :: CCS.TBQueue PNT.NakedMessage -> SVI.Window -> SVI.Renderer -> IO ()
+game :: CCS.TBQueue PNT.ServerToClientMsg -> SVI.Window -> SVI.Renderer -> IO ()
 game tb w r = evalStateT (runReaderT CMA.initLoop (CTY.Resources w r tb)) (initialeState r)
 
 main :: IO ()

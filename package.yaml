@@ -6,7 +6,7 @@ license:             GPL-3
 license-file:        LICENSE
 author:              Robin Raymond
 maintainer:          robin@robinraymond.de
-copyright:           2016 Robin Raymond
+copyright:           2016-2017 Robin Raymond
 category:            Games
 extra-source-files:  README.md
 github:              r-raymond/purple-muon
@@ -15,6 +15,9 @@ ghc-options: -Wall
 
 data-files:
     - res/png/*
+    - res/png/gameicons/*
+    - res/png/gameicons_extended/*
+    - res/wav/*
 
 default-extensions:
     - OverloadedStrings
@@ -28,6 +31,7 @@ dependencies:
     - binary
     - bytestring
     - containers
+    - digest
     - errors
     - fast-logger
     - formatting
@@ -38,9 +42,12 @@ dependencies:
     - network
     - protolude
     - sdl2
+    - sdl2-mixer
+    - sdl2-ttf
     - stm
     - thyme
     - vector
+    - optparse-applicative
     - vector-space
     - xml
     - zlib

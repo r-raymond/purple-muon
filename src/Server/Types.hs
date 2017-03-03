@@ -19,10 +19,10 @@
 
 module Server.Types
     ( WaitingState(..)
-    , GameState(..), gObjs, pObjs, frameBegin, clients, logger
+    , GameState(..), gObjs, pObjs, frameBegin, clients, logger, intStep
     , WaitingServer, clientsConnected
     , Server
-    , Resources(..), tbqueue, socket
+    , Resources(..), tbqueue, socket, uuid
     , ClientConnection(..), addr, name, gameObj
     ) where
 
@@ -61,6 +61,7 @@ data GameState
     , _pObjs      :: PPT.PhysicalObjects
     , _frameBegin :: DTC.UTCTime
     , _clients    :: [ClientConnection]
+    , _intStep    :: Word32                     -- ^ Count of integration steps
     }
 
 -- | Read only resources that the server has access to
@@ -69,6 +70,7 @@ data Resources
     { _tbqueue :: CCS.TBQueue PNT.NakedMessage
     , _socket  :: NSO.Socket
     , _logger  :: SLF.LoggerSet
+    , _uuid    :: PNT.ProtocolUUID
     }
 
 type WaitingServer a = ReaderT Resources (StateT WaitingState IO) a

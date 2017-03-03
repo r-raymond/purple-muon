@@ -14,6 +14,8 @@ Clone the library. Make sure `stack` is installed.
 
 ### Dependencies
 - SDL 2.0.5
+- SDL2-mixer 2.0.x
+- SDL2-ttf   2.0.x
 
 ### Build with stack
 `stack build`
@@ -22,7 +24,7 @@ Clone the library. Make sure `stack` is installed.
 First start the server
 
 ```
-stack exec pm-server
+stack exec pm-server -- -u 1337
 ```
 
 Then start the client
@@ -36,10 +38,7 @@ Suggestions, Pullrequest, etc.
 -----------------------------
 Are all welcome.
 
-TODO
-----
 
-* implement clock synchronization
-* fixTimeStep should be abe to catch up
-* implement handshake protocol
-* reduce size of updates send across the net
+Documentation
+-------------
+can be found at [gh-pages](https://r-raymond.github.io/purple-muon)

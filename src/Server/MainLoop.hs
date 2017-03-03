@@ -4,11 +4,9 @@ module Server.MainLoop
 
 import           Protolude
 
-import qualified Codec.Compression.Zlib       as CCZ
 import qualified Control.Concurrent.STM       as CCS
 import qualified Control.Lens                 as CLE
 import qualified Data.Binary                  as DBI
-import qualified Data.ByteString              as DBY
 import qualified Data.IntMap.Strict           as DIS
 import qualified Network.Socket.ByteString    as NSB
 import qualified System.Log.FastLogger        as SLF
@@ -19,19 +17,20 @@ import qualified PurpleMuon.Network.Util      as PNU
 import qualified PurpleMuon.Physics.Algorithm as PPA
 import qualified PurpleMuon.Physics.Constants as PPC
 
+import qualified Server.CommandLine           as SCO
 import qualified Server.Config                as SCO
 import qualified Server.Frames                as SFR
+import qualified Server.Network               as SNE
 import qualified Server.Types                 as STY
 
-uuid :: PNT.UUID
-uuid = PNT.UUID "Test"
 
-initLoop :: MonadIO m => m ()
-initLoop = do
+initLoop :: MonadIO m => SCO.CommandLineOptions -> m ()
+initLoop clo = do
     (Right ss) <- PNU.serverSocket "7123"
     tb <- liftIO $ CCS.atomically $ CCS.newTBQueue 128
     ls <- liftIO $ SLF.newStdoutLoggerSet SLF.defaultBufSize
-    let res = STY.Resources tb ss ls
+    let uui = toS $ DBI.encode $ SCO.uuid clo
+        res = STY.Resources tb ss ls uui
     liftIO $ evalStateT (runReaderT waitingLoop res) (STY.WaitingState [])
 
 waitingLoop :: STY.WaitingServer ()
@@ -50,10 +49,11 @@ waitingLoop = do
                 (PNT.RequestConnection (PNT.PlayerName name)) -> liftIO $ do
                     SLF.pushLogStrLn l (SLF.toLogStr $ "Player " <> name <> " connected")
                     evalStateT (runReaderT loop res)
-                               (STY.GameState SCO.initialObjs SCO.initialPhyObjs (toEnum 0) [STY.ClientConnection a name (PGT.GameObjUUID 0)])
+                               (STY.GameState SCO.initialObjs SCO.initialPhyObjs (toEnum 0) [STY.ClientConnection a name (PGT.GameObjUUID 0)] 0)
                 _ -> do
                     liftIO $ SLF.pushLogStrLn l "Discard valid but inappropriate package"
                     waitingLoop
+
 
 loop :: STY.Server ()
 loop = do
@@ -61,28 +61,34 @@ loop = do
 
     modify update
 
-    sendNetwork
+    sendUpdate
 
     SFR.manageFps
 
     loop
 
 update :: STY.GameState -> STY.GameState
-update = CLE.over STY.pObjs
-             (\x -> PPA.integrateTimeStep PPC.g PPC.physicsStep x DIS.empty)
+update = (CLE.over STY.pObjs
+             (\x -> PPA.integrateTimeStep PPC.g PPC.physicsStep x DIS.empty)) .
+             (CLE.over STY.intStep (+1))
 
-sendNetwork :: STY.Server ()
-sendNetwork = do
+sendUpdate :: STY.Server ()
+sendUpdate = do
     st <- get
-    res <- ask
-    let toSend = toS $ CCZ.compress $ DBI.encode $ DIS.toList (CLE.view STY.pObjs st)
-        socket = CLE.view STY.socket res
-        logger = CLE.view STY.logger res
-        send a = liftIO $ NSB.sendTo socket (PNT.unUUID uuid <> toSend) a
-        clients = CLE.view STY.clients st
+    SNE.sendPackage (PNT.Update (CLE.view STY.pObjs st))
 
-    liftIO $ SLF.pushLogStrLn logger (SLF.toLogStr ("Sending update package. Size: "
-                                    <> (show $ DBY.length toSend)
-                                    <> "; Clients: "
-                                    ++  (show $ length clients)))
-    sequence_ (fmap send (fmap (CLE.view STY.addr) clients))
+--sendNetwork :: STY.Server ()
+--sendNetwork = do
+--    st <- get
+--    res <- ask
+--    let toSend = toS $ CCZ.compress $ DBI.encode $ DIS.toList (CLE.view STY.pObjs st)
+--        socket = CLE.view STY.socket res
+--        logger = CLE.view STY.logger res
+--        send a = liftIO $ NSB.sendTo socket (uuid <> toSend) a
+--        clients = CLE.view STY.clients st
+--
+--    liftIO $ SLF.pushLogStrLn logger (SLF.toLogStr ("Sending update package. Size: "
+--                                    <> (show $ DBY.length toSend)
+--                                    <> "; Clients: "
+--                                    ++  (show $ length clients)))
+--    sequence_ (fmap send (fmap (CLE.view STY.addr) clients))

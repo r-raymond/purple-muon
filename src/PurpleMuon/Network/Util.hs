@@ -18,7 +18,7 @@
 {-|
 Module      : PurpleMuon.Network.Types
 Description : A collection utilty functions of PurpleMuon's Network Code
-Copyright   : (c) Robin Raymond, 2016
+Copyright   : (c) Robin Raymond, 2016-2017
 License     : GPL-3
 Maintainer  : robin@robinraymond.de
 Portability : POSIX
@@ -32,6 +32,7 @@ module PurpleMuon.Network.Util
 import           Protolude
 
 import qualified Control.Concurrent.STM     as CCS
+import qualified Data.Binary                as DBI
 import qualified Network.Socket             as NSO
 import qualified Network.Socket.ByteString  as NSB
 
@@ -66,15 +67,19 @@ clientSocket host port = liftIO $ try $ do
 -- forkIO this and give it a STM object to write stuff to. It will block on UDP
 -- recv and as soon as something arrives write it to the output
 endlessRecv :: MonadIO m
-            => PNT.UUID     -- ^ the uuid used for filtering
-            -> Int          -- ^ max number of bytes
-            -> NSO.Socket   -- ^ socket to listen to
-            -> CCS.TBQueue PNT.NakedMessage -- ^ stm tbqueue
+            => PNT.ProtocolUUID    -- ^ the uuid used for filtering
+            -> Int                  -- ^ max number of bytes
+            -> NSO.Socket           -- ^ socket to listen to
+            -> CCS.TBQueue PNT.ServerToClientMsg -- ^ stm tbqueue
             -> m ()
 endlessRecv uuid m sock tb = do
     bin <- liftIO $ NSB.recv sock m
     liftIO $ CCS.atomically $
         case PNM.strip uuid (PNT.RawMessage bin) of
-            Just n -> CCS.writeTBQueue tb n
+            Just n -> do
+                let res = DBI.decodeOrFail (toS $ PNT.unNakedMessage n)
+                case res of
+                    Right (_, _, ms) -> CCS.writeTBQueue tb ms
+                    Left _          -> return ()
             _      -> return ()
     endlessRecv uuid m sock tb

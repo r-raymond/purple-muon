@@ -18,7 +18,7 @@
 {-|
 Module      : PurpleMuon.Network.Types
 Description : Collection of game object types
-Copyright   : (c) Robin Raymond, 2016
+Copyright   : (c) Robin Raymond, 2016-2017
 License     : GPL-3
 Maintainer  : robin@robinraymond.de
 Portability : POSIX
@@ -26,21 +26,32 @@ Portability : POSIX
 
 module PurpleMuon.Game.Types
     ( GameObject(..)
+    , GameObjectData(..)
     , GameObjUUID(..)
     ) where
 
-import Protolude
+import           Protolude
 
+import qualified Data.Binary              as DBI
 import qualified PurpleMuon.Physics.Types as PPT
 
 newtype GameObjUUID = GameObjUUID { unGameObjUUID :: Word16 }
     deriving (Eq, Ord)
 
+-- | The type of the game object and the data that goes with it.
+data GameObjectData
+    = PlayerShip
+    | Comet
+    deriving (Generic)
 
 -- | A game object.
 -- Has optionally a name and a `PhysicalObject`.
 data GameObject
     = GameObject
-    { _mName :: Maybe Text
-    , _mPhOb :: Maybe PPT.PhyObjUUID
-    }
+    { _goData :: GameObjectData
+    , _mName  :: Maybe Text
+    , _mPhOb  :: Maybe PPT.PhyObjUUID
+    } deriving (Generic)
+
+instance DBI.Binary GameObjectData
+instance DBI.Binary GameObject

@@ -13,13 +13,13 @@ import qualified PurpleMuon.Physics.Types as PPT
 
 initialObjs :: DIS.IntMap PGT.GameObject
 initialObjs = DIS.fromList
-        [ (1, PGT.GameObject Nothing (Just (PPT.PhyObjUUID 1)))
-        , (2, PGT.GameObject Nothing (Just (PPT.PhyObjUUID 2)))
-        , (3, PGT.GameObject Nothing (Just (PPT.PhyObjUUID 3)))
-        , (4, PGT.GameObject Nothing (Just (PPT.PhyObjUUID 4)))
-        , (5, PGT.GameObject Nothing (Just (PPT.PhyObjUUID 5)))
-        , (6, PGT.GameObject Nothing (Just (PPT.PhyObjUUID 6)))
-        , (7, PGT.GameObject Nothing (Just (PPT.PhyObjUUID 7))) ]
+        [ (1, PGT.GameObject PGT.Comet Nothing (Just (PPT.PhyObjUUID 1)))
+        , (2, PGT.GameObject PGT.Comet Nothing (Just (PPT.PhyObjUUID 2)))
+        , (3, PGT.GameObject PGT.Comet Nothing (Just (PPT.PhyObjUUID 3)))
+        , (4, PGT.GameObject PGT.Comet Nothing (Just (PPT.PhyObjUUID 4)))
+        , (5, PGT.GameObject PGT.Comet Nothing (Just (PPT.PhyObjUUID 5)))
+        , (6, PGT.GameObject PGT.Comet Nothing (Just (PPT.PhyObjUUID 6)))
+        , (7, PGT.GameObject PGT.Comet Nothing (Just (PPT.PhyObjUUID 7))) ]
 
 
 

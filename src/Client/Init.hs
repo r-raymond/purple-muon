@@ -19,11 +19,13 @@ module Client.Init
     ( withGraphics
     ) where
 
-import Protolude
+import           Protolude
 
-import qualified SDL.Init                  as SIN
-import qualified SDL.Video                 as SVI
-import qualified Control.Exception         as CEX
+import qualified Control.Exception as CEX
+import qualified SDL.Font          as SFO
+import qualified SDL.Init          as SIN
+import qualified SDL.Mixer         as SMI
+import qualified SDL.Video         as SVI
 
 -- | Run a computation with initialized SDL
 -- Throws SDLExcetpion on Failure
@@ -43,8 +45,20 @@ withSDLRenderer w comp = CEX.bracket (SVI.createRenderer w (-1) SVI.defaultRende
                                      SVI.destroyRenderer
                                      (comp w)
 
--- | Run a computation with SDL, SDL window and SDL renderer
+-- | Run a computation with SDL-ttf
+withSDLTtf :: IO () -> IO ()
+withSDLTtf comp = CEX.bracket_ SFO.initialize SFO.quit comp
+
+-- | Run a computation with SDL-mixer
+withSDLMixer :: IO () -> IO ()
+withSDLMixer = SMI.withAudio SMI.defaultAudio 4096
+
+-- | Run a computation with SDL, SDL window and SDL renderer, SDL-ttf and
+-- SDL-mixer.
 withGraphics :: (SVI.Window -> SVI.Renderer -> IO ()) -> IO (Either SomeException ())
 withGraphics comp = try $ do
-    withSDL (withSDLWindow (\x -> withSDLRenderer x comp))
+    withSDL
+        (withSDLWindow
+            (\x -> withSDLRenderer x
+                        (\y z -> withSDLTtf $ withSDLMixer $ comp y z)))
 

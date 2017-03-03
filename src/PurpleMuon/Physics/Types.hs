@@ -18,7 +18,7 @@
 {-|
 Module      : PurpleMuon.Physics.Types
 Description : A collection of all types used in PupleMuon's physics code
-Copyright   : (c) Robin Raymond, 2016
+Copyright   : (c) Robin Raymond, 2016-2017
 License     : GPL-3
 Maintainer  : robin@robinraymond.de
 Portability : POSIX
@@ -65,7 +65,7 @@ import qualified Linear.Vector      as LVE
 
 -- | A physical object identifier
 newtype PhyObjUUID = PhyObjUUID { unPhyObjUUID :: Word16 }
-    deriving (Eq, Ord)
+    deriving (Eq, Ord, Num, Real, Enum, Integral, Generic)
 
 -- |The floating point type used throughout the physics module
 type FlType = Float
@@ -174,3 +174,5 @@ instance (DAD.AdditiveGroup DeltaTime) where
     zeroV = DeltaTime 0
     (^+^) (DeltaTime a) (DeltaTime b) = DeltaTime (a + b)
     negateV (DeltaTime a) = DeltaTime ((-1) * a)
+
+instance DBI.Binary PhyObjUUID
