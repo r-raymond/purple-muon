@@ -45,7 +45,7 @@ import qualified Client.Video.Texture     as CVT
 
 playBackgroundMusic :: MonadIO m => m ()
 playBackgroundMusic = do
-    path <- liftIO $ getDataFileName "res/wav/game-loop.wav"
+    path <- liftIO $ getDataFileName "res/ogg/click1.ogg"
     back <- SMI.load path
     SMI.playMusic SMI.Forever back
 

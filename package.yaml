@@ -17,7 +17,7 @@ data-files:
     - res/png/*
     - res/png/gameicons/*
     - res/png/gameicons_extended/*
-    - res/wav/*
+    - res/ogg/*
 
 default-extensions:
     - OverloadedStrings
@@ -34,12 +34,14 @@ dependencies:
     - digest
     - errors
     - fast-logger
+    - filepath
     - formatting
     - JuicyPixels
     - lens
     - linear
     - mtl
     - network
+    - optparse-applicative
     - protolude
     - sdl2
     - sdl2-mixer
@@ -47,7 +49,6 @@ dependencies:
     - stm
     - thyme
     - vector
-    - optparse-applicative
     - vector-space
     - xml
     - zlib

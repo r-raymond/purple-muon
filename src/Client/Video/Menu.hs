@@ -15,6 +15,8 @@
 --  You should have received a copy of the GNU General Public License
 --  along with Purple Muon.  If not, see <http://www.gnu.org/licenses/>.
 
+{-# LANGUAGE TemplateHaskell #-}
+
 module Client.Video.Menu
     ( Position
     , MenuItem(..), position, mType
@@ -23,7 +25,8 @@ module Client.Video.Menu
 
 import           Protolude
 
-import qualified Linear.V2 as LV2
+import qualified Control.Lens as CLE
+import qualified Linear.V2    as LV2
 
 type Position = LV2.V2 Float
 
@@ -32,7 +35,7 @@ type Position = LV2.V2 Float
 data MenuItem
     = MenuItem
     { _position :: Position
-    , _mType     :: MenuType
+    , _mType    :: MenuType
     }
 
 data MenuType

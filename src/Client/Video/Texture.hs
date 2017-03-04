@@ -55,6 +55,7 @@ module Client.Video.Texture
     , renderTexture
     , addTextureAtlas
     , getTexture
+    , deleteAllTextures
     ) where
 
 import           Protolude
@@ -87,7 +88,7 @@ renderTexture (CVT.TextureLoader at te r _ _) (CVT.TexUUID u) mr =
 
 -- | Delete all textures saved in the given texture atlas
 deleteAllTextures :: (MonadIO m) => CVT.TextureLoader -> m ()
-deleteAllTextures = underfined
+deleteAllTextures = undefined
 
 -- |Find the `CVT.TexUUID` of a texture.
 getTexture :: CVT.TextureLoader -> Text -> Maybe CVT.TexUUID
@@ -106,7 +107,7 @@ addTextureAtlas :: (MonadError Text m, MonadIO m)
 addTextureAtlas (CVT.TextureLoader at te r k n) p = do
     (newAt, newTex) <- parseTextureAtlas r k p
     let newAtMap = DIS.insert k newAt at
-        newTeKeys = fmap ((1000*k + (CVT.unTexUUID n) +) [1..]
+        newTeKeys = fmap ((1000*k + (CVT.unTexUUID n)) +) [1..]
         h1        = fmap DIS.insert newTeKeys
         h2        = zip h1 newTex
         h3        = fmap (\(x,y) -> x y) h2

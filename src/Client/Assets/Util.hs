@@ -26,6 +26,7 @@ import           Protolude
 import           Paths_purple_muon
 
 import qualified SDL as SDL
+import qualified System.FilePath.Posix as SFP
 
 import qualified Client.Video.Texture as CVT
 import qualified Client.Video.Types    as CVTY
@@ -86,17 +87,11 @@ loadPngAssets tl paths callback = do
     -- convert names to file paths
     ps <- liftIO $ sequence (fmap getDataFileName paths)
     -- pair with percentages
-    let perc = fmap (\x -> x / (length ps)) [1 ..]
+    let perc = fmap (\x -> 100 * x / (fromIntegral $ length ps)) [1 ..]
         pspe = zip ps perc
     -- functions for loading assets
-        loadAsset :: (MonadError Text m, MonadIO m)
-                  => (FilePath, Float)
-                  -> CVTY.TextureLoader
-                  -> m CVTY.TextureLoader
         loadAsset = \(p, per) tl -> do
-            callback per (toS p)        -- < TODO: replace p (path) by filename!
+            callback per (toS $ SFP.takeFileName p)
             CVT.addTextureAtlas tl p 
-        loadAll :: (MonadError Text m, MonadIO m)
-                => [CVTY.TextureLoader -> m CVTY.TextureLoader]
-        loadAll = fmap loadAsset ps
+        loadAll = fmap loadAsset pspe
     foldl' (>>=) (return tl) loadAll
