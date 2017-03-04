@@ -352,11 +352,12 @@ Texture :: AtlasUUID -> Text -> Rectangle CInt -> Texture
 [name] :: Texture -> Text
 [rect] :: Texture -> Rectangle CInt
 data TextureLoader
-TextureLoader :: IntMap TextureAtlas -> IntMap Texture -> Renderer -> AtlasUUID -> TextureLoader
+TextureLoader :: IntMap TextureAtlas -> IntMap Texture -> Renderer -> AtlasUUID -> TexUUID -> TextureLoader
 [atlases] :: TextureLoader -> IntMap TextureAtlas
 [textures] :: TextureLoader -> IntMap Texture
 [renderer] :: TextureLoader -> Renderer
 [nextKey] :: TextureLoader -> AtlasUUID
+[nextID] :: TextureLoader -> TexUUID
 newtype TexUUID
 TexUUID :: Int -> TexUUID
 [unTexUUID] :: TexUUID -> Int
@@ -406,6 +407,9 @@ addTextureAtlas :: (MonadError Text m, MonadIO m) => TextureLoader -> FilePath -
 
 -- | Find the <a>TexUUID</a> of a texture.
 getTexture :: TextureLoader -> Text -> Maybe TexUUID
+
+-- | Delete all textures saved in the given texture atlas
+deleteAllTextures :: (MonadIO m) => TextureLoader -> m ()
 
 module Client.Types
 data AppState
