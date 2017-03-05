@@ -90,6 +90,17 @@ renderTexture (CVT.TextureLoader at te r _ _) (CVT.TexUUID u) mr =
 deleteAllTextures :: (MonadIO m) => CVT.TextureLoader -> m ()
 deleteAllTextures = undefined
 
+-- | Upload one texture.
+-- Can specify an optional TexUUID. In case it is provided, that one is deleted
+-- and replaced with the new Texture. There is no guarantee that the returned
+-- TexUUID will be the same though.
+uploadTexture :: (MonadIO m)
+              => CVT.TextureLoader
+              -> SVR.Surface
+              -> Maybe CVT.TexUUID
+              -> m CVT.TexUUID
+uploadTexture tl s Nothing = undefined
+
 -- |Find the `CVT.TexUUID` of a texture.
 getTexture :: CVT.TextureLoader -> Text -> Maybe CVT.TexUUID
 getTexture (CVT.TextureLoader _ t _ _ _)  p =

@@ -68,7 +68,7 @@ loadAllPngAssets :: (MonadError Text m, MonadIO m)
 loadAllPngAssets r c = loadPngAssets (CVT.newTextureLoader r) pngAssets c
 
 -- |Load png assets.
-loadPngAssets :: (MonadError Text m, MonadIO m)
+loadPngAssets :: forall m. (MonadError Text m, MonadIO m)
               => CVTY.TextureLoader         -- ^ Textureloader to load textures
                                             -- into
               -> [FilePath]                 -- ^ Paths to xml files. Note that
@@ -90,6 +90,7 @@ loadPngAssets tl paths callback = do
     let perc = fmap (\x -> 100 * x / (fromIntegral $ length ps)) [1 ..]
         pspe = zip ps perc
     -- functions for loading assets
+        loadAsset :: (FilePath, Float) -> CVTY.TextureLoader -> m CVTY.TextureLoader
         loadAsset = \(p, per) tl -> do
             callback per (toS $ SFP.takeFileName p)
             CVT.addTextureAtlas tl p 

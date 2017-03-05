@@ -25,6 +25,7 @@ default-extensions:
     - GeneralizedNewtypeDeriving
     - DeriveGeneric
     - FlexibleContexts
+    - ScopedTypeVariables
 
 dependencies:
     - base >= 4.7 && < 5

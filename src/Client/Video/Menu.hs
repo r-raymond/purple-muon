@@ -25,8 +25,9 @@ module Client.Video.Menu
 
 import           Protolude
 
-import qualified Control.Lens as CLE
-import qualified Linear.V2    as LV2
+import qualified Client.Video.Types as CVT
+import qualified Control.Lens       as CLE
+import qualified Linear.V2          as LV2
 
 type Position = LV2.V2 Float
 
@@ -40,8 +41,9 @@ data MenuItem
 
 data MenuType
     = Label
-    { _labelText :: Text
-    , _labelSize :: Int
+    { _labelText   :: Text
+    , _labelSize   :: Int
+    , _labeltextue :: CVT.TexUUID
     }
     | Button
     { _buttonText :: Text
