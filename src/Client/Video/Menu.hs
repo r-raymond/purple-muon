@@ -20,7 +20,7 @@
 module Client.Video.Menu
     ( Position
     , MenuItem(..), position, mType
-    , MenuType(..), labelText, labelSize, buttonText, buttonSize, inputFieldText, inputFieldSize
+    , MenuType(..), labelText, labelSize, labelTextue, buttonText, buttonSize, inputFieldText, inputFieldSize
     ) where
 
 import           Protolude
@@ -43,7 +43,7 @@ data MenuType
     = Label
     { _labelText   :: Text
     , _labelSize   :: Int
-    , _labeltextue :: CVT.TexUUID
+    , _labelTextue :: CVT.TexUUID
     }
     | Button
     { _buttonText :: Text
