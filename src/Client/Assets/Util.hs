@@ -26,6 +26,7 @@ import           Protolude
 import           Paths_purple_muon
 
 import qualified SDL as SDL
+import qualified System.FilePath.Posix as SFP
 
 import qualified Client.Video.Texture as CVT
 import qualified Client.Video.Types    as CVTY
@@ -58,20 +59,40 @@ pngAssets = [ "res/png/gravity.xml"
             ]
 
 -- |Load all png assets into new texture loader
-loadAllPngAssets :: (MonadError Text m, MonadIO m) => SDL.Renderer -> m CVTY.TextureLoader
-loadAllPngAssets r = loadPngAssets (CVT.newTextureLoader r) pngAssets
+loadAllPngAssets :: (MonadError Text m, MonadIO m)
+                 => SDL.Renderer             -- ^ Renderer to use to upload
+                                             -- textures to the video card.
+                 -> (Float -> Text -> m ())  -- ^ Callback function (see
+                                             -- `loadPngAssets`)
+                 -> m CVTY.TextureLoader
+loadAllPngAssets r c = loadPngAssets (CVT.newTextureLoader r) pngAssets c
 
 -- |Load png assets.
-loadPngAssets :: (MonadError Text m, MonadIO m)
-              => CVTY.TextureLoader
-              -> [FilePath]
+loadPngAssets :: forall m. (MonadError Text m, MonadIO m)
+              => CVTY.TextureLoader         -- ^ Textureloader to load textures
+                                            -- into
+              -> [FilePath]                 -- ^ Paths to xml files. Note that
+                                            -- these should be specified
+                                            -- relative to the root of the git
+                                            -- directory
+              -> (Float -> Text -> m ())    -- ^ Callback function. This
+                                            -- function will be called whenever
+                                            -- a new texture is loading with the
+                                            -- percentage of loaded files and
+                                            -- the name of the currently loading
+                                            -- texture. If this is not needed,
+                                            -- set it to `return ()`.
               -> m CVTY.TextureLoader
-loadPngAssets tl paths = do
+loadPngAssets tl paths callback = do
+    -- convert names to file paths
     ps <- liftIO $ sequence (fmap getDataFileName paths)
-    let loadA :: (MonadError Text m, MonadIO m)
-              => FilePath -> CVTY.TextureLoader -> m CVTY.TextureLoader
-        loadA = \x y -> CVT.addTextureAtlas y x 
-        loadAll :: (MonadError Text m, MonadIO m)
-                => [CVTY.TextureLoader -> m CVTY.TextureLoader]
-        loadAll = fmap loadA ps
+    -- pair with percentages
+    let perc = fmap (\x -> 100 * x / (fromIntegral $ length ps)) [1 ..]
+        pspe = zip ps perc
+    -- functions for loading assets
+        loadAsset :: (FilePath, Float) -> CVTY.TextureLoader -> m CVTY.TextureLoader
+        loadAsset = \(p, per) tl -> do
+            callback per (toS $ SFP.takeFileName p)
+            CVT.addTextureAtlas tl p 
+        loadAll = fmap loadAsset pspe
     foldl' (>>=) (return tl) loadAll

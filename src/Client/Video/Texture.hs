@@ -55,6 +55,7 @@ module Client.Video.Texture
     , renderTexture
     , addTextureAtlas
     , getTexture
+    , deleteAllTextures
     ) where
 
 import           Protolude
@@ -77,7 +78,7 @@ import qualified PurpleMuon.Util.MonadError as PUM
 
 -- | Render a texture specified by a `CVT.TexUUID`.
 renderTexture :: (MonadIO m) => CVT.TextureLoader -> CVT.TexUUID -> Maybe (SVR.Rectangle FCT.CInt) -> m ()
-renderTexture (CVT.TextureLoader at te r _) (CVT.TexUUID u) mr =
+renderTexture (CVT.TextureLoader at te r _ _) (CVT.TexUUID u) mr =
     case DIS.lookup u te of
         Nothing -> do   -- render red square for missing
             SVR.rendererDrawColor r SDL.$= SVE.V4 255 0 0 0
@@ -85,32 +86,45 @@ renderTexture (CVT.TextureLoader at te r _) (CVT.TexUUID u) mr =
         Just t  -> SVR.copy r (CVT.unTextureAtlas (at DIS.! CVT.atlas t))
                               (Just $ CVT.rect t) mr
 
+-- | Delete all textures saved in the given texture atlas
+deleteAllTextures :: (MonadIO m) => CVT.TextureLoader -> m ()
+deleteAllTextures = undefined
+
+-- | Upload one texture.
+-- Can specify an optional TexUUID. In case it is provided, that one is deleted
+-- and replaced with the new Texture. There is no guarantee that the returned
+-- TexUUID will be the same though.
+uploadTexture :: (MonadIO m)
+              => CVT.TextureLoader
+              -> SVR.Surface
+              -> Maybe CVT.TexUUID
+              -> m CVT.TexUUID
+uploadTexture tl s Nothing = undefined
 
 -- |Find the `CVT.TexUUID` of a texture.
 getTexture :: CVT.TextureLoader -> Text -> Maybe CVT.TexUUID
-getTexture (CVT.TextureLoader _ t _ _)  p =
+getTexture (CVT.TextureLoader _ t _ _ _)  p =
     fmap (CVT.TexUUID . fst) (find (\(_, x) -> CVT.name x == p) (DIS.assocs t))
 
 -- |Create a new texture loader.
 newTextureLoader :: SVR.Renderer -> CVT.TextureLoader
-newTextureLoader r = CVT.TextureLoader DIS.empty DIS.empty r 0
+newTextureLoader r = CVT.TextureLoader DIS.empty DIS.empty r 0 (CVT.TexUUID 0)
 
 -- |Add an texture atlas to a texture loader
 addTextureAtlas :: (MonadError Text m, MonadIO m)
                 => CVT.TextureLoader
                 -> FilePath
                 -> m CVT.TextureLoader
-addTextureAtlas (CVT.TextureLoader at te r k) p = do
+addTextureAtlas (CVT.TextureLoader at te r k n) p = do
     (newAt, newTex) <- parseTextureAtlas r k p
     let newAtMap = DIS.insert k newAt at
-        -- Assume a maximum of 1000 Textures per Atlas (TODO: Make this less
-        -- dumb)
-        newTeKeys = fmap ((1000*k) +) [1..]
+        newTeKeys = fmap ((1000*k + (CVT.unTexUUID n)) +) [1..]
         h1        = fmap DIS.insert newTeKeys
         h2        = zip h1 newTex
         h3        = fmap (\(x,y) -> x y) h2
         newTeMap  = foldr (\x y -> x y) te h3
-    return $ CVT.TextureLoader newAtMap newTeMap r (k+1)
+        newN      = CVT.TexUUID (length newTex + (CVT.unTexUUID n))
+    return $ CVT.TextureLoader newAtMap newTeMap r (k+1) newN
 
 -- |Helper function for addTextureAtlas
 parseTextureAtlas :: (MonadError Text m, MonadIO m)
@@ -170,8 +184,12 @@ loadTextureAtlas p = do
     c <- liftIO $ readFile p
     PUM.liftMaybe ("Error parsing " <> toS p) (TXL.parseXMLDoc c)
 
+-- | Turn a surface into a texture. Also delete the surface
 surfaceToTexture :: MonadIO m => SVR.Renderer -> SVR.Surface -> m SVR.Texture
-surfaceToTexture = SVR.createTextureFromSurface
+surfaceToTexture r s = do
+    tex <- SVR.createTextureFromSurface r s
+    SDL.freeSurface s
+    return tex
 
 loadSurface :: (MonadError Text m, MonadIO m) => FilePath -> m SVR.Surface
 loadSurface p = do

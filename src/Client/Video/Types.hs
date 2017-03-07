@@ -47,6 +47,7 @@ data TextureLoader
     , textures  :: DIS.IntMap Texture
     , renderer  :: SVR.Renderer
     , nextKey   :: AtlasUUID
+    , nextID    :: TexUUID
     }
 
 type AtlasUUID = Int

@@ -27,6 +27,7 @@ import           Version
 
 import qualified Control.Concurrent.STM   as CCS
 import qualified Control.Lens             as CLE
+import qualified Formatting               as FOR
 import qualified SDL                      as SDL
 import qualified SDL.Event                as SEV
 import qualified SDL.Mixer                as SMI
@@ -44,7 +45,7 @@ import qualified Client.Video.Texture     as CVT
 
 playBackgroundMusic :: MonadIO m => m ()
 playBackgroundMusic = do
-    path <- liftIO $ getDataFileName "res/wav/game-loop.wav"
+    path <- liftIO $ getDataFileName "res/ogg/click1.ogg"
     back <- SMI.load path
     SMI.playMusic SMI.Forever back
 
@@ -52,9 +53,10 @@ initLoop :: CTY.Game()
 initLoop = do
     res <- ask
     let ren = CLE.view CTY.renderer res
+        callback f p = putStrLn (FOR.format (FOR.fixed 0 FOR.% "%: loading " FOR.% FOR.stext) f p)
 
     playBackgroundMusic
-    etl <- runExceptT $ CAU.loadAllPngAssets ren
+    etl <- runExceptT $ CAU.loadAllPngAssets ren callback
     case etl of
         Right tl -> do
             modify (CLE.set CTY.textures tl)
