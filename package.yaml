@@ -26,6 +26,7 @@ default-extensions:
     - DeriveGeneric
     - FlexibleContexts
     - ScopedTypeVariables
+    - TypeFamilies
 
 dependencies:
     - base >= 4.7 && < 5
@@ -37,6 +38,7 @@ dependencies:
     - fast-logger
     - filepath
     - formatting
+    - hashtables
     - JuicyPixels
     - lens
     - linear

@@ -91,8 +91,8 @@ loadPngAssets tl paths callback = do
         pspe = zip ps perc
     -- functions for loading assets
         loadAsset :: (FilePath, Float) -> CVTY.TextureLoader -> m CVTY.TextureLoader
-        loadAsset = \(p, per) tl -> do
+        loadAsset = \(p, per) tlo -> do
             callback per (toS $ SFP.takeFileName p)
-            CVT.addTextureAtlas tl p 
+            CVT.addTextureAtlas tlo p 
         loadAll = fmap loadAsset pspe
     foldl' (>>=) (return tl) loadAll
