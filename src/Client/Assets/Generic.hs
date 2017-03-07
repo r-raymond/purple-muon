@@ -16,7 +16,9 @@
 --  along with Purple Muon.  If not, see <http://www.gnu.org/licenses/>.
 
 module Client.Assets.Generic
-    (
+    ( AssetID(..)
+    , AssetLoader(..)
+    , HashmapLoader(..)
     ) where
 
 import Protolude
@@ -38,7 +40,7 @@ class AssetLoader al where
     -- | Load an asset (maybe multiple assets) into an AssetLoader
     loadAsset :: (MonadIO m, MonadError Text m)  => al -> FilePath ->  m al
     -- | Retreive asset from AssetLoader
-    getAsset :: (MonadError () m) => al -> AssetID (Asset al) -> m (Asset al)
+    getAsset :: (MonadIO m, MonadError () m) => al -> AssetID (Asset al) -> m (Asset al)
     -- | Delete an asset
     deleteAsset :: (MonadIO m) => al -> AssetID (Asset al) -> m ()
 
@@ -55,17 +57,25 @@ data HashmapLoader a ext
 
 instance AssetLoader (HashmapLoader a ext) where
 
-    loadAsset (HashmapLoader s e l _) p = do
+    data Asset (HashmapLoader a ext) = Asset a
+
+    loadAsset h@(HashmapLoader s e l _) p = do
         massets <- liftIO $ l e p
         assets <- PUM.liftEither massets
+        let insert ((AssetID id), asset) = DHI.insert s id asset
+            insertAll = fmap insert assets
+        liftIO $ sequence_ insertAll
+        return (h { store = s })
 
+    getAsset (HashmapLoader s _ _ _) (AssetID t) = do
+        ma <- liftIO $ DHI.lookup s t
+        a <- PUM.liftMaybe () ma
+        return (Asset a)
 
---    getAsset (HashmapLoader s e _ _) (AssetID t) = do
---        ma <- liftIO $ DHI.lookup s t
---        PUM.liftMaybe () ma
---
     deleteAsset (HashmapLoader s e _ d) (AssetID t) = do
         ma <- liftIO $ DHI.lookup s t
         case ma of
-            Just a -> liftIO $ d e a
+            Just a -> liftIO $ do
+                d e a
+                DHI.delete s t
             Nothing -> return ()

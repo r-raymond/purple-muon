@@ -20,11 +20,12 @@ data-files:
     - res/ogg/*
 
 default-extensions:
-    - OverloadedStrings
-    - NoImplicitPrelude
-    - GeneralizedNewtypeDeriving
     - DeriveGeneric
     - FlexibleContexts
+    - GeneralizedNewtypeDeriving
+    - MultiParamTypeClasses
+    - NoImplicitPrelude
+    - OverloadedStrings
     - ScopedTypeVariables
     - TypeFamilies
 
