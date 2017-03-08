@@ -43,8 +43,14 @@ newtype AssetID a = AssetID { unAssetID :: Text }
 class AssetLoader al where
     -- | Type of an asset
     data Asset al :: *
-    -- | Load an asset (maybe multiple assets) into an AssetLoader
-    loadAsset :: (MonadIO m, MonadError Text m)  => al -> FilePath ->  m al
+    -- | Load an asset (maybe multiple assets) into an AssetLoader. Returns the
+    -- `AssetID`s of the loaded types.
+    --
+    -- WARNING: loadAsset will always normalize the given `FilePath` via the
+    -- cabal paths package. Hence all paths should be specified relative to the
+    -- root of the git repository. Also make sure that the files are mentioned
+    -- in the package.yaml file under data-files.
+    loadAsset :: (MonadIO m, MonadError Text m)  => al -> FilePath ->  m [(AssetID (Asset al))]
     -- | Retreive asset from AssetLoader
     getAsset :: (MonadIO m, MonadError () m) => al -> AssetID (Asset al) -> m (Asset al)
     -- | Delete an asset
@@ -65,20 +71,22 @@ data HashmapLoader a ext
 
 instance AssetLoader (HashmapLoader a ext) where
 
-    data Asset (HashmapLoader a ext) = Asset a
+    data Asset (HashmapLoader a ext) = A a -- Need a constructor here, makes things
+                                           -- unnecessarily complicated
 
-    loadAsset h@(HashmapLoader s e l _) p = do
-        massets <- liftIO $ l e p
+    loadAsset (HashmapLoader s e l _) p = do
+        np <- liftIO $ getDataFileName p
+        massets <- liftIO $ l e np
         assets <- PUM.liftEither massets
         let insert ((AssetID id), asset) = DHI.insert s id asset
             insertAll = fmap insert assets
         liftIO $ sequence_ insertAll
-        return (h { store = s })
+        return (fmap (\((AssetID id), _) -> AssetID id) assets)
 
     getAsset (HashmapLoader s _ _ _) (AssetID t) = do
         ma <- liftIO $ DHI.lookup s t
         a <- PUM.liftMaybe () ma
-        return (Asset a)
+        return (A a)
 
     deleteAsset (HashmapLoader s e _ d) (AssetID t) = do
         ma <- liftIO $ DHI.lookup s t
@@ -94,7 +102,7 @@ instance AssetLoader (HashmapLoader a ext) where
 
 
 -- | Utility function to load a bunch of assets into an `AssetLoader` with a
--- callback function.
+-- callback function. Also normalizes the paths via the cabal paths.
 loadAssets :: forall m a. (MonadError Text m, MonadIO m, AssetLoader a)
               => a                          -- ^ `AssetLoader` to load textures
                                             -- into
@@ -109,20 +117,18 @@ loadAssets :: forall m a. (MonadError Text m, MonadIO m, AssetLoader a)
                                             -- the name of the currently loading
                                             -- asset. If this is not needed,
                                             -- set it to `return ()`.
-              -> m a
+              -> m ()
 loadAssets al paths callback = do
-    -- convert names to file paths
-    ps <- liftIO $ sequence (fmap getDataFileName paths)
     -- pair with percentages
-    let perc = fmap (\x -> 100 * x / (fromIntegral $ length ps)) [1 ..]
-        pspe = zip ps perc
+    let perc = fmap (\x -> 100 * x / (fromIntegral $ length paths)) [1 ..]
+        pspe = zip paths perc
     -- functions for loading assets
-        loadA :: (FilePath, Float) -> a -> m a
-        loadA = \(p, per) tlo -> do
+        loadA :: (FilePath, Float) -> m ()
+        loadA = \(p, per) -> do
             callback per (toS $ SFP.takeFileName p)
-            loadAsset tlo p
+            void $ loadAsset al p
         loadAll = fmap loadA pspe
-    foldl' (>>=) (return al) loadAll
+    sequence_ loadAll
 
 -- | Utility function to delete allassets in an `AssetLoader`
 deleteAssets :: (AssetLoader a, MonadIO m) => a -> m ()

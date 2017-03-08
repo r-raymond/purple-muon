@@ -30,6 +30,7 @@ module PurpleMuon.Util.MonadError
     , liftEitherWith
     , liftEither
     , mapLeft
+    , liftList
     ) where
 
 import Protolude
@@ -61,3 +62,11 @@ liftEitherWith _ (Right s) = return s
 liftEither :: (MonadError e m) => Either e a -> m a
 liftEither = liftEitherWith identity
 
+-- | Lift a list into error monad
+-- Throws error if list is empty, gives head otherwise
+liftList :: (MonadError e m)
+         => e
+         -> [a]
+         -> m a
+liftList err [] = throwError err
+liftList _ (x:_) = return x

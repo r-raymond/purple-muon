@@ -47,9 +47,9 @@ import qualified Client.Video.Texture     as CVT
 playBackgroundMusic :: MonadIO m => m ()
 playBackgroundMusic = do
     let callback f p = putStrLn (FOR.format (FOR.fixed 0 FOR.% "%: loading " FOR.% FOR.stext) f p)
-    esl <- CAS.soundLoader
-    (Right sl) <- runExceptT $ CAG.loadAssets esl CAS.soundAssets callback
-    (Right (CAG.Asset a)) <- runExceptT $ CAG.getAsset sl (CAG.AssetID "click1")
+    sl <- CAS.soundLoader
+    Right () <- runExceptT $ CAG.loadAssets sl CAS.soundAssets callback
+    (Right (CAG.A a)) <- runExceptT $ CAG.getAsset sl (CAG.AssetID "click1")
     SMI.playForever a
 
 initLoop :: CTY.Game()
