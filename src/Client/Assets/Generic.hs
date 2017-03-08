@@ -79,3 +79,5 @@ instance AssetLoader (HashmapLoader a ext) where
                 d e a
                 DHI.delete s t
             Nothing -> return ()
+
+

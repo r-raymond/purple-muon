@@ -64,7 +64,6 @@ import           Paths_purple_muon
 
 import qualified Control.Exception          as CEX
 import qualified Data.IntMap.Strict         as DIS
-import qualified Data.Vector.Storable       as DVS
 import qualified Foreign.C.Types            as FCT
 import qualified Linear.Affine              as LAF
 import qualified Linear.V2                  as LV2
@@ -100,7 +99,7 @@ uploadTexture :: (MonadIO m)
               -> SVR.Surface
               -> Maybe CVT.TexUUID
               -> m CVT.TexUUID
-uploadTexture tl s Nothing = undefined
+uploadTexture _ _ _ = undefined
 
 -- |Find the `CVT.TexUUID` of a texture.
 getTexture :: CVT.TextureLoader -> Text -> Maybe CVT.TexUUID
@@ -194,6 +193,7 @@ surfaceToTexture r s = do
 
 loadSurface :: (MonadError Text m, MonadIO m) => FilePath -> m SVR.Surface
 loadSurface p = do
-    img <- liftIO (CEX.try $ SIM.load p :: IO (Either SomeException SDL.Surface))
+    rp <- liftIO $ getDataFileName p 
+    img <- liftIO (CEX.try $ SIM.load rp :: IO (Either SomeException SDL.Surface))
     PUM.liftEitherWith (const ("Could not load file " <> (toS p))) img
 

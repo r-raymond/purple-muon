@@ -29,9 +29,15 @@ module PurpleMuon.Util.MonadError
     ( liftMaybe
     , liftEitherWith
     , liftEither
+    , mapLeft
     ) where
 
 import Protolude
+
+-- | Map the error type (`Left`) of an `Either`
+mapLeft :: (a -> b) -> Either a c -> Either b c
+mapLeft f (Left x) = Left $ f x
+mapLeft _ (Right x) = Right x
 
 -- | Lift a Maybe into an error monad
 liftMaybe :: (MonadError e m) => e          -- ^ Error to be thrown if Nothing
