@@ -19,6 +19,8 @@ module Client.Assets.Generic
     ( AssetID(..)
     , AssetLoader(..)
     , HashmapLoader(..)
+    , loadAssets
+    , deleteAssets
     ) where
 
 import Protolude
@@ -46,6 +48,8 @@ class AssetLoader al where
     getAsset :: (MonadIO m, MonadError () m) => al -> AssetID (Asset al) -> m (Asset al)
     -- | Delete an asset
     deleteAsset :: (MonadIO m) => al -> AssetID (Asset al) -> m ()
+    -- | Get all `AssetID`s
+    getAllIDs :: (MonadIO m) => al -> m [AssetID (Asset al)]
 
 -- | A simple implementation of an AssetLoader via Hashmaps
 -- `a` is the type of the Asset to be loaded and stored and `ext` can be any
@@ -83,6 +87,10 @@ instance AssetLoader (HashmapLoader a ext) where
                 DHI.delete s t
             Nothing -> return ()
 
+    getAllIDs (HashmapLoader s _ _ _) = do
+        l <- liftIO $ DHI.toList s
+        return (fmap (AssetID . fst) l)
+
 
 -- | Utility function to load a bunch of assets into an `AssetLoader` with a
 -- callback function.
@@ -111,6 +119,12 @@ loadAssets al paths callback = do
         loadA :: (FilePath, Float) -> a -> m a
         loadA = \(p, per) tlo -> do
             callback per (toS $ SFP.takeFileName p)
-            loadAsset al p
+            loadAsset tlo p
         loadAll = fmap loadA pspe
     foldl' (>>=) (return al) loadAll
+
+-- | Utility function to delete allassets in an `AssetLoader`
+deleteAssets :: (AssetLoader a, MonadIO m) => a -> m ()
+deleteAssets al = do
+    ids <- getAllIDs al
+    sequence_ (fmap (deleteAsset al) ids)
