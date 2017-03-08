@@ -17,6 +17,7 @@
 
 module Client.Assets.Generic
     ( AssetID(..)
+    , Asset(..)
     , AssetLoader(..)
     , HashmapLoader(..)
     , loadAssets

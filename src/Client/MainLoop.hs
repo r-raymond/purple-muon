@@ -36,6 +36,8 @@ import qualified SDL.Video                as SVI
 
 import qualified PurpleMuon.Network.Types as PNT
 
+import qualified Client.Assets.Generic    as CAG
+import qualified Client.Assets.Sound      as CAS
 import qualified Client.Assets.Util       as CAU
 import qualified Client.Event             as CEV
 import qualified Client.Frames            as CTF
@@ -45,9 +47,11 @@ import qualified Client.Video.Texture     as CVT
 
 playBackgroundMusic :: MonadIO m => m ()
 playBackgroundMusic = do
-    path <- liftIO $ getDataFileName "res/ogg/click1.ogg"
-    back <- SMI.load path
-    SMI.playMusic SMI.Forever back
+    let callback f p = putStrLn (FOR.format (FOR.fixed 0 FOR.% "%: loading " FOR.% FOR.stext) f p)
+    esl <- CAS.soundLoader
+    (Right sl) <- runExceptT $ CAG.loadAssets esl CAS.soundAssets callback
+    (Right (CAG.Asset a)) <- runExceptT $ CAG.getAsset sl (CAG.AssetID "click1")
+    SMI.playForever a
 
 initLoop :: CTY.Game()
 initLoop = do
