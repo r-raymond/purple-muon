@@ -40,7 +40,7 @@ before_install:
   - sudo ldconfig
 
   # sdl2-image
-  - curl https://www.libsdl.org/projects/SDL_image/release/SDL2_image-2.0.1.tar.gz
+  - curl https://www.libsdl.org/projects/SDL_image/release/SDL2_image-2.0.1.tar.gz -o SDL2_image-2.0.1.tar.gz
   - tar -xzvf SDL2_image-2.0.1.tar.gz
   - (cd SDL2_image-2.0.1 && ./configure && make && sudo make install)
   - sudo ldconfig
