@@ -40,7 +40,6 @@ dependencies:
     - filepath
     - formatting
     - hashtables
-    - JuicyPixels
     - lens
     - linear
     - mtl
@@ -48,6 +47,7 @@ dependencies:
     - optparse-applicative
     - protolude
     - sdl2
+    - sdl2-image
     - sdl2-mixer
     - sdl2-ttf
     - stm

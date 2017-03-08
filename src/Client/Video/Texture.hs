@@ -62,13 +62,14 @@ import           Protolude
 
 import           Paths_purple_muon
 
-import qualified Codec.Picture              as CPI
+import qualified Control.Exception          as CEX
 import qualified Data.IntMap.Strict         as DIS
 import qualified Data.Vector.Storable       as DVS
 import qualified Foreign.C.Types            as FCT
 import qualified Linear.Affine              as LAF
 import qualified Linear.V2                  as LV2
 import qualified SDL                        as SDL
+import qualified SDL.Image                  as SIM
 import qualified SDL.Vect                   as SVE
 import qualified SDL.Video.Renderer         as SVR
 import qualified Text.XML.Light             as TXL
@@ -193,20 +194,6 @@ surfaceToTexture r s = do
 
 loadSurface :: (MonadError Text m, MonadIO m) => FilePath -> m SVR.Surface
 loadSurface p = do
-    realPath <- liftIO $ getDataFileName p
-    mImg <- liftIO $ CPI.readImage realPath
-    img <- PUM.liftEitherWith (\err -> "Could not load image: " <> toS err) mImg
-    loadSurfaceHelper img
-
-loadSurfaceHelper :: MonadIO m => CPI.DynamicImage -> m SVR.Surface
-loadSurfaceHelper img = do
-    let rgba8  = CPI.convertRGBA8 img
-        width  = CPI.imageWidth rgba8
-        height = CPI.imageWidth rgba8
-        dim    = fmap (FCT.CInt . fromIntegral) (LV2.V2 width height)
-        pitch  = FCT.CInt $ fromIntegral (4 * width)
-        iData  = CPI.imageData rgba8
-        cmask = SVR.ABGR8888
-    rawData <- liftIO $ stToIO $ DVS.thaw iData
-    SVR.createRGBSurfaceFrom rawData dim pitch cmask
+    img <- liftIO (CEX.try $ SIM.load p :: IO (Either SomeException SDL.Surface))
+    PUM.liftEitherWith (const ("Could not load file " <> (toS p))) img
 
