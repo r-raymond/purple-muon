@@ -34,6 +34,9 @@ liftEitherWith :: (MonadError e m) => (f -> e) -> Either f a -> m a
 -- | Lift Either into error monad Throws error on <a>Left</a> Value.
 liftEither :: (MonadError e m) => Either e a -> m a
 
+-- | Map the error type (<a>Left</a>) of an <a>Either</a>
+mapLeft :: (a -> b) -> Either a c -> Either b c
+
 
 module PurpleMuon.Physics.Types
 
