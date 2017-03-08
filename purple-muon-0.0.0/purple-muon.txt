@@ -9,8 +9,15 @@
 @version 0.0.0
 
 module Version
+
+-- | The current gitTag as given by `git describe`, or <tt>UNKNOWN</tt> if
+--   this command fails.
 gitTag :: Text
+
+-- | The platform this was build on.
 platform :: Text
+
+-- | The compiler that was used for this build.
 compiler :: Text
 
 
