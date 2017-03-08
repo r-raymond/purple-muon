@@ -54,16 +54,20 @@ template1 = "\
 \ \n\
 \import Protolude\n\
 \ \n\
+\-- | The current gitTag as given by `git describe`, or `UNKNOWN` if this\n\
+\-- command fails.\n\
 \gitTag :: Text\n\
 \gitTag = \""
 
 template2 = "\"\n\
 \ \n\
+\-- | The platform this was build on.\n\
 \platform :: Text\n\
 \platform = \""
 
 template3 = "\"\n\
 \ \n\
+\-- | The compiler that was used for this build.\n\
 \compiler :: Text\n\
 \compiler = \""
 
