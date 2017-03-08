@@ -37,6 +37,10 @@ liftEither :: (MonadError e m) => Either e a -> m a
 -- | Map the error type (<a>Left</a>) of an <a>Either</a>
 mapLeft :: (a -> b) -> Either a c -> Either b c
 
+-- | Lift a list into error monad Throws error if list is empty, gives head
+--   otherwise
+liftList :: (MonadError e m) => e -> [a] -> m a
+
 
 module PurpleMuon.Physics.Types
 
