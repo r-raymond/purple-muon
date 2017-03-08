@@ -23,6 +23,9 @@ module Client.Assets.Generic
 
 import Protolude
 
+import           Paths_purple_muon
+
+import qualified System.FilePath.Posix as SFP
 import qualified Data.HashTable.IO as DHI
 
 import qualified PurpleMuon.Util.MonadError as PUM
@@ -81,3 +84,33 @@ instance AssetLoader (HashmapLoader a ext) where
             Nothing -> return ()
 
 
+-- | Utility function to load a bunch of assets into an `AssetLoader` with a
+-- callback function.
+loadAssets :: forall m a. (MonadError Text m, MonadIO m, AssetLoader a)
+              => a                          -- ^ `AssetLoader` to load textures
+                                            -- into
+              -> [FilePath]                 -- ^ Paths to asset files. Note that
+                                            -- these should be specified
+                                            -- relative to the root of the git
+                                            -- directory
+              -> (Float -> Text -> m ())    -- ^ Callback function. This
+                                            -- function will be called whenever
+                                            -- a new asset is loading with the
+                                            -- percentage of loaded files and
+                                            -- the name of the currently loading
+                                            -- asset. If this is not needed,
+                                            -- set it to `return ()`.
+              -> m a
+loadAssets al paths callback = do
+    -- convert names to file paths
+    ps <- liftIO $ sequence (fmap getDataFileName paths)
+    -- pair with percentages
+    let perc = fmap (\x -> 100 * x / (fromIntegral $ length ps)) [1 ..]
+        pspe = zip ps perc
+    -- functions for loading assets
+        loadA :: (FilePath, Float) -> a -> m a
+        loadA = \(p, per) tlo -> do
+            callback per (toS $ SFP.takeFileName p)
+            loadAsset al p
+        loadAll = fmap loadA pspe
+    foldl' (>>=) (return al) loadAll
