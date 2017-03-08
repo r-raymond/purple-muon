@@ -22,7 +22,6 @@ module Client.MainLoop
 
 import           Protolude
 
-import           Paths_purple_muon
 import           Version
 
 import qualified Control.Concurrent.STM   as CCS
