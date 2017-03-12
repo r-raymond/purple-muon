@@ -28,6 +28,8 @@ module PurpleMuon.Game.Types
     ( GameObject(..)
     , GameObjectData(..)
     , GameObjUUID(..)
+    , Position(..)
+    , Size(..)
     ) where
 
 import           Protolude
@@ -46,6 +48,20 @@ data GameObjectData
     | Comet
     deriving (Generic)
 
+data Position
+    = Position
+    { _xPos :: Float
+    , _yPos :: Float
+    , _angle :: Float
+    } deriving Generic
+
+data Size
+    = Size
+    { _xSize :: Float
+    , _ySize :: Float
+    } deriving Generic
+
+
 -- | A game object.
 -- Has optionally a name and a `PhysicalObject`.
 data GameObject
@@ -53,8 +69,10 @@ data GameObject
     { _goData  :: GameObjectData
     , _mName   :: Maybe Text
     , _mPhOb   :: Maybe PPT.PhyObjUUID
-    , _mSprite :: Maybe CAS.SpriteID
+    , _mSprite :: Maybe (CAS.SpriteID, Position, Size)
     } deriving (Generic)
 
 instance DBI.Binary GameObjectData
+instance DBI.Binary Position
+instance DBI.Binary Size
 instance DBI.Binary GameObject

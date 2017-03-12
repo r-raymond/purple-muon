@@ -137,3 +137,5 @@ deleteAssets :: (AssetLoader a, MonadIO m) => a -> m ()
 deleteAssets al = do
     ids <- getAllIDs al
     sequence_ (fmap (deleteAsset al) ids)
+
+instance DBI.Binary (AssetID b)

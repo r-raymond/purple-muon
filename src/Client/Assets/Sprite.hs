@@ -24,7 +24,6 @@ module Client.Assets.Sprite
 
 import           Protolude
 
-import qualified Data.Binary                as DBI
 import qualified Data.HashTable.IO          as DHI
 import qualified Foreign.C.Types            as FCT
 import qualified SDL
@@ -131,10 +130,4 @@ parseSprite tex (TXL.Elem (TXL.Element (TXL.QName "SubTexture" Nothing Nothing) 
                 (SDL.Rectangle (SDL.P $ SDL.V2 xInt yInt) (SDL.V2 wInt hInt))
                 (SDL.P $ SDL.V2 (wInt `div` 2) (hInt `div` 2)))
 parseSprite _ t = throwError ("Error parsing texture" <> show t)
-
-instance DBI.Binary SpriteID where
-    put (CAG.AssetID t) = put t
-    get = do
-        t <- get
-        return (CAG.AssetID t)
 

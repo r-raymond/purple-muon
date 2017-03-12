@@ -8,18 +8,22 @@ import           Protolude
 import qualified Data.IntMap.Strict       as DIS
 import qualified Linear.V2                as LV2
 
+import qualified Client.Assets.Generic    as CAG
 import qualified PurpleMuon.Game.Types    as PGT
 import qualified PurpleMuon.Physics.Types as PPT
 
+metID = Just $ CAG.AssetID "meteorBrown_big1.png"
+
 initialObjs :: DIS.IntMap PGT.GameObject
 initialObjs = DIS.fromList
-        [ (1, PGT.GameObject PGT.Comet Nothing (Just (PPT.PhyObjUUID 1)))
-        , (2, PGT.GameObject PGT.Comet Nothing (Just (PPT.PhyObjUUID 2)))
-        , (3, PGT.GameObject PGT.Comet Nothing (Just (PPT.PhyObjUUID 3)))
-        , (4, PGT.GameObject PGT.Comet Nothing (Just (PPT.PhyObjUUID 4)))
-        , (5, PGT.GameObject PGT.Comet Nothing (Just (PPT.PhyObjUUID 5)))
-        , (6, PGT.GameObject PGT.Comet Nothing (Just (PPT.PhyObjUUID 6)))
-        , (7, PGT.GameObject PGT.Comet Nothing (Just (PPT.PhyObjUUID 7))) ]
+        [ (1, PGT.GameObject PGT.Comet Nothing (Just (PPT.PhyObjUUID 1)) metID)
+        , (2, PGT.GameObject PGT.Comet Nothing (Just (PPT.PhyObjUUID 2)) metID)
+        , (3, PGT.GameObject PGT.Comet Nothing (Just (PPT.PhyObjUUID 3)) metID)
+        , (4, PGT.GameObject PGT.Comet Nothing (Just (PPT.PhyObjUUID 4)) metID)
+        , (5, PGT.GameObject PGT.Comet Nothing (Just (PPT.PhyObjUUID 5)) metID)
+        , (6, PGT.GameObject PGT.Comet Nothing (Just (PPT.PhyObjUUID 6)) metID)
+        , (7, PGT.GameObject PGT.Comet Nothing (Just (PPT.PhyObjUUID 7)) metID)
+        ]
 
 
 

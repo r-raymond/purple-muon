@@ -51,13 +51,13 @@ renderGameObjects t po = do
     CVT.renderTexture texload t bb
 
 physicalObjectOfGameObject :: PGT.GameObject -> CTY.Game (Maybe PPT.PhysicalObject)
-physicalObjectOfGameObject (PGT.GameObject _ _ p) = do
+physicalObjectOfGameObject (PGT.GameObject _ _ p _) = do
     sta <- get
     let pos = CLE.view (CTY.game . CTY.physicalObjects) sta
     return (p >>= \x -> DIS.lookup (fromIntegral x) pos)
 
 renderGameObject :: PGT.GameObject -> CTY.Game ()
-renderGameObject go@(PGT.GameObject PGT.Comet _ _) = do
+renderGameObject go@(PGT.GameObject PGT.Comet _ _ _) = do
     res <- ask
     sta <- get
     p <- physicalObjectOfGameObject go
@@ -80,4 +80,4 @@ renderGameObject go@(PGT.GameObject PGT.Comet _ _) = do
         Nothing -> -- wtf, can't render a comet without a physical position
             -- todo: log error
             return ()
-renderGameObject (PGT.GameObject PGT.PlayerShip _ _) = return ()
+renderGameObject (PGT.GameObject PGT.PlayerShip _ _ _) = return ()
