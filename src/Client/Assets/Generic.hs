@@ -24,12 +24,13 @@ module Client.Assets.Generic
     , deleteAssets
     ) where
 
-import Protolude
+import           Protolude
 
 import           Paths_purple_muon
 
-import qualified System.FilePath.Posix as SFP
-import qualified Data.HashTable.IO as DHI
+import qualified Data.Binary                as DBI
+import qualified Data.HashTable.IO          as DHI
+import qualified System.FilePath.Posix      as SFP
 
 import qualified PurpleMuon.Util.MonadError as PUM
 
@@ -37,6 +38,7 @@ import qualified PurpleMuon.Util.MonadError as PUM
 -- The identifier has a phantom type which ensures that id's of different assets
 -- can not be mixed.
 newtype AssetID a = AssetID { unAssetID :: Text }
+    deriving Generic
 
 -- | A AssetLoader is responsible for managing assets. It can load assets and
 -- store them for easy retrival.
@@ -52,7 +54,7 @@ class AssetLoader al where
     -- in the package.yaml file under data-files.
     loadAsset :: (MonadIO m, MonadError Text m)  => al -> FilePath ->  m [(AssetID (Asset al))]
     -- | Retreive asset from AssetLoader
-    getAsset :: (MonadIO m, MonadError () m) => al -> AssetID (Asset al) -> m (Asset al)
+    getAsset :: (MonadIO m, MonadError Text m) => al -> AssetID (Asset al) -> m (Asset al)
     -- | Delete an asset
     deleteAsset :: (MonadIO m) => al -> AssetID (Asset al) -> m ()
     -- | Get all `AssetID`s
@@ -85,7 +87,7 @@ instance AssetLoader (HashmapLoader a ext) where
 
     getAsset (HashmapLoader s _ _ _) (AssetID t) = do
         ma <- liftIO $ DHI.lookup s t
-        a <- PUM.liftMaybe () ma
+        a <- PUM.liftMaybe ("Could not load asset " <> t) ma
         return (A a)
 
     deleteAsset (HashmapLoader s e _ d) (AssetID t) = do

@@ -18,22 +18,25 @@
 module Client.Assets.Sprite
     ( spriteLoader
     , Sprite(..)
+    , SpriteLoaderType
+    , SpriteID
     ) where
 
 import           Protolude
 
+import qualified Data.Binary                as DBI
 import qualified Data.HashTable.IO          as DHI
+import qualified Foreign.C.Types            as FCT
 import qualified SDL
 import qualified Text.XML.Light             as TXL
-import qualified Foreign.C.Types    as FCT
 
 import qualified Client.Assets.Generic      as CAG
-import qualified Client.Assets.Texture as CAT
+import qualified Client.Assets.Texture      as CAT
 import qualified PurpleMuon.Util.MonadError as PUM
 
 data Sprite
     = Sprite
-    { texture :: CAT.TextureID
+    { texture :: SDL.Texture
     , rect    :: SDL.Rectangle FCT.CInt
     , center  :: SDL.Point SDL.V2 FCT.CInt
     }
@@ -69,7 +72,8 @@ loadSpriteAtlas tlo p = do
     xml <- loadXMLDocument p
     let filtered = filter contentFilter (TXL.elContent xml)
     tid <- parseSpriteAtlasHeader tlo xml
-    sequence (fmap (parseSprite tid) filtered)
+    (CAG.A tex) <- CAG.getAsset tlo tid
+    sequence (fmap (parseSprite tex) filtered)
 
 -- | Load an XML Document from a file with error handling
 loadXMLDocument :: (MonadError Text m, MonadIO m)
@@ -106,10 +110,10 @@ xmlAttrHelper atts key =
 
 -- |Parse a single sprite xml element
 parseSprite :: (MonadError Text m)
-            => CAT.TextureID
+            => SDL.Texture
             -> TXL.Content
             -> m (SpriteID, Sprite)
-parseSprite tid (TXL.Elem (TXL.Element (TXL.QName "SubTexture" Nothing Nothing) attr _ _)) = do
+parseSprite tex (TXL.Elem (TXL.Element (TXL.QName "SubTexture" Nothing Nothing) attr _ _)) = do
     let liftHelper x = PUM.liftMaybe ("Error parsing attribute " <> x) $ xmlAttrHelper attr x
         parseHelper x = PUM.liftMaybe ("Error parsing attribute " <> x) $ readMaybe $ toS x
     name   <- liftHelper "name"
@@ -123,8 +127,14 @@ parseSprite tid (TXL.Elem (TXL.Element (TXL.QName "SubTexture" Nothing Nothing) 
     hInt   <- parseHelper height
     return (CAG.AssetID name,
             Sprite
-                tid
+                tex
                 (SDL.Rectangle (SDL.P $ SDL.V2 xInt yInt) (SDL.V2 wInt hInt))
                 (SDL.P $ SDL.V2 (wInt `div` 2) (hInt `div` 2)))
 parseSprite _ t = throwError ("Error parsing texture" <> show t)
+
+instance DBI.Binary SpriteID where
+    put (CAG.AssetID t) = put t
+    get = do
+        t <- get
+        return (CAG.AssetID t)
 
