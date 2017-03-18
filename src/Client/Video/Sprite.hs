@@ -56,13 +56,16 @@ renderGameObject :: MonadIO m
                  -> Resolution
                  -> PGT.GameObject
                  -> m ()
-renderGameObject ren sl res (PGT.GameObject _ _ _ sp) =
+renderGameObject ren sl (xres, yres) (PGT.GameObject _ _ _ sp) =
     case sp of
         Just (s, pos, size) -> renderSprite ren sl s (Just apos) a (SDL.V2 False False)
           where
-            x = PGT._xPos pos
-            y = PGT._yPos pos
-            a = PGT._angle pos
-            xS = PGT._xSize size
-            yS = PGT._ySize size
+            x = (fromIntegral xres) * PGT._xPos pos
+            y = (fromIntegral yres) * PGT._yPos pos
+            a = FCT.CDouble $ float2Double $ PGT._angle pos
+            xS = (fromIntegral xres) * PGT._xSize size
+            yS = (fromIntegral yres) * PGT._ySize size
+            v1 = fmap truncate (SDL.V2 x y)
+            v2 = fmap truncate (SDL.V2 xS yS)
+            apos = SDL.Rectangle (SDL.P v1) v2
         Nothing -> return ()

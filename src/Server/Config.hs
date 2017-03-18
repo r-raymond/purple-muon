@@ -12,7 +12,8 @@ import qualified Client.Assets.Generic    as CAG
 import qualified PurpleMuon.Game.Types    as PGT
 import qualified PurpleMuon.Physics.Types as PPT
 
-metID = Just $ CAG.AssetID "meteorBrown_big1.png"
+metID :: Maybe (CAG.AssetID a, PGT.Position, PGT.Size)
+metID = Just $ (CAG.AssetID "meteorBrown_big1.png", (PGT.Position 0 0 0), (PGT.Size 0 0))
 
 initialObjs :: DIS.IntMap PGT.GameObject
 initialObjs = DIS.fromList
