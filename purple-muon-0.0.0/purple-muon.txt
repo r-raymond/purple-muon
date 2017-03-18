@@ -228,6 +228,94 @@ module PurpleMuon.Physics.Algorithm
 --   <a>https://en.wikipedia.org/wiki/Runge%E2%80%93Kutta_methods</a>
 integrateTimeStep :: GravitationalConstant -> DeltaTime -> PhysicalObjects -> Forces -> PhysicalObjects
 
+module Client.Video.Types
+newtype TextureAtlas
+TextureAtlas :: Texture -> TextureAtlas
+[unTextureAtlas] :: TextureAtlas -> Texture
+data Texture
+Texture :: AtlasUUID -> Text -> Rectangle CInt -> Texture
+[atlas] :: Texture -> AtlasUUID
+[name] :: Texture -> Text
+[rect] :: Texture -> Rectangle CInt
+data TextureLoader
+TextureLoader :: IntMap TextureAtlas -> IntMap Texture -> Renderer -> AtlasUUID -> TexUUID -> TextureLoader
+[atlases] :: TextureLoader -> IntMap TextureAtlas
+[textures] :: TextureLoader -> IntMap Texture
+[renderer] :: TextureLoader -> Renderer
+[nextKey] :: TextureLoader -> AtlasUUID
+[nextID] :: TextureLoader -> TexUUID
+newtype TexUUID
+TexUUID :: Int -> TexUUID
+[unTexUUID] :: TexUUID -> Int
+type Position = (Word16, Word16)
+type AtlasUUID = Int
+data RenderTexture
+RenderTexture :: TexUUID -> Position -> RenderTexture
+[uuid] :: RenderTexture -> TexUUID
+[pos] :: RenderTexture -> Position
+
+
+-- | This module uses SDL2 and JuicyPixels to work with textures.
+--   JuicyPixels is used to load arbitrary image formats. These are then
+--   converted to RGBA8 images which SDL2 uses to upload to the video card.
+--   
+--   All image files need to have an accompanying texture atlas file. This
+--   file needs to satisfy the following criteria:
+--   
+--   <ul>
+--   <li>it needs to be a valid xml file</li>
+--   <li>it has to consist of a single outer xml element which has the
+--   property <tt>imagePath</tt>, with value the path of the actual image
+--   file (specified from the root of the git repository)</li>
+--   <li>the content of the single outer xml element has to be more xml
+--   elements, which have the following properties:<ul><li><tt>name</tt>:
+--   The name that is used to load this file</li><li><tt>x</tt>: The
+--   <tt>x</tt> offset in the image specified by
+--   <tt>imagePath</tt></li><li><tt>y</tt>: The <tt>y</tt> offset in the
+--   image specified by <tt>imagePath</tt></li><li><tt>width</tt>: The
+--   width of the texture</li><li><tt>height</tt>: The height of the
+--   texture</li></ul></li>
+--   </ul>
+--   
+--   The names of the xml elements are arbitrary. Anything besides the
+--   above mentioned will be ignored and can safely be used to encode
+--   additional information.
+module Client.Video.Texture
+
+-- | Create a new texture loader.
+newTextureLoader :: Renderer -> TextureLoader
+
+-- | Render a texture specified by a <a>TexUUID</a>.
+renderTexture :: (MonadIO m) => TextureLoader -> TexUUID -> Maybe (Rectangle CInt) -> m ()
+
+-- | Add an texture atlas to a texture loader
+addTextureAtlas :: (MonadError Text m, MonadIO m) => TextureLoader -> FilePath -> m TextureLoader
+
+-- | Find the <a>TexUUID</a> of a texture.
+getTexture :: TextureLoader -> Text -> Maybe TexUUID
+
+-- | Delete all textures saved in the given texture atlas
+deleteAllTextures :: (MonadIO m) => TextureLoader -> m ()
+
+module Client.Init
+
+-- | Run a computation with SDL, SDL window and SDL renderer, SDL-ttf and
+--   SDL-mixer.
+withGraphics :: (Window -> Renderer -> IO ()) -> IO (Either SomeException ())
+
+module Client.Image
+parseTextureAtlas :: MonadIO m => FilePath -> m (Maybe Element)
+filterAtlas :: Text -> Content -> Bool
+data Texture
+Texture :: TextureAtlas -> Text -> Int -> Int -> Int -> Int -> Texture
+[atlas] :: Texture -> TextureAtlas
+[name] :: Texture -> Text
+[x] :: Texture -> Int
+[y] :: Texture -> Int
+[width] :: Texture -> Int
+[height] :: Texture -> Int
+data TextureAtlas
+
 
 module PurpleMuon.Network.Types
 
@@ -314,117 +402,6 @@ instance Data.Binary.Class.Binary PurpleMuon.Network.Types.PlayerName
 instance Data.Binary.Class.Binary PurpleMuon.Network.Types.ServerToClientMsg
 instance Data.Binary.Class.Binary PurpleMuon.Network.Types.ClientToServerMsg
 
-
-module PurpleMuon.Network.Message
-
--- | Prepend a message with an crc32 checksum.
-prepend :: ProtocolUUID -> NakedMessage -> RawMessage
-
--- | strip an crc32 off of a message. Returns Just (stripped message) if
---   the message contains the correct uuid and Nothing otherwise
-strip :: ProtocolUUID -> RawMessage -> Maybe NakedMessage
-
--- | Calculate the next message count
-nextMC :: MessageCount -> MessageCount
-
--- | Calculate the offset of two message types. Guarantees that
---   
---   <pre>
---   moveMC a (diffMC a b) = b
---   </pre>
---   
---   for all MessageCounts a and b.
-diffMC :: MessageCount -> MessageCount -> Offset
-
--- | Move a MessageCount by a given offset
-moveMC :: MessageCount -> Offset -> MessageCount
-
-
-module PurpleMuon.Network.Util
-
--- | Open a UDP Socket on a specific port
-serverSocket :: MonadIO m => Text -> m (Either SomeException Socket)
-
--- | Connect an UDP socket to a specific port
-clientSocket :: MonadIO m => Text -> Text -> m (Either SomeException Socket)
-
--- | Endless receiving queue forkIO this and give it a STM object to write
---   stuff to. It will block on UDP recv and as soon as something arrives
---   write it to the output
-endlessRecv :: MonadIO m => ProtocolUUID -> Int -> Socket -> TBQueue ServerToClientMsg -> m ()
-
-module Server.Main
-main :: IO ()
-
-module Client.Video.Types
-newtype TextureAtlas
-TextureAtlas :: Texture -> TextureAtlas
-[unTextureAtlas] :: TextureAtlas -> Texture
-data Texture
-Texture :: AtlasUUID -> Text -> Rectangle CInt -> Texture
-[atlas] :: Texture -> AtlasUUID
-[name] :: Texture -> Text
-[rect] :: Texture -> Rectangle CInt
-data TextureLoader
-TextureLoader :: IntMap TextureAtlas -> IntMap Texture -> Renderer -> AtlasUUID -> TexUUID -> TextureLoader
-[atlases] :: TextureLoader -> IntMap TextureAtlas
-[textures] :: TextureLoader -> IntMap Texture
-[renderer] :: TextureLoader -> Renderer
-[nextKey] :: TextureLoader -> AtlasUUID
-[nextID] :: TextureLoader -> TexUUID
-newtype TexUUID
-TexUUID :: Int -> TexUUID
-[unTexUUID] :: TexUUID -> Int
-type Position = (Word16, Word16)
-type AtlasUUID = Int
-data RenderTexture
-RenderTexture :: TexUUID -> Position -> RenderTexture
-[uuid] :: RenderTexture -> TexUUID
-[pos] :: RenderTexture -> Position
-
-
--- | This module uses SDL2 and JuicyPixels to work with textures.
---   JuicyPixels is used to load arbitrary image formats. These are then
---   converted to RGBA8 images which SDL2 uses to upload to the video card.
---   
---   All image files need to have an accompanying texture atlas file. This
---   file needs to satisfy the following criteria:
---   
---   <ul>
---   <li>it needs to be a valid xml file</li>
---   <li>it has to consist of a single outer xml element which has the
---   property <tt>imagePath</tt>, with value the path of the actual image
---   file (specified from the root of the git repository)</li>
---   <li>the content of the single outer xml element has to be more xml
---   elements, which have the following properties:<ul><li><tt>name</tt>:
---   The name that is used to load this file</li><li><tt>x</tt>: The
---   <tt>x</tt> offset in the image specified by
---   <tt>imagePath</tt></li><li><tt>y</tt>: The <tt>y</tt> offset in the
---   image specified by <tt>imagePath</tt></li><li><tt>width</tt>: The
---   width of the texture</li><li><tt>height</tt>: The height of the
---   texture</li></ul></li>
---   </ul>
---   
---   The names of the xml elements are arbitrary. Anything besides the
---   above mentioned will be ignored and can safely be used to encode
---   additional information.
-module Client.Video.Texture
-
--- | Create a new texture loader.
-newTextureLoader :: Renderer -> TextureLoader
-
--- | Render a texture specified by a <a>TexUUID</a>.
-renderTexture :: (MonadIO m) => TextureLoader -> TexUUID -> Maybe (Rectangle CInt) -> m ()
-
--- | Add an texture atlas to a texture loader
-addTextureAtlas :: (MonadError Text m, MonadIO m) => TextureLoader -> FilePath -> m TextureLoader
-
--- | Find the <a>TexUUID</a> of a texture.
-getTexture :: TextureLoader -> Text -> Maybe TexUUID
-
--- | Delete all textures saved in the given texture atlas
-deleteAllTextures :: (MonadIO m) => TextureLoader -> m ()
-
 module Client.Types
 data AppState
 AppState :: Bool -> GameState -> FpsCounter -> UTCTime -> TextureLoader -> AppState
@@ -468,32 +445,52 @@ TextureUUIDs :: TexUUID -> TexUUID -> TextureUUIDs
 [stones] :: TextureUUIDs -> TexUUID
 instance GHC.Show.Show Client.Types.FpsCounter
 
-module Client.Init
-
--- | Run a computation with SDL, SDL window and SDL renderer, SDL-ttf and
---   SDL-mixer.
-withGraphics :: (Window -> Renderer -> IO ()) -> IO (Either SomeException ())
-
-module Client.Image
-parseTextureAtlas :: MonadIO m => FilePath -> m (Maybe Element)
-filterAtlas :: Text -> Content -> Bool
-data Texture
-Texture :: TextureAtlas -> Text -> Int -> Int -> Int -> Int -> Texture
-[atlas] :: Texture -> TextureAtlas
-[name] :: Texture -> Text
-[x] :: Texture -> Int
-[y] :: Texture -> Int
-[width] :: Texture -> Int
-[height] :: Texture -> Int
-data TextureAtlas
+module Client.Event
+handleEvent :: Event -> Game ()
 
 module Client.Frames
 frameBegin :: Game ()
 manageFps :: Game ()
 formatFps :: Game Text
 
-module Client.Event
-handleEvent :: Event -> Game ()
+
+module PurpleMuon.Network.Message
+
+-- | Prepend a message with an crc32 checksum.
+prepend :: ProtocolUUID -> NakedMessage -> RawMessage
+
+-- | strip an crc32 off of a message. Returns Just (stripped message) if
+--   the message contains the correct uuid and Nothing otherwise
+strip :: ProtocolUUID -> RawMessage -> Maybe NakedMessage
+
+-- | Calculate the next message count
+nextMC :: MessageCount -> MessageCount
+
+-- | Calculate the offset of two message types. Guarantees that
+--   
+--   <pre>
+--   moveMC a (diffMC a b) = b
+--   </pre>
+--   
+--   for all MessageCounts a and b.
+diffMC :: MessageCount -> MessageCount -> Offset
+
+-- | Move a MessageCount by a given offset
+moveMC :: MessageCount -> Offset -> MessageCount
+
+
+module PurpleMuon.Network.Util
+
+-- | Open a UDP Socket on a specific port
+serverSocket :: MonadIO m => Text -> m (Either SomeException Socket)
+
+-- | Connect an UDP socket to a specific port
+clientSocket :: MonadIO m => Text -> Text -> m (Either SomeException Socket)
+
+-- | Endless receiving queue forkIO this and give it a STM object to write
+--   stuff to. It will block on UDP recv and as soon as something arrives
+--   write it to the output
+endlessRecv :: MonadIO m => ProtocolUUID -> Int -> Socket -> TBQueue ServerToClientMsg -> m ()
 
 module Client.MainLoop
 loop :: TextureUUIDs -> Game ()
@@ -503,4 +500,7 @@ module Client.Main
 uuid :: ProtocolUUID
 initialeState :: Renderer -> AppState
 game :: TBQueue ServerToClientMsg -> Window -> Renderer -> IO ()
+main :: IO ()
+
+module Server.Main
 main :: IO ()
