@@ -24,11 +24,11 @@ module Client.Video.Menu
 
 import           Protolude
 
-import qualified Client.Video.Types as CVT
-import qualified Control.Lens       as CLE
-import qualified Linear.V2          as LV2
+import qualified Control.Lens         as CLE
+import qualified Linear.V2            as LV2
 
-import qualified PurpleMuon.Types   as PTY
+import qualified Client.Assets.Sprite as CAS
+import qualified PurpleMuon.Types     as PTY
 
 data MenuItem
     = MenuItem
@@ -40,7 +40,7 @@ data MenuType
     = Label
     { _labelText   :: Text
     , _labelSize   :: Int
-    , _labelTextue :: CVT.TexUUID
+    , _labelTextue :: CAS.SpriteID
     }
     | Button
     { _buttonText :: Text
