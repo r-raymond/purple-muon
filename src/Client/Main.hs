@@ -22,19 +22,20 @@ import           Protolude
 import           Version
 
 import qualified Control.Concurrent.STM    as CCS
+import qualified Data.Binary               as DBI
 import qualified Data.IntMap.Strict        as DIS
 import           Network.Socket.ByteString
 import qualified SDL.Video                 as SVI
-import qualified Data.Binary              as DBI
 
 import qualified PurpleMuon.Network.Types  as PNT
 import qualified PurpleMuon.Network.Util   as PNU
 import qualified PurpleMuon.Physics.Types  as PPT
 
+import qualified Client.Assets.Sprite      as CAS
+import qualified Client.Assets.Texture     as CAT
 import qualified Client.Init               as CIN
 import qualified Client.MainLoop           as CMA
 import qualified Client.Types              as CTY
-import qualified Client.Video.Texture      as CVT
 
 uuid :: PNT.ProtocolUUID
 uuid = toS $ DBI.encode (1337 :: Word32)
@@ -45,7 +46,7 @@ initialeState r =
         (CTY.InGameState DIS.empty (PPT.DeltaTime 0) (PPT.DeltaTime 0))
         (CTY.FpsCounter 60 [])
         (toEnum 0)
-        (CVT.newTextureLoader r)
+        (CAS.spriteLoader)
 
 game :: CCS.TBQueue PNT.ServerToClientMsg -> SVI.Window -> SVI.Renderer -> IO ()
 game tb w r = evalStateT (runReaderT CMA.initLoop (CTY.Resources w r tb)) (initialeState r)

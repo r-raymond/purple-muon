@@ -18,12 +18,11 @@
 {-# LANGUAGE TemplateHaskell #-}
 
 module Client.Types
-    ( AppState(..), running, game, fps, frameBegin, textures
+    ( AppState(..), running, game, fps, frameBegin, sprites
     , Game
-    , GameState(..), physicalObjects, dt, accumTime
+    , GameState(..), physicalObjects, dt, accumTime, gameObjects
     , Resources(..), window, renderer, tbqueue
     , FpsCounter(..)
-    , TextureUUIDs(..)
     ) where
 
 import           Protolude
@@ -32,11 +31,13 @@ import qualified Control.Concurrent.STM   as CCS
 import qualified Control.Lens             as CLE
 import qualified Data.Thyme.Clock         as DTC
 import qualified SDL.Video                as SVI
+import qualified Data.IntMap.Strict       as DIS
 
-import qualified Client.Video.Types       as CVT
+import qualified Client.Assets.Sprite     as CAS
+import qualified PurpleMuon.Game.Types    as PGT
 import qualified PurpleMuon.Network.Types as PNT
 import qualified PurpleMuon.Physics.Types as PPT
-import qualified PurpleMuon.Types as PPY
+import qualified PurpleMuon.Types         as PPY
 
 data AppState
     = AppState
@@ -44,7 +45,7 @@ data AppState
     , _game       :: GameState
     , _fps        :: FpsCounter
     , _frameBegin :: DTC.UTCTime -- TODO: figure out how to get show back on Appstate
-    , _textures   :: CVT.TextureLoader
+    , _sprites    :: CAS.SpriteLoaderType
     }
 
 type Game a = ReaderT Resources (StateT AppState IO) a
@@ -54,6 +55,7 @@ data GameState
     { _physicalObjects :: PPT.PhysicalObjects
     , _dt              :: PPT.DeltaTime
     , _accumTime       :: PPT.DeltaTime         -- ^ Accumulated time for fixed physics step
+    , _gameObjects     :: DIS.IntMap PGT.GameObject
     }
     | MenuState
 
@@ -70,12 +72,6 @@ data FpsCounter
     { maxFrames :: Int
     , fpsL      :: [PPY.FlType]
     } deriving (Show)
-
-data TextureUUIDs
-    = TextureUUIDs
-    { background :: CVT.TexUUID
-    , stones     :: CVT.TexUUID
-    }
 
 CLE.makeLenses ''AppState
 CLE.makeLenses ''GameState

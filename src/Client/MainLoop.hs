@@ -36,13 +36,12 @@ import qualified SDL.Video                as SVI
 import qualified PurpleMuon.Network.Types as PNT
 
 import qualified Client.Assets.Generic    as CAG
+import qualified Client.Video.Sprite      as CVS
 import qualified Client.Assets.Sound      as CAS
 import qualified Client.Assets.Util       as CAU
 import qualified Client.Event             as CEV
 import qualified Client.Frames            as CTF
 import qualified Client.Types             as CTY
-import qualified Client.Video.Render      as CVR
-import qualified Client.Video.Texture     as CVT
 
 playBackgroundMusic :: MonadIO m => m ()
 playBackgroundMusic = do
@@ -54,23 +53,19 @@ playBackgroundMusic = do
 
 initLoop :: CTY.Game()
 initLoop = do
-    res <- ask
-    let ren = CLE.view CTY.renderer res
+    sta <- get
+    let sl = CLE.view CTY.sprites sta
         callback f p = putStrLn (FOR.format (FOR.fixed 0 FOR.% "%: loading " FOR.% FOR.stext) f p)
 
-    playBackgroundMusic
-    etl <- runExceptT $ CAU.loadAllPngAssets ren callback
-    case etl of
-        Right tl -> do
-            modify (CLE.set CTY.textures tl)
 
-            let (Just s) = CVT.getTexture tl "meteorBrown_big1.png"
-                (Just b) = CVT.getTexture tl "background.png"
-            loop (CTY.TextureUUIDs b s)
+    playBackgroundMusic
+    res <- runExceptT $ CAG.loadAssets sl CAU.pngAssets callback
+    case res of
+        Right () -> loop
         Left e -> panic $ "Could not load assets: " <> e
 
-loop :: CTY.TextureUUIDs -> CTY.Game ()
-loop tuu = do
+loop :: CTY.Game ()
+loop = do
     CTF.frameBegin
 
     network
@@ -79,7 +74,7 @@ loop tuu = do
     let window   = CLE.view CTY.window   res
 
     SEV.mapEvents CEV.handleEvent
-    render tuu
+    render
 
     -- advanceGameState
 
@@ -87,23 +82,28 @@ loop tuu = do
 
     fps <- CTF.formatFps
     SVI.windowTitle window SDL.$= ("PM " <> gitTag <> " (" <> fps <> ")")
-    whenM (fmap (CLE.view CTY.running) get) (loop tuu)
+    whenM (fmap (CLE.view CTY.running) get) loop
 
-render :: CTY.TextureUUIDs -> CTY.Game ()
-render tuu = do
+render :: CTY.Game ()
+render = do
     res <- ask
     sta <- get
     let renderer = CLE.view CTY.renderer res
-        texload  = CLE.view CTY.textures sta
+        sl       = CLE.view CTY.sprites sta
     SVI.rendererDrawColor renderer SDL.$= SVE.V4 0 0 0 0
     SVI.clear renderer
 
-    CVT.renderTexture texload (CTY.background tuu) Nothing
+    --CVT.renderTexture texload (CTY.background tuu) Nothing
 
     appState <- get
     let pos = CLE.view (CTY.game . CTY.physicalObjects) appState
+        gos = CLE.view (CTY.game . CTY.gameObjects) appState
+        ngos = fmap (CVS.updateRenderInfo pos) gos
 
-    sequence_ (fmap (CVR.renderGameObjects (CTY.stones tuu)) pos)
+    sequence_ (fmap (CVS.renderGameObject renderer
+                                          sl
+                                          (SDL.V2 640 480) -- TODO : fix
+                                          ) ngos)
 
     SVI.present renderer
 

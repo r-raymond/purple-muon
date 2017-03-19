@@ -18,18 +18,9 @@
 
 module Client.Assets.Util
     ( pngAssets
-    , loadAllPngAssets
     ) where
 
 import           Protolude
-
-import           Paths_purple_muon
-
-import qualified SDL as SDL
-import qualified System.FilePath.Posix as SFP
-
-import qualified Client.Video.Texture as CVT
-import qualified Client.Video.Types    as CVTY
 
 -- | A list of all png assets to load on game start.
 -- If this list gets too long, maybe it should be split into assets for
@@ -57,42 +48,3 @@ pngAssets = [ "res/png/gravity.xml"
             , "res/png/gameicons_extended/sheet_white1x.xml"
             , "res/png/gameicons_extended/sheet_white2x.xml"
             ]
-
--- |Load all png assets into new texture loader
-loadAllPngAssets :: (MonadError Text m, MonadIO m)
-                 => SDL.Renderer             -- ^ Renderer to use to upload
-                                             -- textures to the video card.
-                 -> (Float -> Text -> m ())  -- ^ Callback function (see
-                                             -- `loadPngAssets`)
-                 -> m CVTY.TextureLoader
-loadAllPngAssets r c = loadPngAssets (CVT.newTextureLoader r) pngAssets c
-
--- |Load png assets.
-loadPngAssets :: forall m. (MonadError Text m, MonadIO m)
-              => CVTY.TextureLoader         -- ^ Textureloader to load textures
-                                            -- into
-              -> [FilePath]                 -- ^ Paths to xml files. Note that
-                                            -- these should be specified
-                                            -- relative to the root of the git
-                                            -- directory
-              -> (Float -> Text -> m ())    -- ^ Callback function. This
-                                            -- function will be called whenever
-                                            -- a new texture is loading with the
-                                            -- percentage of loaded files and
-                                            -- the name of the currently loading
-                                            -- texture. If this is not needed,
-                                            -- set it to `return ()`.
-              -> m CVTY.TextureLoader
-loadPngAssets tl paths callback = do
-    -- convert names to file paths
-    ps <- liftIO $ sequence (fmap getDataFileName paths)
-    -- pair with percentages
-    let perc = fmap (\x -> 100 * x / (fromIntegral $ length ps)) [1 ..]
-        pspe = zip ps perc
-    -- functions for loading assets
-        loadAsset :: (FilePath, Float) -> CVTY.TextureLoader -> m CVTY.TextureLoader
-        loadAsset = \(p, per) tlo -> do
-            callback per (toS $ SFP.takeFileName p)
-            CVT.addTextureAtlas tlo p 
-        loadAll = fmap loadAsset pspe
-    foldl' (>>=) (return tl) loadAll
