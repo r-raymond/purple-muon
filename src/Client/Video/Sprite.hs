@@ -16,19 +16,24 @@
 --  along with Purple Muon.  If not, see <http://www.gnu.org/licenses/>.
 
 module Client.Video.Sprite
-    (
+    ( renderGameObject
+    , updateRenderInfo
     ) where
 
 import           Protolude
 
-import qualified Foreign.C.Types       as FCT
+import qualified Control.Lens             as CLE
+import qualified Data.IntMap.Strict       as DIS
+import qualified Foreign.C.Types          as FCT
 import qualified SDL
 
-import qualified Client.Assets.Generic as CAG
-import qualified Client.Assets.Sprite  as CAS
-import qualified PurpleMuon.Game.Types as PGT
+import qualified Client.Assets.Generic    as CAG
+import qualified Client.Assets.Sprite     as CAS
+import qualified PurpleMuon.Game.Types    as PGT
+import qualified PurpleMuon.Physics.Types as PPT
+import qualified PurpleMuon.Types         as PTY
 
-type Resolution = (Int, Int)
+type Resolution = SDL.V2 Int
 
 -- | Render a sprite
 --
@@ -56,16 +61,27 @@ renderGameObject :: MonadIO m
                  -> Resolution
                  -> PGT.GameObject
                  -> m ()
-renderGameObject ren sl (xres, yres) (PGT.GameObject _ _ _ sp) =
-    case sp of
-        Just (s, pos, size) -> renderSprite ren sl s (Just apos) a (SDL.V2 False False)
-          where
-            x = (fromIntegral xres) * PGT._xPos pos
-            y = (fromIntegral yres) * PGT._yPos pos
-            a = FCT.CDouble $ float2Double $ PGT._angle pos
-            xS = (fromIntegral xres) * PGT._xSize size
-            yS = (fromIntegral yres) * PGT._ySize size
-            v1 = fmap truncate (SDL.V2 x y)
-            v2 = fmap truncate (SDL.V2 xS yS)
-            apos = SDL.Rectangle (SDL.P v1) v2
+renderGameObject ren sl res (PGT.GameObject _ _ _ mri) =
+    case mri of
+        Just (PGT.RenderInfo p a si sp) ->
+            renderSprite ren sl sp (Just apos) an (SDL.V2 False False)
+              where
+                xy = (fmap fromIntegral res) * (PTY.unPosition p)
+                an = FCT.CDouble $ float2Double a
+                xyS = (fmap fromIntegral res) * si
+                v1 = fmap truncate xy
+                v2 = fmap truncate xyS
+                apos = SDL.Rectangle (SDL.P v1) v2
         Nothing -> return ()
+
+-- | Update the sprite position with the position of the physical Object
+updateRenderInfo :: PPT.PhysicalObjects -> PGT.GameObject -> PGT.GameObject
+updateRenderInfo pos go@(PGT.GameObject _ _ (Just po) (Just ri)) =
+    case newp of
+        (Just np) -> go { PGT._mReInfo = Just $ CLE.set PGT.pos npos ri }
+          where
+            npos = CLE.view PPT.pos np
+        Nothing -> go
+      where
+        newp = DIS.lookup (PPT.unPhyObjUUID po) pos
+updateRenderInfo _ go = go

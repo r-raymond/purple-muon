@@ -24,20 +24,25 @@ Maintainer  : robin@robinraymond.de
 Portability : POSIX
 -}
 
+{-# LANGUAGE TemplateHaskell #-}
+
 module PurpleMuon.Game.Types
-    ( GameObject(..)
+    ( GameObject(..), goData, mName, mPhOb, mReInfo
     , GameObjectData(..)
     , GameObjUUID(..)
-    , Position(..)
-    , Size(..)
+    , Size(..), xSize, ySize
+    , RenderInfo(..), pos, angle, size, sprite
     ) where
 
 import           Protolude
 
+import qualified Control.Lens             as CLE
 import qualified Data.Binary              as DBI
+import qualified Linear.V2                as LV2
 
 import qualified Client.Assets.Sprite     as CAS
 import qualified PurpleMuon.Physics.Types as PPT
+import qualified PurpleMuon.Types         as PTY
 
 newtype GameObjUUID = GameObjUUID { unGameObjUUID :: Word16 }
     deriving (Eq, Ord)
@@ -48,11 +53,12 @@ data GameObjectData
     | Comet
     deriving (Generic)
 
-data Position
-    = Position
-    { _xPos :: Float
-    , _yPos :: Float
-    , _angle :: Float
+data RenderInfo
+    = RenderInfo
+    { _pos    :: PTY.Position
+    , _angle  :: PTY.FlType
+    , _size   :: LV2.V2 PTY.FlType
+    , _sprite :: CAS.SpriteID
     } deriving Generic
 
 data Size
@@ -69,10 +75,14 @@ data GameObject
     { _goData  :: GameObjectData
     , _mName   :: Maybe Text
     , _mPhOb   :: Maybe PPT.PhyObjUUID
-    , _mSprite :: Maybe (CAS.SpriteID, Position, Size)
+    , _mReInfo :: Maybe RenderInfo
     } deriving (Generic)
 
 instance DBI.Binary GameObjectData
-instance DBI.Binary Position
 instance DBI.Binary Size
+instance DBI.Binary RenderInfo
 instance DBI.Binary GameObject
+
+CLE.makeLenses ''GameObject
+CLE.makeLenses ''RenderInfo
+CLE.makeLenses ''Size

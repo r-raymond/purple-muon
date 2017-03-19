@@ -42,12 +42,13 @@ import qualified Linear.Vector                as LVE
 
 import qualified PurpleMuon.Physics.Constants as PPC
 import qualified PurpleMuon.Physics.Types     as PPT
+import qualified PurpleMuon.Types             as PPY
 
 integrateAccel :: PPT.DeltaTime -> PPT.Acceleration -> PPT.Velocity -> PPT.Velocity
 integrateAccel (PPT.DeltaTime dt) (PPT.Acceleration a) (PPT.Velocity v) = PPT.Velocity (fmap (* dt) a + v)
 
-integrateVel :: PPT.DeltaTime -> PPT.Velocity -> PPT.Position -> PPT.Position
-integrateVel (PPT.DeltaTime dt) (PPT.Velocity v) (PPT.Position p) = PPT.Position (fmap (* dt) v + p)
+integrateVel :: PPT.DeltaTime -> PPT.Velocity -> PPY.Position -> PPY.Position
+integrateVel (PPT.DeltaTime dt) (PPT.Velocity v) (PPY.Position p) = PPY.Position (fmap (* dt) v + p)
 
 newton2nd :: PPT.Force -> PPT.Mass -> PPT.Acceleration
 newton2nd (PPT.Force f) (PPT.Mass m) = PPT.Acceleration (fmap (/ m) f)
@@ -151,8 +152,8 @@ gravitationalForce :: PPT.PhysicalSize
                    -> PPT.Force
 gravitationalForce ps g o1 o2 = PPT.Force $ LV2.V2 projectedForce1 projectedForce2
   where
-    p1 = PPT.unPosition $ CLE.view PPT.pos o1
-    p2 = PPT.unPosition $ CLE.view PPT.pos o2
+    p1 = PPY.unPosition $ CLE.view PPT.pos o1
+    p2 = PPY.unPosition $ CLE.view PPT.pos o2
     m1 = PPT.unMass $ CLE.view PPT.mass o1
     m2 = PPT.unMass $ CLE.view PPT.mass o2
     gVal = PPT.unGravitationalConstant g
@@ -211,15 +212,15 @@ calculateForce g (k1, o1) (k2, o2) =
       where
         f = gravitationalForce PPC.physicalSize g o2 o1
 
-wrap :: PPT.FlType -> PPT.FlType -> PPT.FlType
+wrap :: PPY.FlType -> PPY.FlType -> PPY.FlType
 wrap bound x
     | x < 0     = wrap bound (x + bound)
     | x > bound = wrap bound (x - bound)
     | otherwise = x
 
-wrapTorus :: PPT.Position -> PPT.Position
-wrapTorus = PPT.Position . cutOff . PPT.unPosition
+wrapTorus :: PPY.Position -> PPY.Position
+wrapTorus = PPY.Position . cutOff . PPY.unPosition
   where
     PPT.PhysicalSize (LV2.V2 xMax yMax) = PPC.physicalSize
-    cutOff :: LV2.V2 PPT.FlType -> LV2.V2 PPT.FlType
+    cutOff :: LV2.V2 PPY.FlType -> LV2.V2 PPY.FlType
     cutOff (LV2.V2 x y) = LV2.V2 (wrap xMax x) (wrap yMax y)

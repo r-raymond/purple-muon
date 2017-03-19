@@ -18,8 +18,7 @@
 {-# LANGUAGE TemplateHaskell #-}
 
 module Client.Video.Menu
-    ( Position
-    , MenuItem(..), position, mType
+    ( MenuItem(..), position, mType
     , MenuType(..), labelText, labelSize, labelTextue, buttonText, buttonSize, inputFieldText, inputFieldSize
     ) where
 
@@ -29,13 +28,11 @@ import qualified Client.Video.Types as CVT
 import qualified Control.Lens       as CLE
 import qualified Linear.V2          as LV2
 
-type Position = LV2.V2 Float
-
-
+import qualified PurpleMuon.Types   as PTY
 
 data MenuItem
     = MenuItem
-    { _position :: Position
+    { _position :: PTY.Position
     , _mType    :: MenuType
     }
 

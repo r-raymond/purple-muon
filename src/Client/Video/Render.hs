@@ -32,12 +32,13 @@ import qualified Client.Video.Texture     as CVT
 import qualified Client.Video.Types       as CVTY
 import qualified PurpleMuon.Game.Types    as PGT
 import qualified PurpleMuon.Physics.Types as PPT
+import qualified PurpleMuon.Types         as PTY
 
 renderGameObjects :: CVTY.TexUUID -> PPT.PhysicalObject -> CTY.Game ()
 renderGameObjects t po = do
     res <- ask
     sta <- get
-    let pos = PPT.unPosition $ CLE.view PPT.pos po
+    let pos = PTY.unPosition $ CLE.view PPT.pos po
         window = CLE.view CTY.window res
         texload = CLE.view CTY.textures sta
     windowsize <- SDL.get $ SDL.windowSize window
@@ -64,7 +65,7 @@ renderGameObject go@(PGT.GameObject PGT.Comet _ _ _) = do
 
     case p of
         (Just po) -> do
-            let pos = PPT.unPosition $ CLE.view PPT.pos po
+            let pos = PTY.unPosition $ CLE.view PPT.pos po
                 window = CLE.view CTY.window res
                 texload = CLE.view CTY.textures sta
             windowsize <- SDL.get $ SDL.windowSize window

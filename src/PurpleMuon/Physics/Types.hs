@@ -31,8 +31,6 @@ Portability : POSIX
 module PurpleMuon.Physics.Types
     ( -- * Basic types
       PhyObjUUID(..)
-    , FlType
-    , Position(..)
     , Mass(..)
     , Velocity(..)
     , Acceleration(..)
@@ -62,41 +60,36 @@ import qualified Data.VectorSpace   as DVE
 import qualified Linear.V2          as LV2
 import qualified Linear.Vector      as LVE
 
+import qualified PurpleMuon.Types   as PTY
 
 -- | A physical object identifier
-newtype PhyObjUUID = PhyObjUUID { unPhyObjUUID :: Word16 }
+newtype PhyObjUUID = PhyObjUUID { unPhyObjUUID :: Int }
     deriving (Eq, Ord, Num, Real, Enum, Integral, Generic)
 
--- |The floating point type used throughout the physics module
-type FlType = Float
-
--- | The position of an object
-newtype Position = Position { unPosition :: LV2.V2 FlType }
-  deriving (Eq, Show, Generic)
-
 -- | The mass of an object
-newtype Mass = Mass { unMass :: FlType }
+newtype Mass = Mass { unMass :: PTY.FlType }
   deriving (Eq, Show, Generic)
 
 -- | The velocity of an object
-newtype Velocity = Velocity { unVelocity :: LV2.V2 FlType }
+newtype Velocity = Velocity { unVelocity :: LV2.V2 PTY.FlType }
   deriving (Eq, Show, Generic)
 
 -- | The acceleration of an object
-newtype Acceleration = Acceleration { unAcceleration :: LV2.V2 FlType }
+newtype Acceleration = Acceleration { unAcceleration :: LV2.V2 PTY.FlType }
   deriving (Eq, Show, Generic)
 
 -- | A time delta
 -- Meassured in seconds
-newtype DeltaTime = DeltaTime { unDeltaTime :: FlType }
+newtype DeltaTime = DeltaTime { unDeltaTime :: PTY.FlType }
   deriving (Eq, Show, Ord, Generic)
 
 -- | A Force
-newtype Force = Force { unForce :: LV2.V2 FlType }
+newtype Force = Force { unForce :: LV2.V2 PTY.FlType }
   deriving (Eq, Show, Generic)
 
 -- | The gravitaional constant
-newtype GravitationalConstant = GravitationalConstant { unGravitationalConstant :: FlType }
+newtype GravitationalConstant =
+    GravitationalConstant { unGravitationalConstant :: PTY.FlType }
   deriving (Eq, Show, Generic)
 
 -- | The type of a physical object
@@ -113,14 +106,13 @@ data ObjGrav = Gravitating      -- ^ the object exerts gravitational forces
 data PhysicalObject
     = PhysicalObject
     { _mass        :: Mass     -- ^ The mass of the object
-    , _pos         :: Position -- ^ The position of the object
+    , _pos         :: PTY.Position -- ^ The position of the object
     , _vel         :: Velocity -- ^ The velocity of the object
     , _static      :: ObjType  -- ^ Is this object moving?
     , _gravitating :: ObjGrav  -- ^ Is this object gravitating?
     } deriving (Show, Generic)
 
 instance DBI.Binary Mass
-instance DBI.Binary Position
 instance DBI.Binary Velocity
 instance DBI.Binary ObjType
 instance DBI.Binary ObjGrav
@@ -130,7 +122,7 @@ instance DBI.Binary PhysicalObject
 CLE.makeLenses ''PhysicalObject
 
 -- |The physical size of the playing board
-newtype PhysicalSize = PhysicalSize { unPhysicalSize :: LV2.V2 FlType }
+newtype PhysicalSize = PhysicalSize { unPhysicalSize :: LV2.V2 PTY.FlType }
   deriving (Eq, Show, Generic)
 
 -- |The derivaties of a physical object numerical integrater
@@ -153,7 +145,7 @@ type Forces = DIS.IntMap Force
       ; (^+^) (TYPE a) (TYPE b) = TYPE (a LVE.^+^ b) \
       ; negateV (TYPE a) = TYPE $ LVE.negated a  }; \
     instance (DVE.VectorSpace TYPE) where \
-      { type (Scalar TYPE) = FlType \
+      { type (Scalar TYPE) = PTY.FlType \
       ; (*^) l (TYPE a) = TYPE (fmap (*l) a) };
 
 -- All vector quantities instance vectorspace (note, `Position` does NOT)
@@ -167,7 +159,7 @@ instance (DAD.AdditiveGroup Derivative) where
     negateV (Derivative a) = Derivative $ DAD.negateV a
 
 instance (DVE.VectorSpace Derivative) where
-    type (Scalar Derivative) = FlType
+    type (Scalar Derivative) = PTY.FlType
     (*^) l (Derivative a) = Derivative (l DVE.*^ a)
 
 instance (DAD.AdditiveGroup DeltaTime) where

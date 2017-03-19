@@ -9,7 +9,7 @@ import           Protolude
 import qualified Control.Lens             as CLE
 import qualified Data.Thyme.Clock         as DTC
 
-import qualified PurpleMuon.Physics.Types as PPT
+import qualified PurpleMuon.Types         as PPY
 import qualified PurpleMuon.Util.Frames   as PUF
 
 import qualified Server.Types             as STY
@@ -26,4 +26,4 @@ manageFps = PUF.manageFps minFrameTime getFb storeDt
     storeDt _ = return ()
 
 minFrameTime :: DTC.NominalDiffTime
-minFrameTime = DTC.fromSeconds (1 / 30 :: PPT.FlType)
+minFrameTime = DTC.fromSeconds (1 / 30 :: PPY.FlType)

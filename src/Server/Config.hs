@@ -11,9 +11,13 @@ import qualified Linear.V2                as LV2
 import qualified Client.Assets.Generic    as CAG
 import qualified PurpleMuon.Game.Types    as PGT
 import qualified PurpleMuon.Physics.Types as PPT
+import qualified PurpleMuon.Types         as PTY
 
-metID :: Maybe (CAG.AssetID a, PGT.Position, PGT.Size)
-metID = Just $ (CAG.AssetID "meteorBrown_big1.png", (PGT.Position 0 0 0), (PGT.Size 0 0))
+metID :: Maybe PGT.RenderInfo
+metID = Just $ PGT.RenderInfo (PTY.Position $ LV2.V2 0 0)
+                              0
+                              (LV2.V2 0 0)
+                              (CAG.AssetID "meteorBrown_big1.png")
 
 initialObjs :: DIS.IntMap PGT.GameObject
 initialObjs = DIS.fromList
@@ -32,43 +36,43 @@ initialPhyObjs :: PPT.PhysicalObjects
 initialPhyObjs = DIS.fromList
         [ (1, PPT.PhysicalObject
                 (PPT.Mass 1)
-                (PPT.Position (LV2.V2 0.5 0.5))
+                (PTY.Position (LV2.V2 0.5 0.5))
                 (PPT.Velocity (LV2.V2 0 (-0.1)))
                 PPT.NonStatic
                 PPT.Gravitating)
         , (2, PPT.PhysicalObject
                 (PPT.Mass 1)
-                (PPT.Position (LV2.V2 0.75 0.5))
+                (PTY.Position (LV2.V2 0.75 0.5))
                 (PPT.Velocity (LV2.V2 0 0.1))
                 PPT.NonStatic
                 PPT.Gravitating)
         , (3, PPT.PhysicalObject
                 (PPT.Mass 1)
-                (PPT.Position (LV2.V2 0.75 0.15))
+                (PTY.Position (LV2.V2 0.75 0.15))
                 (PPT.Velocity (LV2.V2 0 0.1))
                 PPT.NonStatic
                 PPT.Gravitating)
         , (4, PPT.PhysicalObject
                 (PPT.Mass 1)
-                (PPT.Position (LV2.V2 0.75 0.25))
+                (PTY.Position (LV2.V2 0.75 0.25))
                 (PPT.Velocity (LV2.V2 0 0.1))
                 PPT.NonStatic
                 PPT.Gravitating)
         , (5, PPT.PhysicalObject
                 (PPT.Mass 1)
-                (PPT.Position (LV2.V2 0.75 0.35))
+                (PTY.Position (LV2.V2 0.75 0.35))
                 (PPT.Velocity (LV2.V2 0 0.1))
                 PPT.NonStatic
                 PPT.Gravitating)
         , (6, PPT.PhysicalObject
                 (PPT.Mass 1)
-                (PPT.Position (LV2.V2 0.75 0.45))
+                (PTY.Position (LV2.V2 0.75 0.45))
                 (PPT.Velocity (LV2.V2 0 0.1))
                 PPT.NonStatic
                 PPT.Gravitating)
         , (7, PPT.PhysicalObject
                 (PPT.Mass 1)
-                (PPT.Position (LV2.V2 0.75 0.55))
+                (PTY.Position (LV2.V2 0.75 0.55))
                 (PPT.Velocity (LV2.V2 0 0.1))
                 PPT.NonStatic
                 PPT.Gravitating)]

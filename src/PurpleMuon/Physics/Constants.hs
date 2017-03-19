@@ -31,11 +31,12 @@ module PurpleMuon.Physics.Constants
     , minimumDistance
     ) where
 
-import Protolude
+import           Protolude
 
 import qualified Linear.V2                as LV2
 
 import qualified PurpleMuon.Physics.Types as PPT
+import qualified PurpleMuon.Types         as PPY
 
 g :: PPT.GravitationalConstant
 g = PPT.GravitationalConstant 0.01
@@ -49,5 +50,5 @@ physicsStep = PPT.DeltaTime (1 / 30)
 
 -- | The minimum distance two objects are allowed to have
 -- This makes the integration numerically much more stable
-minimumDistance :: PPT.FlType
+minimumDistance :: PPY.FlType
 minimumDistance = 0.1

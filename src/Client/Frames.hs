@@ -28,6 +28,7 @@ import qualified Data.Thyme.Clock         as DTC
 import qualified Formatting               as FOR
 
 import qualified PurpleMuon.Physics.Types as PPT
+import qualified PurpleMuon.Types         as PTY
 import qualified PurpleMuon.Util.Frames   as PUF
 
 import qualified Client.Types             as CTY
@@ -47,20 +48,20 @@ manageFps = PUF.manageFps minFrameTime getFb storeDt
         modify (CLE.over (CTY.game . CTY.accumTime)
                          (\(PPT.DeltaTime a) -> PPT.DeltaTime (a + dt)))
 
-registerFps :: PPT.FlType -> CTY.FpsCounter -> CTY.FpsCounter
+registerFps :: PTY.FlType -> CTY.FpsCounter -> CTY.FpsCounter
 registerFps fps fpsC = fpsC { CTY.fpsL = take m newFpsL }
   where
     m = CTY.maxFrames fpsC
     f = CTY.fpsL fpsC
     newFpsL = fps : f
 
-getAvgFrametime :: CTY.FpsCounter -> PPT.FlType
+getAvgFrametime :: CTY.FpsCounter -> PTY.FlType
 getAvgFrametime  (CTY.FpsCounter _ f) = sum f / fromIntegral (max (length f) 1)
 
 minFrameTime :: DTC.NominalDiffTime
-minFrameTime = DTC.fromSeconds (1 / 120 :: PPT.FlType)
+minFrameTime = DTC.fromSeconds (1 / 120 :: PTY.FlType)
 
-fpsFormat :: FOR.Format r (PPT.FlType -> r)
+fpsFormat :: FOR.Format r (PTY.FlType -> r)
 fpsFormat = "Fps : " FOR.% FOR.fixed 1
 
 formatFps :: CTY.Game Text

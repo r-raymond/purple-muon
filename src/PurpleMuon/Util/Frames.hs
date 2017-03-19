@@ -1,3 +1,4 @@
+
 --  Copyright 2016, 2017 Robin Raymond
 --
 --  This file is part of Purple Muon
@@ -15,6 +16,19 @@
 --  You should have received a copy of the GNU General Public License
 --  along with Purple Muon.  If not, see <http://www.gnu.org/licenses/>.
 
+{-|
+Module      : PurpleMuon.Util.Frames
+Description : Module to handle frame mangement.
+Copyright   : (c) Robin Raymond, 2016-2017
+License     : GPL-3
+Maintainer  : robin@robinraymond.de
+Portability : POSIX
+
+This module defines helper function for frame management. It allows to define a
+wanted frame length and wait if the frame was shorter. It also abstracts over
+storing frame lengths and calculating FPS.
+-}
+
 module PurpleMuon.Util.Frames
     ( frameBegin
     , manageFps
@@ -27,7 +41,7 @@ import qualified Data.AdditiveGroup       as DAD
 import qualified Data.AffineSpace         as DAF
 import qualified Data.Thyme.Clock         as DTC
 
-import qualified PurpleMuon.Physics.Types as PPT
+import qualified PurpleMuon.Types         as PTY
 
 -- | Call at the beginning of a frame.
 -- Updates the frameBegin timer.
@@ -42,7 +56,7 @@ frameBegin f = do
 waitFor :: MonadIO m => DTC.NominalDiffTime -> m ()
 waitFor dt = liftIO $ CCO.threadDelay dt_ms
   where
-    dt_s = DTC.toSeconds dt :: PPT.FlType
+    dt_s = DTC.toSeconds dt :: PTY.FlType
     dt_ms_float = dt_s * 1000000
     dt_ms = truncate dt_ms_float
 
@@ -52,7 +66,7 @@ waitFor dt = liftIO $ CCO.threadDelay dt_ms
 manageFps :: MonadIO m
           => DTC.NominalDiffTime     -- ^ the desired frame time
           -> m DTC.UTCTime           -- ^ get the frame begin
-          -> (PPT.FlType -> m ())    -- ^ store `dt`
+          -> (PTY.FlType -> m ())    -- ^ store `dt`
           -> m ()
 manageFps minFT getFB storeDt = do
     end <- liftIO $ DTC.getCurrentTime
@@ -62,6 +76,6 @@ manageFps minFT getFB storeDt = do
     when (used < minFT) (waitFor (minFT DAD.^-^ used))
     final <- liftIO $ DTC.getCurrentTime
     let elapsed = final DAF..-. start
-        frameTime = DTC.toSeconds elapsed :: PPT.FlType
+        frameTime = DTC.toSeconds elapsed :: PTY.FlType
 
     storeDt frameTime

@@ -36,6 +36,7 @@ import qualified SDL.Video                as SVI
 import qualified Client.Video.Types       as CVT
 import qualified PurpleMuon.Network.Types as PNT
 import qualified PurpleMuon.Physics.Types as PPT
+import qualified PurpleMuon.Types as PPY
 
 data AppState
     = AppState
@@ -67,7 +68,7 @@ data Resources
 data FpsCounter
     = FpsCounter
     { maxFrames :: Int
-    , fpsL      :: [PPT.FlType]
+    , fpsL      :: [PPY.FlType]
     } deriving (Show)
 
 data TextureUUIDs
