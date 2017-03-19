@@ -40,16 +40,20 @@ import qualified Client.Types              as CTY
 uuid :: PNT.ProtocolUUID
 uuid = toS $ DBI.encode (1337 :: Word32)
 
-initialeState :: SVI.Renderer -> CTY.AppState
-initialeState r =
-    CTY.AppState True
-        (CTY.InGameState DIS.empty (PPT.DeltaTime 0) (PPT.DeltaTime 0))
+initialeState :: MonadIO m => SVI.Renderer -> m CTY.AppState
+initialeState r = do
+    tl <- CAT.textureLoader r
+    sl <- CAS.spriteLoader tl
+    return $ CTY.AppState True
+        (CTY.InGameState DIS.empty (PPT.DeltaTime 0) (PPT.DeltaTime 0) DIS.empty)
         (CTY.FpsCounter 60 [])
         (toEnum 0)
-        (CAS.spriteLoader)
+        sl
 
 game :: CCS.TBQueue PNT.ServerToClientMsg -> SVI.Window -> SVI.Renderer -> IO ()
-game tb w r = evalStateT (runReaderT CMA.initLoop (CTY.Resources w r tb)) (initialeState r)
+game tb w r = do
+    initS <- initialeState r
+    evalStateT (runReaderT CMA.initLoop (CTY.Resources w r tb)) initS
 
 main :: IO ()
 main = do
