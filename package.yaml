@@ -60,6 +60,7 @@ dependencies:
 library:
   source-dirs: src
   other-modules:
+    - Paths_purple_muon
     - Version
 
 executables:
