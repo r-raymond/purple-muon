@@ -60,25 +60,7 @@ dependencies:
 library:
   source-dirs: src
   exposed-modules:
-    - Version
-    - PurpleMuon.Network.Types
-    - PurpleMuon.Network.Message
-    - PurpleMuon.Network.Util
-    - PurpleMuon.Physics.Types
-    - PurpleMuon.Physics.Algorithm
-    - PurpleMuon.Physics.Constants
-    - PurpleMuon.Util.MonadError
-
-    - Client.Event
-    - Client.Frames
-    - Client.Image
-    - Client.Init
-    - Client.MainLoop
-    - Client.Types
-    - Client.Video.Texture
-    - Client.Video.Types
     - Client.Main
-
     - Server.Main
 
 executables:
