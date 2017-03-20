@@ -62,6 +62,7 @@ library:
   exposed-modules:
     - Client.Main
     - Server.Main
+    - Version
 
 executables:
     pm-client:
