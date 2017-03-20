@@ -59,9 +59,7 @@ dependencies:
 
 library:
   source-dirs: src
-  exposed-modules:
-    - Client.Main
-    - Server.Main
+  other-modules:
     - Version
 
 executables:
