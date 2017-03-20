@@ -8,23 +8,696 @@
 @package purple-muon
 @version 0.0.0
 
-module Version
+module Server.CommandLine
+data CommandLineOptions
+CommandLineOptions :: Word32 -> CommandLineOptions
+[uuid] :: CommandLineOptions -> Word32
+parser :: Parser CommandLineOptions
 
--- | The current gitTag as given by `git describe`, or <tt>UNKNOWN</tt> if
---   this command fails.
-gitTag :: Text
+module PurpleMuon.Video.Types
 
--- | The platform this was build on.
-platform :: Text
 
--- | The compiler that was used for this build.
-compiler :: Text
+-- | This module defines common lifting operations into MonadError.
+module PurpleMuon.Util.MonadError
+
+-- | Lift a Maybe into an error monad
+liftMaybe :: (MonadError e m) => e -> Maybe a -> m a
+
+-- | Lift Either into error monad This version additionally allows to
+--   specify a transformation for the <a>Left</a> value.
+liftEitherWith :: (MonadError e m) => (f -> e) -> Either f a -> m a
+
+-- | Lift Either into error monad Throws error on <a>Left</a> Value.
+liftEither :: (MonadError e m) => Either e a -> m a
+
+-- | Map the error type (<a>Left</a>) of an <a>Either</a>
+mapLeft :: (a -> b) -> Either a c -> Either b c
+
+-- | Lift a list into error monad Throws error if list is empty, gives head
+--   otherwise
+liftList :: (MonadError e m) => e -> [a] -> m a
+
+
+-- | This module defined types that are used in multiple subcomponents.
+--   Instead of having different versions in each subcompoenent, they are
+--   collected here. As such, this module is kind of a collection of things
+--   without a common denominator.
+module PurpleMuon.Types
+
+-- | The floating point type used in PurpleMuon
+type FlType = Float
+
+-- | A position type describing a position on the screen. Screen positions
+--   are always int the range `[0,1] x [0,1]` and will be rescaled when
+--   drawn according to the screen resolution. The physics engine uses the
+--   same positions to describe the physical objects.
+newtype Position
+Position :: V2 FlType -> Position
+[unPosition] :: Position -> V2 FlType
+instance GHC.Show.Show PurpleMuon.Types.Position
+instance GHC.Classes.Eq PurpleMuon.Types.Position
+instance GHC.Generics.Generic PurpleMuon.Types.Position
+instance Data.Binary.Class.Binary PurpleMuon.Types.Position
+
+
+-- | This module defines helper function for frame management. It allows to
+--   define a wanted frame length and wait if the frame was shorter. It
+--   also abstracts over storing frame lengths and calculating FPS.
+module PurpleMuon.Util.Frames
+
+-- | Call at the beginning of a frame. Updates the frameBegin timer.
+frameBegin :: MonadIO m => (UTCTime -> m ()) -> m ()
+
+-- | Handle frame time. The function will then calculate the remaining
+--   time, sleep the thread, update the frame counter and the dt variable
+--   of the game state
+manageFps :: MonadIO m => NominalDiffTime -> m UTCTime -> (FlType -> m ()) -> m ()
+
+
+module PurpleMuon.Physics.Types
+
+-- | A physical object identifier
+newtype PhyObjUUID
+PhyObjUUID :: Int -> PhyObjUUID
+[unPhyObjUUID] :: PhyObjUUID -> Int
+
+-- | The mass of an object
+newtype Mass
+Mass :: FlType -> Mass
+[unMass] :: Mass -> FlType
+
+-- | The velocity of an object
+newtype Velocity
+Velocity :: V2 FlType -> Velocity
+[unVelocity] :: Velocity -> V2 FlType
+
+-- | The acceleration of an object
+newtype Acceleration
+Acceleration :: V2 FlType -> Acceleration
+[unAcceleration] :: Acceleration -> V2 FlType
+
+-- | A time delta Meassured in seconds
+newtype DeltaTime
+DeltaTime :: FlType -> DeltaTime
+[unDeltaTime] :: DeltaTime -> FlType
+
+-- | A Force
+newtype Force
+Force :: V2 FlType -> Force
+[unForce] :: Force -> V2 FlType
+
+-- | The gravitaional constant
+newtype GravitationalConstant
+GravitationalConstant :: FlType -> GravitationalConstant
+[unGravitationalConstant] :: GravitationalConstant -> FlType
+
+-- | A physical object
+data PhysicalObject
+PhysicalObject :: Mass -> Position -> Velocity -> ObjType -> ObjGrav -> PhysicalObject
+
+-- | The mass of the object
+[_mass] :: PhysicalObject -> Mass
+
+-- | The position of the object
+[_pos] :: PhysicalObject -> Position
+
+-- | The velocity of the object
+[_vel] :: PhysicalObject -> Velocity
+
+-- | Is this object moving?
+[_static] :: PhysicalObject -> ObjType
+
+-- | Is this object gravitating?
+[_gravitating] :: PhysicalObject -> ObjGrav
+mass :: Lens' PhysicalObject Mass
+pos :: Lens' PhysicalObject Position
+vel :: Lens' PhysicalObject Velocity
+static :: Lens' PhysicalObject ObjType
+gravitating :: Lens' PhysicalObject ObjGrav
+
+-- | The physical size of the playing board
+newtype PhysicalSize
+PhysicalSize :: V2 FlType -> PhysicalSize
+[unPhysicalSize] :: PhysicalSize -> V2 FlType
+
+-- | The derivaties of a physical object numerical integrater
+newtype Derivative
+Derivative :: (Velocity, Force) -> Derivative
+[unDerviative] :: Derivative -> (Velocity, Force)
+
+-- | A collection of derivaties, indexed by the <tt>uuid</tt> of the
+--   objects
+type Derivatives = IntMap Derivative
+
+-- | A collection of objects, indexed by the <tt>uuid</tt> of the objects
+type PhysicalObjects = IntMap PhysicalObject
+
+-- | A collection of forces, indexed by the <tt>uuid</tt> of the objects
+type Forces = IntMap Force
+
+-- | The type of a gravitating body
+data ObjGrav
+
+-- | the object exerts gravitational forces
+Gravitating :: ObjGrav
+
+-- | the object only recerives grav. forces
+NonGravitating :: ObjGrav
+
+-- | The type of a physical object
+data ObjType
+
+-- | the objects position is fixed
+Static :: ObjType
+
+-- | the objects position is not fixed
+NonStatic :: ObjType
+instance GHC.Generics.Generic PurpleMuon.Physics.Types.Derivative
+instance GHC.Show.Show PurpleMuon.Physics.Types.Derivative
+instance GHC.Classes.Eq PurpleMuon.Physics.Types.Derivative
+instance GHC.Generics.Generic PurpleMuon.Physics.Types.PhysicalSize
+instance GHC.Show.Show PurpleMuon.Physics.Types.PhysicalSize
+instance GHC.Classes.Eq PurpleMuon.Physics.Types.PhysicalSize
+instance Data.AdditiveGroup.AdditiveGroup PurpleMuon.Physics.Types.Force
+instance Data.VectorSpace.VectorSpace PurpleMuon.Physics.Types.Force
+instance Data.AdditiveGroup.AdditiveGroup PurpleMuon.Physics.Types.Velocity
+instance Data.VectorSpace.VectorSpace PurpleMuon.Physics.Types.Velocity
+instance Data.AdditiveGroup.AdditiveGroup PurpleMuon.Physics.Types.Acceleration
+instance Data.VectorSpace.VectorSpace PurpleMuon.Physics.Types.Acceleration
+instance Data.AdditiveGroup.AdditiveGroup PurpleMuon.Physics.Types.Derivative
+instance Data.VectorSpace.VectorSpace PurpleMuon.Physics.Types.Derivative
+instance Data.AdditiveGroup.AdditiveGroup PurpleMuon.Physics.Types.DeltaTime
+instance Data.Binary.Class.Binary PurpleMuon.Physics.Types.PhyObjUUID
+instance GHC.Generics.Generic PurpleMuon.Physics.Types.PhysicalObject
+instance GHC.Show.Show PurpleMuon.Physics.Types.PhysicalObject
+instance GHC.Generics.Generic PurpleMuon.Physics.Types.ObjGrav
+instance GHC.Show.Show PurpleMuon.Physics.Types.ObjGrav
+instance GHC.Classes.Eq PurpleMuon.Physics.Types.ObjGrav
+instance GHC.Generics.Generic PurpleMuon.Physics.Types.ObjType
+instance GHC.Show.Show PurpleMuon.Physics.Types.ObjType
+instance GHC.Classes.Eq PurpleMuon.Physics.Types.ObjType
+instance GHC.Generics.Generic PurpleMuon.Physics.Types.GravitationalConstant
+instance GHC.Show.Show PurpleMuon.Physics.Types.GravitationalConstant
+instance GHC.Classes.Eq PurpleMuon.Physics.Types.GravitationalConstant
+instance GHC.Generics.Generic PurpleMuon.Physics.Types.Force
+instance GHC.Show.Show PurpleMuon.Physics.Types.Force
+instance GHC.Classes.Eq PurpleMuon.Physics.Types.Force
+instance GHC.Generics.Generic PurpleMuon.Physics.Types.DeltaTime
+instance GHC.Classes.Ord PurpleMuon.Physics.Types.DeltaTime
+instance GHC.Show.Show PurpleMuon.Physics.Types.DeltaTime
+instance GHC.Classes.Eq PurpleMuon.Physics.Types.DeltaTime
+instance GHC.Generics.Generic PurpleMuon.Physics.Types.Acceleration
+instance GHC.Show.Show PurpleMuon.Physics.Types.Acceleration
+instance GHC.Classes.Eq PurpleMuon.Physics.Types.Acceleration
+instance GHC.Generics.Generic PurpleMuon.Physics.Types.Velocity
+instance GHC.Show.Show PurpleMuon.Physics.Types.Velocity
+instance GHC.Classes.Eq PurpleMuon.Physics.Types.Velocity
+instance GHC.Generics.Generic PurpleMuon.Physics.Types.Mass
+instance GHC.Show.Show PurpleMuon.Physics.Types.Mass
+instance GHC.Classes.Eq PurpleMuon.Physics.Types.Mass
+instance GHC.Generics.Generic PurpleMuon.Physics.Types.PhyObjUUID
+instance GHC.Real.Integral PurpleMuon.Physics.Types.PhyObjUUID
+instance GHC.Enum.Enum PurpleMuon.Physics.Types.PhyObjUUID
+instance GHC.Real.Real PurpleMuon.Physics.Types.PhyObjUUID
+instance GHC.Num.Num PurpleMuon.Physics.Types.PhyObjUUID
+instance GHC.Classes.Ord PurpleMuon.Physics.Types.PhyObjUUID
+instance GHC.Classes.Eq PurpleMuon.Physics.Types.PhyObjUUID
+instance Data.Binary.Class.Binary PurpleMuon.Physics.Types.Mass
+instance Data.Binary.Class.Binary PurpleMuon.Physics.Types.Velocity
+instance Data.Binary.Class.Binary PurpleMuon.Physics.Types.ObjType
+instance Data.Binary.Class.Binary PurpleMuon.Physics.Types.ObjGrav
+instance Data.Binary.Class.Binary PurpleMuon.Physics.Types.PhysicalObject
+
+
+module PurpleMuon.Physics.Constants
+g :: GravitationalConstant
+physicalSize :: PhysicalSize
+
+-- | Do physics at 30 Hz
+physicsStep :: DeltaTime
+
+-- | The minimum distance two objects are allowed to have This makes the
+--   integration numerically much more stable
+minimumDistance :: FlType
+
+
+module PurpleMuon.Physics.Algorithm
+
+-- | Integrate a physical object system. Uses RK4, and the notation from
+--   the wikipedia article
+--   <a>https://en.wikipedia.org/wiki/Runge%E2%80%93Kutta_methods</a>
+integrateTimeStep :: GravitationalConstant -> DeltaTime -> PhysicalObjects -> Forces -> PhysicalObjects
+
+module Client.Init
+
+-- | Run a computation with SDL, SDL window and SDL renderer, SDL-ttf and
+--   SDL-mixer.
+withGraphics :: (Window -> Renderer -> IO ()) -> IO (Either SomeException ())
+
+module Client.Image
+parseTextureAtlas :: MonadIO m => FilePath -> m (Maybe Element)
+filterAtlas :: Text -> Content -> Bool
+data Texture
+Texture :: TextureAtlas -> Text -> Int -> Int -> Int -> Int -> Texture
+[atlas] :: Texture -> TextureAtlas
+[name] :: Texture -> Text
+[x] :: Texture -> Int
+[y] :: Texture -> Int
+[width] :: Texture -> Int
+[height] :: Texture -> Int
+data TextureAtlas
+
+module Client.Assets.Util
+
+-- | A list of all png assets to load on game start. If this list gets too
+--   long, maybe it should be split into assets for different stages of the
+--   game.
+pngAssets :: [FilePath]
+
+module Client.Assets.Generic
+
+-- | A unique identifier for assets. The identifier has a phantom type
+--   which ensures that id's of different assets can not be mixed.
+newtype AssetID a
+AssetID :: Text -> AssetID a
+[unAssetID] :: AssetID a -> Text
+
+-- | A AssetLoader is responsible for managing assets. It can load assets
+--   and store them for easy retrival.
+class AssetLoader al where data Asset al :: * where {
+    data family Asset al :: *;
+}
+
+-- | Load an asset (maybe multiple assets) into an AssetLoader. Returns the
+--   <a>AssetID</a>s of the loaded types.
+--   
+--   WARNING: loadAsset will always normalize the given <a>FilePath</a> via
+--   the cabal paths package. Hence all paths should be specified relative
+--   to the root of the git repository. Also make sure that the files are
+--   mentioned in the package.yaml file under data-files.
+loadAsset :: (AssetLoader al, MonadIO m, MonadError Text m) => al -> FilePath -> m [(AssetID (Asset al))]
+
+-- | Retreive asset from AssetLoader
+getAsset :: (AssetLoader al, MonadIO m, MonadError Text m) => al -> AssetID (Asset al) -> m (Asset al)
+
+-- | Delete an asset
+deleteAsset :: (AssetLoader al, MonadIO m) => al -> AssetID (Asset al) -> m ()
+
+-- | Get all <a>AssetID</a>s
+getAllIDs :: (AssetLoader al, MonadIO m) => al -> m [AssetID (Asset al)]
+
+-- | A simple implementation of an AssetLoader via Hashmaps <tt>a</tt> is
+--   the type of the Asset to be loaded and stored and <tt>ext</tt> can be
+--   any extra data that needs to be used when loading an asset from a
+--   file.
+data HashmapLoader a ext
+HashmapLoader :: BasicHashTable Text a -> ext -> (ext -> FilePath -> IO (Either Text [(AssetID a, a)])) -> (ext -> a -> IO ()) -> HashmapLoader a ext
+[store] :: HashmapLoader a ext -> BasicHashTable Text a
+[extraData] :: HashmapLoader a ext -> ext
+[loadFromFile] :: HashmapLoader a ext -> ext -> FilePath -> IO (Either Text [(AssetID a, a)])
+[delete] :: HashmapLoader a ext -> ext -> a -> IO ()
+
+-- | Utility function to load a bunch of assets into an <a>AssetLoader</a>
+--   with a callback function. Also normalizes the paths via the cabal
+--   paths.
+loadAssets :: forall m a. (MonadError Text m, MonadIO m, AssetLoader a) => a -> [FilePath] -> (Float -> Text -> m ()) -> m ()
+
+-- | Utility function to delete allassets in an <a>AssetLoader</a>
+deleteAssets :: (AssetLoader a, MonadIO m) => a -> m ()
+instance GHC.Generics.Generic (Client.Assets.Generic.AssetID a)
+instance Client.Assets.Generic.AssetLoader (Client.Assets.Generic.HashmapLoader a ext)
+instance Data.Binary.Class.Binary (Client.Assets.Generic.AssetID b)
+
+module Client.Assets.Sound
+
+-- | Implementation of <tt>AssetLoader</tt> for sounds.
+soundLoader :: MonadIO m => m SoundLoaderType
+
+-- | Complete list of all sound assets in the game
+soundAssets :: [FilePath]
+
+-- | A type of a sound loader
+type SoundLoaderType = HashmapLoader Chunk ()
+
+-- | Type of a sound identifier
+type SoundID = AssetID (Asset SoundLoaderType)
+
+module Client.Assets.Texture
+
+-- | Implementation of <tt>AssetLoader</tt> for textures
+textureLoader :: MonadIO m => Renderer -> m TextureLoaderType
+
+-- | Type of a texture loader
+type TextureLoaderType = HashmapLoader Texture Renderer
+
+-- | Type of a texture identifier
+type TextureID = AssetID (Asset TextureLoaderType)
+
+module Client.Assets.Sprite
+
+-- | Implementation of <tt>AssetLoader</tt> for sprites
+spriteLoader :: MonadIO m => TextureLoaderType -> m SpriteLoaderType
+data Sprite
+Sprite :: Texture -> Rectangle CInt -> Point V2 CInt -> Sprite
+[texture] :: Sprite -> Texture
+[rect] :: Sprite -> Rectangle CInt
+[center] :: Sprite -> Point V2 CInt
+
+-- | Type of a sprite loader
+type SpriteLoaderType = HashmapLoader Sprite TextureLoaderType
+
+-- | Type of a sprite loader identifier
+type SpriteID = AssetID (Asset SpriteLoaderType)
+
+module Client.Video.Menu
+data MenuItem
+MenuItem :: Position -> MenuType -> MenuItem
+[_position] :: MenuItem -> Position
+[_mType] :: MenuItem -> MenuType
+position :: Lens' MenuItem Position
+mType :: Lens' MenuItem MenuType
+data MenuType
+Label :: Text -> Int -> SpriteID -> MenuType
+[_labelText] :: MenuType -> Text
+[_labelSize] :: MenuType -> Int
+[_labelTextue] :: MenuType -> SpriteID
+Button :: Text -> V2 Float -> MenuType
+[_buttonText] :: MenuType -> Text
+[_buttonSize] :: MenuType -> V2 Float
+InputField :: Text -> V2 Float -> MenuType
+[_inputFieldText] :: MenuType -> Text
+[_inputFieldSize] :: MenuType -> V2 Float
+labelText :: Traversal' MenuType Text
+labelSize :: Traversal' MenuType Int
+labelTextue :: Traversal' MenuType SpriteID
+buttonText :: Traversal' MenuType Text
+buttonSize :: Traversal' MenuType (V2 Float)
+inputFieldText :: Traversal' MenuType Text
+inputFieldSize :: Traversal' MenuType (V2 Float)
+
+
+module PurpleMuon.Game.Types
+
+-- | A game object. Has optionally a name and a <tt>PhysicalObject</tt>.
+data GameObject
+GameObject :: GameObjectData -> Maybe Text -> Maybe PhyObjUUID -> Maybe RenderInfo -> GameObject
+[_goData] :: GameObject -> GameObjectData
+[_mName] :: GameObject -> Maybe Text
+[_mPhOb] :: GameObject -> Maybe PhyObjUUID
+[_mReInfo] :: GameObject -> Maybe RenderInfo
+goData :: Lens' GameObject GameObjectData
+mName :: Lens' GameObject (Maybe Text)
+mPhOb :: Lens' GameObject (Maybe PhyObjUUID)
+mReInfo :: Lens' GameObject (Maybe RenderInfo)
+
+-- | The type of the game object and the data that goes with it.
+data GameObjectData
+PlayerShip :: GameObjectData
+Comet :: GameObjectData
+newtype GameObjUUID
+GameObjUUID :: Word16 -> GameObjUUID
+[unGameObjUUID] :: GameObjUUID -> Word16
+data Size
+Size :: Float -> Float -> Size
+[_xSize] :: Size -> Float
+[_ySize] :: Size -> Float
+xSize :: Lens' Size Float
+ySize :: Lens' Size Float
+data RenderInfo
+RenderInfo :: Position -> FlType -> V2 FlType -> SpriteID -> RenderInfo
+[_pos] :: RenderInfo -> Position
+[_angle] :: RenderInfo -> FlType
+[_size] :: RenderInfo -> V2 FlType
+[_sprite] :: RenderInfo -> SpriteID
+pos :: Lens' RenderInfo Position
+angle :: Lens' RenderInfo FlType
+size :: Lens' RenderInfo (V2 FlType)
+sprite :: Lens' RenderInfo SpriteID
+instance GHC.Generics.Generic PurpleMuon.Game.Types.GameObject
+instance GHC.Generics.Generic PurpleMuon.Game.Types.Size
+instance GHC.Generics.Generic PurpleMuon.Game.Types.RenderInfo
+instance GHC.Generics.Generic PurpleMuon.Game.Types.GameObjectData
+instance GHC.Classes.Ord PurpleMuon.Game.Types.GameObjUUID
+instance GHC.Classes.Eq PurpleMuon.Game.Types.GameObjUUID
+instance Data.Binary.Class.Binary PurpleMuon.Game.Types.GameObjectData
+instance Data.Binary.Class.Binary PurpleMuon.Game.Types.Size
+instance Data.Binary.Class.Binary PurpleMuon.Game.Types.RenderInfo
+instance Data.Binary.Class.Binary PurpleMuon.Game.Types.GameObject
+
+
+module PurpleMuon.Network.Types
+
+-- | A binary message that is send over the network
+newtype RawMessage
+RawMessage :: ByteString -> RawMessage
+[unRawMessage] :: RawMessage -> ByteString
+
+-- | A binary message without a uuid header
+newtype NakedMessage
+NakedMessage :: ByteString -> NakedMessage
+[unNakedMessage] :: NakedMessage -> ByteString
+
+-- | A uuid is a header that the server and client prepends to every
+--   message. A message that does not have such a header is discarded
+--   immediately
+type ProtocolUUID = ByteString
+
+-- | The payload of a Message
+newtype Payload
+Payload :: ByteString -> Payload
+[unPayload] :: Payload -> ByteString
+
+-- | A counter to count both the remote and local messages
+newtype MessageCount
+MessageCount :: Word32 -> MessageCount
+[unMessageCounter] :: MessageCount -> Word32
+
+-- | A field indicating which of the last 32 messages have arrived.
+newtype AckField
+AckField :: Word32 -> AckField
+[unAckField] :: AckField -> Word32
+
+-- | A difference between to Message counts
+newtype Offset
+Offset :: Int -> Offset
+[unOffset] :: Offset -> Int
+
+-- | A Configuration of a connection
+data NetworkConfig
+ConnectionConfig :: Int -> NetworkConfig
+[maxClients] :: NetworkConfig -> Int
+data NetworkState
+NetworkState :: Socket -> NetworkState
+[socket] :: NetworkState -> Socket
+data ConnectionState
+ConnectionState :: SockAddr -> MessageCount -> ConnectionState
+[addr] :: ConnectionState -> SockAddr
+[latestCounter] :: ConnectionState -> MessageCount
+
+-- | Messages the Server sends to the Clients
+data ServerToClientMsg
+
+-- | A simple ping package to determine network latency
+Ping :: ServerToClientMsg
+
+-- | Create a new game object
+CreateGameObject :: GameObject -> ServerToClientMsg
+
+-- | The physical objects in the system TODO: Pack this better. Also send
+--   the generation of the data
+Update :: PhysicalObjects -> ServerToClientMsg
+
+-- | Messages the Clients send to the Server
+data ClientToServerMsg
+
+-- | Request a connection to the server. The sever will answer with ping
+--   commands to establish the network latency if the request is granted
+RequestConnection :: PlayerName -> ClientToServerMsg
+
+-- | Answer to a ping command. The <a>MessageCount</a> indicates which
+Pong :: MessageCount -> ClientToServerMsg
+
+-- | A player name
+newtype PlayerName
+PlayerName :: Text -> PlayerName
+[unPlayerName] :: PlayerName -> Text
+instance GHC.Generics.Generic PurpleMuon.Network.Types.ClientToServerMsg
+instance GHC.Generics.Generic PurpleMuon.Network.Types.PlayerName
+instance GHC.Generics.Generic PurpleMuon.Network.Types.ServerToClientMsg
+instance GHC.Generics.Generic PurpleMuon.Network.Types.MessageCount
+instance Data.Binary.Class.Binary PurpleMuon.Network.Types.MessageCount
+instance Data.Binary.Class.Binary PurpleMuon.Network.Types.PlayerName
+instance Data.Binary.Class.Binary PurpleMuon.Network.Types.ServerToClientMsg
+instance Data.Binary.Class.Binary PurpleMuon.Network.Types.ClientToServerMsg
+
+module Client.Types
+data AppState
+AppState :: Bool -> GameState -> FpsCounter -> UTCTime -> SpriteLoaderType -> AppState
+[_running] :: AppState -> Bool
+[_game] :: AppState -> GameState
+[_fps] :: AppState -> FpsCounter
+[_frameBegin] :: AppState -> UTCTime
+[_sprites] :: AppState -> SpriteLoaderType
+running :: Lens' AppState Bool
+game :: Lens' AppState GameState
+fps :: Lens' AppState FpsCounter
+frameBegin :: Lens' AppState UTCTime
+sprites :: Lens' AppState SpriteLoaderType
+type Game a = ReaderT Resources (StateT AppState IO) a
+data GameState
+InGameState :: PhysicalObjects -> DeltaTime -> DeltaTime -> IntMap GameObject -> GameState
+[_physicalObjects] :: GameState -> PhysicalObjects
+[_dt] :: GameState -> DeltaTime
+
+-- | Accumulated time for fixed physics step
+[_accumTime] :: GameState -> DeltaTime
+[_gameObjects] :: GameState -> IntMap GameObject
+MenuState :: GameState
+physicalObjects :: Traversal' GameState PhysicalObjects
+dt :: Traversal' GameState DeltaTime
+accumTime :: Traversal' GameState DeltaTime
+gameObjects :: Traversal' GameState (IntMap GameObject)
+data Resources
+Resources :: Window -> Renderer -> TBQueue ServerToClientMsg -> Resources
+[_window] :: Resources -> Window
+[_renderer] :: Resources -> Renderer
+[_tbqueue] :: Resources -> TBQueue ServerToClientMsg
+window :: Lens' Resources Window
+renderer :: Lens' Resources Renderer
+tbqueue :: Lens' Resources (TBQueue ServerToClientMsg)
+data FpsCounter
+FpsCounter :: Int -> [FlType] -> FpsCounter
+[maxFrames] :: FpsCounter -> Int
+[fpsL] :: FpsCounter -> [FlType]
+instance GHC.Show.Show Client.Types.FpsCounter
+
+module Client.Event
+handleEvent :: Event -> Game ()
+
+module Client.Frames
+frameBegin :: Game ()
+manageFps :: Game ()
+formatFps :: Game Text
+
+
+module PurpleMuon.Network.Message
+
+-- | Prepend a message with an crc32 checksum.
+prepend :: ProtocolUUID -> NakedMessage -> RawMessage
+
+-- | strip an crc32 off of a message. Returns Just (stripped message) if
+--   the message contains the correct uuid and Nothing otherwise
+strip :: ProtocolUUID -> RawMessage -> Maybe NakedMessage
+
+-- | Calculate the next message count
+nextMC :: MessageCount -> MessageCount
+
+-- | Calculate the offset of two message types. Guarantees that
+--   
+--   <pre>
+--   moveMC a (diffMC a b) = b
+--   </pre>
+--   
+--   for all MessageCounts a and b.
+diffMC :: MessageCount -> MessageCount -> Offset
+
+-- | Move a MessageCount by a given offset
+moveMC :: MessageCount -> Offset -> MessageCount
+
+
+module PurpleMuon.Network.Util
+
+-- | Open a UDP Socket on a specific port
+serverSocket :: MonadIO m => Text -> m (Either SomeException Socket)
+
+-- | Connect an UDP socket to a specific port
+clientSocket :: MonadIO m => Text -> Text -> m (Either SomeException Socket)
+
+-- | Endless receiving queue forkIO this and give it a STM object to write
+--   stuff to. It will block on UDP recv and as soon as something arrives
+--   write it to the output
+endlessRecv :: MonadIO m => ProtocolUUID -> Int -> Socket -> TBQueue ServerToClientMsg -> m ()
+
+module Server.Types
+
+-- | The state of a server waiting for connections
+data WaitingState
+WaitingState :: [ClientConnection] -> WaitingState
+[_clientsConnected] :: WaitingState -> [ClientConnection]
+
+-- | The state of a server in game
+data GameState
+GameState :: IntMap GameObject -> PhysicalObjects -> UTCTime -> [ClientConnection] -> Word32 -> GameState
+[_gObjs] :: GameState -> IntMap GameObject
+[_pObjs] :: GameState -> PhysicalObjects
+[_frameBegin] :: GameState -> UTCTime
+[_clients] :: GameState -> [ClientConnection]
+
+-- | Count of integration steps
+[_intStep] :: GameState -> Word32
+gObjs :: Lens' GameState (IntMap GameObject)
+pObjs :: Lens' GameState PhysicalObjects
+frameBegin :: Lens' GameState UTCTime
+clients :: Lens' GameState [ClientConnection]
+logger :: Lens' Resources LoggerSet
+intStep :: Lens' GameState Word32
+type WaitingServer a = ReaderT Resources (StateT WaitingState IO) a
+clientsConnected :: Iso' WaitingState [ClientConnection]
+type Server a = ReaderT Resources (StateT GameState IO) a
+
+-- | Read only resources that the server has access to
+data Resources
+Resources :: TBQueue NakedMessage -> Socket -> LoggerSet -> ProtocolUUID -> Resources
+[_tbqueue] :: Resources -> TBQueue NakedMessage
+[_socket] :: Resources -> Socket
+[_logger] :: Resources -> LoggerSet
+[_uuid] :: Resources -> ProtocolUUID
+tbqueue :: Lens' Resources (TBQueue NakedMessage)
+socket :: Lens' Resources Socket
+uuid :: Lens' Resources ProtocolUUID
+
+-- | A client connection saves all the data the server knows about a client
+data ClientConnection
+ClientConnection :: SockAddr -> Text -> GameObjUUID -> ClientConnection
+[_addr] :: ClientConnection -> SockAddr
+[_name] :: ClientConnection -> Text
+[_gameObj] :: ClientConnection -> GameObjUUID
+addr :: Lens' ClientConnection SockAddr
+name :: Lens' ClientConnection Text
+gameObj :: Lens' ClientConnection GameObjUUID
+
+module Server.Frames
+frameBegin :: Server ()
+manageFps :: Server ()
+
+module Server.Network
+
+-- | Send a package to all clients. Don't request an acknowledgment of
+--   arrival.
+sendPackage :: (MonadState GameState m, MonadReader Resources m, MonadIO m) => ServerToClientMsg -> m ()
+
+module Client.Video.Sprite
+renderGameObject :: MonadIO m => Renderer -> SpriteLoaderType -> Resolution -> GameObject -> m ()
+
+-- | Update the sprite position with the position of the physical Object
+updateRenderInfo :: PhysicalObjects -> GameObject -> GameObject
+
+module Client.MainLoop
+loop :: Game ()
+initLoop :: Game ()
 
 module Client.Main
 uuid :: ProtocolUUID
 initialeState :: MonadIO m => Renderer -> m AppState
 game :: TBQueue ServerToClientMsg -> Window -> Renderer -> IO ()
 main :: IO ()
+
+module Server.Config
+initialObjs :: IntMap GameObject
+initialPhyObjs :: PhysicalObjects
+
+module Server.MainLoop
+initLoop :: MonadIO m => CommandLineOptions -> m ()
 
 module Server.Main
 main :: IO ()
