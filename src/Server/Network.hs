@@ -59,9 +59,20 @@ sendPackage pkg = do
 
 
 -- | Send a complete game state to a client
-sendGameState :: (MonadIO m)
-              => STY.ClientConnection
-              -> PPT.PhysicalObjects
+sendGameState :: (MonadState STY.GameState m, MonadReader STY.Resources m, MonadIO m)
+              => PPT.PhysicalObjects
               -> DIS.IntMap PGT.GameObject
+              -> STY.ClientConnection
               -> m ()
 sendGameState = undefined
+
+
+sendGameObject :: (MonadState STY.GameState m, MonadReader STY.Resources m, MonadIO m)
+               => STY.ClientConnection
+               -> PPT.PhysicalObjects
+               -> (PGT.GameObjUUID, PGT.GameObject)
+               -> m ()
+sendGameObject cc pos (k, go) =
+    case (CLE.view PGT.mPhOb go) of
+        Nothing    -> sendPackage (PNT.CreateGameObject (k, go, Nothing))
+        Just phKey -> return ()

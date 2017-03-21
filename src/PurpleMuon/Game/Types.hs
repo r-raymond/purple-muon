@@ -44,8 +44,8 @@ import qualified Client.Assets.Sprite     as CAS
 import qualified PurpleMuon.Physics.Types as PPT
 import qualified PurpleMuon.Types         as PTY
 
-newtype GameObjUUID = GameObjUUID { unGameObjUUID :: Word16 }
-    deriving (Eq, Ord)
+newtype GameObjUUID = GameObjUUID { unGameObjUUID :: Int }
+    deriving (Eq, Ord, Generic)
 
 -- | The type of the game object and the data that goes with it.
 data GameObjectData
@@ -82,7 +82,9 @@ instance DBI.Binary GameObjectData
 instance DBI.Binary Size
 instance DBI.Binary RenderInfo
 instance DBI.Binary GameObject
+instance DBI.Binary GameObjUUID
 
 CLE.makeLenses ''GameObject
 CLE.makeLenses ''RenderInfo
 CLE.makeLenses ''Size
+CLE.makeLenses '' GameObjUUID

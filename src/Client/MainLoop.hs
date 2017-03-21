@@ -123,16 +123,17 @@ network = do
             network
         Just (PNT.Ping) -> network                  -- < TODO
         Just (PNT.CreateGameObject (k, o, mp)) ->
-            case mp of
+            let key = PGT.unGameObjUUID k
+            in case mp of
                 Nothing -> do
-                    modify (CLE.over (CTY.game . CTY.gameObjects) (DIS.insert k o))
+                    modify (CLE.over (CTY.game . CTY.gameObjects) (DIS.insert key o))
                     network
                 Just p -> do
                     let mpk = fmap PPT.unPhyObjUUID (CLE.view PGT.mPhOb o)
                     case mpk of
                         Just pk -> do
                             modify (CLE.over (CTY.game . CTY.physicalObjects) (DIS.insert pk p))
-                            modify (CLE.over (CTY.game . CTY.gameObjects) (DIS.insert k o))
+                            modify (CLE.over (CTY.game . CTY.gameObjects) (DIS.insert key o))
                             network
                         Nothing -> network -- TODO: Log error. got physical object but no matching id
         Nothing -> return ()
