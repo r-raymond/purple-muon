@@ -26,6 +26,7 @@ import           Version
 
 import qualified Control.Concurrent.STM   as CCS
 import qualified Control.Lens             as CLE
+import qualified Data.IntMap.Strict       as DIS
 import qualified Formatting               as FOR
 import qualified SDL                      as SDL
 import qualified SDL.Event                as SEV
@@ -33,15 +34,17 @@ import qualified SDL.Mixer                as SMI
 import qualified SDL.Vect                 as SVE
 import qualified SDL.Video                as SVI
 
+import qualified PurpleMuon.Game.Types    as PGT
 import qualified PurpleMuon.Network.Types as PNT
+import qualified PurpleMuon.Physics.Types as PPT
 
 import qualified Client.Assets.Generic    as CAG
-import qualified Client.Video.Sprite      as CVS
 import qualified Client.Assets.Sound      as CAS
 import qualified Client.Assets.Util       as CAU
 import qualified Client.Event             as CEV
 import qualified Client.Frames            as CTF
 import qualified Client.Types             as CTY
+import qualified Client.Video.Sprite      as CVS
 
 playBackgroundMusic :: MonadIO m => m ()
 playBackgroundMusic = do
@@ -62,7 +65,7 @@ initLoop = do
     res <- runExceptT $ CAG.loadAssets sl CAU.pngAssets callback
     case res of
         Right () -> loop
-        Left e -> panic $ "Could not load assets: " <> e
+        Left e   -> panic $ "Could not load assets: " <> e
 
 loop :: CTY.Game ()
 loop = do
@@ -108,7 +111,7 @@ render = do
     SVI.present renderer
 
 
-
+-- TODO: Move this in own module
 network :: CTY.Game ()
 network = do
     res <- ask
@@ -119,5 +122,17 @@ network = do
             modify (CLE.set (CTY.game . CTY.physicalObjects) objs)
             network
         Just (PNT.Ping) -> network                  -- < TODO
-        Just (PNT.CreateGameObject _) -> network    -- < TODO
+        Just (PNT.CreateGameObject (k, o, mp)) ->
+            case mp of
+                Nothing -> do
+                    modify (CLE.over (CTY.game . CTY.gameObjects) (DIS.insert k o))
+                    network
+                Just p -> do
+                    let mpk = fmap PPT.unPhyObjUUID (CLE.view PGT.mPhOb o)
+                    case mpk of
+                        Just pk -> do
+                            modify (CLE.over (CTY.game . CTY.physicalObjects) (DIS.insert pk p))
+                            modify (CLE.over (CTY.game . CTY.gameObjects) (DIS.insert k o))
+                            network
+                        Nothing -> network -- TODO: Log error. got physical object but no matching id
         Nothing -> return ()
