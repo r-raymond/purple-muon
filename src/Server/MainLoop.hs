@@ -75,7 +75,7 @@ update = (CLE.over STY.pObjs
 sendUpdate :: STY.Server ()
 sendUpdate = do
     st <- get
-    SNE.sendPackage (PNT.Update (CLE.view STY.pObjs st))
+    SNE.sendPackageToAll (PNT.Update (CLE.view STY.pObjs st))
 
 --sendNetwork :: STY.Server ()
 --sendNetwork = do

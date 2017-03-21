@@ -18,17 +18,17 @@
 
 module Server.Network
     ( sendPackage
+    , sendPackageToAll
+    , sendGameState
     ) where
 
 import           Protolude
 
 import qualified Control.Lens              as CLE
 import qualified Data.Binary               as DBI
-import qualified Data.ByteString           as DBY
 import qualified Data.Digest.CRC32         as DDC
 import qualified Data.IntMap.Strict        as DIS
 import qualified Network.Socket.ByteString as NSB
-import qualified System.Log.FastLogger     as SLF
 
 import qualified PurpleMuon.Game.Types     as PGT
 import qualified PurpleMuon.Network.Types  as PNT
@@ -36,45 +36,49 @@ import qualified PurpleMuon.Physics.Types  as PPT
 import qualified PurpleMuon.Types          as PTY
 import qualified Server.Types              as STY
 
--- | Send a package to all clients. Don't request an acknowledgment of arrival.
-sendPackage :: (MonadState STY.GameState m, MonadReader STY.Resources m, MonadIO m)
+-- | Send a package to a client. Don't request an acknowledgment of arrival.
+sendPackage :: (MonadReader STY.Resources m, MonadIO m)
             => PNT.ServerToClientMsg
+            -> STY.ClientConnection
             -> m ()
-sendPackage pkg = do
-    st <- get
+sendPackage pkg cc = do
     res <- ask
     let bin = toS $ DBI.encode pkg
         protocolUUID = CLE.view STY.uuid res
         message = (toS $ DBI.encode $ DDC.crc32 (protocolUUID <> bin)) <> bin
         socket = CLE.view STY.socket res
-        logger = CLE.view STY.logger res
-        send a = liftIO $ NSB.sendTo socket message a
-        clients = CLE.view STY.clients st
+        addr = CLE.view STY.addr cc
+    void $ liftIO $ NSB.sendTo socket message addr
 
-
-    liftIO $ SLF.pushLogStrLn logger (SLF.toLogStr ("Sending package. Size: "
-                                    <> (show $ DBY.length message)
-                                    <> "; Clients: "
-                                    ++  (show $ length clients)))
-    sequence_ (fmap send (fmap (CLE.view STY.addr) clients))
+-- | Send a package to all clients. Don't request an acknowledgment of arrival.
+sendPackageToAll :: ( MonadState STY.GameState m
+                    , MonadReader STY.Resources m
+                    , MonadIO m)
+                 => PNT.ServerToClientMsg
+                 -> m ()
+sendPackageToAll pkg = do
+    sta <- get
+    let clients = CLE.view STY.clients sta
+    sequence_ (fmap (sendPackage pkg) clients)
 
 
 -- | Send a complete game state to a client
-sendGameState :: (MonadState STY.GameState m, MonadReader STY.Resources m, MonadIO m)
+sendGameState :: (MonadReader STY.Resources m, MonadIO m)
               => PPT.PhysicalObjects
               -> DIS.IntMap PGT.GameObject
               -> STY.ClientConnection
               -> m ()
-sendGameState = undefined
+sendGameState pos gos cc = sequence_ $
+    DIS.mapWithKey (\k o -> sendGameObject cc pos (PTY.Key k, o)) gos
 
 
-sendGameObject :: (MonadState STY.GameState m, MonadReader STY.Resources m, MonadIO m)
+sendGameObject :: (MonadReader STY.Resources m, MonadIO m)
                => STY.ClientConnection
                -> PPT.PhysicalObjects
                -> (PGT.GameObjKey, PGT.GameObject)
                -> m ()
 sendGameObject cc pos (k, go) =
     case (CLE.view PGT.mPhOb go) of
-        Nothing    -> sendPackage (PNT.CreateGameObject (k, go, Nothing))
+        Nothing    -> sendPackage (PNT.CreateGameObject (k, go, Nothing)) cc
         Just phKey -> let phObj = DIS.lookup (PTY.unKey phKey) pos
-                      in sendPackage (PNT.CreateGameObject (k, go, phObj))
+                      in sendPackage (PNT.CreateGameObject (k, go, phObj)) cc
