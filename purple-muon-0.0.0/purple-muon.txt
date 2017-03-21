@@ -666,9 +666,16 @@ manageFps :: Server ()
 
 module Server.Network
 
+-- | Send a package to a client. Don't request an acknowledgment of
+--   arrival.
+sendPackage :: (MonadReader Resources m, MonadIO m) => ServerToClientMsg -> ClientConnection -> m ()
+
 -- | Send a package to all clients. Don't request an acknowledgment of
 --   arrival.
-sendPackage :: (MonadState GameState m, MonadReader Resources m, MonadIO m) => ServerToClientMsg -> m ()
+sendPackageToAll :: (MonadState GameState m, MonadReader Resources m, MonadIO m) => ServerToClientMsg -> m ()
+
+-- | Send a complete game state to a client
+sendGameState :: (MonadReader Resources m, MonadIO m) => PhysicalObjects -> IntMap GameObject -> ClientConnection -> m ()
 
 module Client.Video.Sprite
 renderGameObject :: MonadIO m => Renderer -> SpriteLoaderType -> Resolution -> GameObject -> m ()
