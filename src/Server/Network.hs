@@ -33,6 +33,7 @@ import qualified System.Log.FastLogger     as SLF
 import qualified PurpleMuon.Game.Types     as PGT
 import qualified PurpleMuon.Network.Types  as PNT
 import qualified PurpleMuon.Physics.Types  as PPT
+import qualified PurpleMuon.Types          as PTY
 import qualified Server.Types              as STY
 
 -- | Send a package to all clients. Don't request an acknowledgment of arrival.
@@ -70,9 +71,10 @@ sendGameState = undefined
 sendGameObject :: (MonadState STY.GameState m, MonadReader STY.Resources m, MonadIO m)
                => STY.ClientConnection
                -> PPT.PhysicalObjects
-               -> (PGT.GameObjUUID, PGT.GameObject)
+               -> (PGT.GameObjKey, PGT.GameObject)
                -> m ()
 sendGameObject cc pos (k, go) =
     case (CLE.view PGT.mPhOb go) of
         Nothing    -> sendPackage (PNT.CreateGameObject (k, go, Nothing))
-        Just phKey -> return ()
+        Just phKey -> let phObj = DIS.lookup (PTY.unKey phKey) pos
+                      in sendPackage (PNT.CreateGameObject (k, go, phObj))

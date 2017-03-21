@@ -30,7 +30,7 @@ Portability : POSIX
 
 module PurpleMuon.Physics.Types
     ( -- * Basic types
-      PhyObjUUID(..)
+      PhyObjKey
     , Mass(..)
     , Velocity(..)
     , Acceleration(..)
@@ -63,8 +63,7 @@ import qualified Linear.Vector      as LVE
 import qualified PurpleMuon.Types   as PTY
 
 -- | A physical object identifier
-newtype PhyObjUUID = PhyObjUUID { unPhyObjUUID :: Int }
-    deriving (Eq, Ord, Num, Real, Enum, Integral, Generic)
+type PhyObjKey = PTY.Key PhysicalObject
 
 -- | The mass of an object
 newtype Mass = Mass { unMass :: PTY.FlType }
@@ -166,5 +165,3 @@ instance (DAD.AdditiveGroup DeltaTime) where
     zeroV = DeltaTime 0
     (^+^) (DeltaTime a) (DeltaTime b) = DeltaTime (a + b)
     negateV (DeltaTime a) = DeltaTime ((-1) * a)
-
-instance DBI.Binary PhyObjUUID

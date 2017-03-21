@@ -37,6 +37,7 @@ import qualified SDL.Video                as SVI
 import qualified PurpleMuon.Game.Types    as PGT
 import qualified PurpleMuon.Network.Types as PNT
 import qualified PurpleMuon.Physics.Types as PPT
+import qualified PurpleMuon.Types         as PTY
 
 import qualified Client.Assets.Generic    as CAG
 import qualified Client.Assets.Sound      as CAS
@@ -123,13 +124,13 @@ network = do
             network
         Just (PNT.Ping) -> network                  -- < TODO
         Just (PNT.CreateGameObject (k, o, mp)) ->
-            let key = PGT.unGameObjUUID k
+            let key = PTY.unKey k
             in case mp of
                 Nothing -> do
                     modify (CLE.over (CTY.game . CTY.gameObjects) (DIS.insert key o))
                     network
                 Just p -> do
-                    let mpk = fmap PPT.unPhyObjUUID (CLE.view PGT.mPhOb o)
+                    let mpk = fmap PTY.unKey (CLE.view PGT.mPhOb o)
                     case mpk of
                         Just pk -> do
                             modify (CLE.over (CTY.game . CTY.physicalObjects) (DIS.insert pk p))

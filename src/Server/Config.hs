@@ -21,13 +21,13 @@ metID = Just $ PGT.RenderInfo (PTY.Position $ LV2.V2 0 0)
 
 initialObjs :: DIS.IntMap PGT.GameObject
 initialObjs = DIS.fromList
-        [ (1, PGT.GameObject PGT.Comet Nothing (Just (PPT.PhyObjUUID 1)) metID)
-        , (2, PGT.GameObject PGT.Comet Nothing (Just (PPT.PhyObjUUID 2)) metID)
-        , (3, PGT.GameObject PGT.Comet Nothing (Just (PPT.PhyObjUUID 3)) metID)
-        , (4, PGT.GameObject PGT.Comet Nothing (Just (PPT.PhyObjUUID 4)) metID)
-        , (5, PGT.GameObject PGT.Comet Nothing (Just (PPT.PhyObjUUID 5)) metID)
-        , (6, PGT.GameObject PGT.Comet Nothing (Just (PPT.PhyObjUUID 6)) metID)
-        , (7, PGT.GameObject PGT.Comet Nothing (Just (PPT.PhyObjUUID 7)) metID)
+        [ (1, PGT.GameObject PGT.Comet Nothing (Just (PTY.Key 1)) metID)
+        , (2, PGT.GameObject PGT.Comet Nothing (Just (PTY.Key 2)) metID)
+        , (3, PGT.GameObject PGT.Comet Nothing (Just (PTY.Key 3)) metID)
+        , (4, PGT.GameObject PGT.Comet Nothing (Just (PTY.Key 4)) metID)
+        , (5, PGT.GameObject PGT.Comet Nothing (Just (PTY.Key 5)) metID)
+        , (6, PGT.GameObject PGT.Comet Nothing (Just (PTY.Key 6)) metID)
+        , (7, PGT.GameObject PGT.Comet Nothing (Just (PTY.Key 7)) metID)
         ]
 
 

@@ -29,7 +29,7 @@ Portability : POSIX
 module PurpleMuon.Game.Types
     ( GameObject(..), goData, mName, mPhOb, mReInfo
     , GameObjectData(..)
-    , GameObjUUID(..)
+    , GameObjKey
     , Size(..), xSize, ySize
     , RenderInfo(..), pos, angle, size, sprite
     ) where
@@ -44,8 +44,7 @@ import qualified Client.Assets.Sprite     as CAS
 import qualified PurpleMuon.Physics.Types as PPT
 import qualified PurpleMuon.Types         as PTY
 
-newtype GameObjUUID = GameObjUUID { unGameObjUUID :: Int }
-    deriving (Eq, Ord, Generic)
+type GameObjKey = PTY.Key GameObject
 
 -- | The type of the game object and the data that goes with it.
 data GameObjectData
@@ -74,7 +73,7 @@ data GameObject
     = GameObject
     { _goData  :: GameObjectData
     , _mName   :: Maybe Text
-    , _mPhOb   :: Maybe PPT.PhyObjUUID
+    , _mPhOb   :: Maybe PPT.PhyObjKey
     , _mReInfo :: Maybe RenderInfo
     } deriving (Generic)
 
@@ -82,9 +81,7 @@ instance DBI.Binary GameObjectData
 instance DBI.Binary Size
 instance DBI.Binary RenderInfo
 instance DBI.Binary GameObject
-instance DBI.Binary GameObjUUID
 
 CLE.makeLenses ''GameObject
 CLE.makeLenses ''RenderInfo
 CLE.makeLenses ''Size
-CLE.makeLenses '' GameObjUUID

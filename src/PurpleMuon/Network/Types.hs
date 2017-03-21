@@ -92,7 +92,7 @@ data ConnectionState
 data ServerToClientMsg
     = Ping              -- ^ A simple ping package to determine network latency
     | CreateGameObject
-        ( PGT.GameObjUUID
+        ( PGT.GameObjKey
         , PGT.GameObject
         , Maybe PPT.PhysicalObject) -- ^ Create a new game object
     | Update PPT.PhysicalObjects    -- ^ The physical objects in the system

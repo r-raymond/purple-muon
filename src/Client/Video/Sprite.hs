@@ -83,5 +83,5 @@ updateRenderInfo pos go@(PGT.GameObject _ _ (Just po) (Just ri)) =
             npos = CLE.view PPT.pos np
         Nothing -> go
       where
-        newp = DIS.lookup (PPT.unPhyObjUUID po) pos
+        newp = DIS.lookup (PTY.unKey po) pos
 updateRenderInfo _ go = go
