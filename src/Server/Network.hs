@@ -26,10 +26,13 @@ import qualified Control.Lens              as CLE
 import qualified Data.Binary               as DBI
 import qualified Data.ByteString           as DBY
 import qualified Data.Digest.CRC32         as DDC
+import qualified Data.IntMap.Strict        as DIS
 import qualified Network.Socket.ByteString as NSB
 import qualified System.Log.FastLogger     as SLF
 
+import qualified PurpleMuon.Game.Types     as PGT
 import qualified PurpleMuon.Network.Types  as PNT
+import qualified PurpleMuon.Physics.Types  as PPT
 import qualified Server.Types              as STY
 
 -- | Send a package to all clients. Don't request an acknowledgment of arrival.
@@ -53,3 +56,12 @@ sendPackage pkg = do
                                     <> "; Clients: "
                                     ++  (show $ length clients)))
     sequence_ (fmap send (fmap (CLE.view STY.addr) clients))
+
+
+-- | Send a complete game state to a client
+sendGameState :: (MonadIO m)
+              => STY.ClientConnection
+              -> PPT.PhysicalObjects
+              -> DIS.IntMap PGT.GameObject
+              -> m ()
+sendGameState = undefined
