@@ -501,7 +501,7 @@ data ServerToClientMsg
 Ping :: ServerToClientMsg
 
 -- | Create a new game object
-CreateGameObject :: GameObject -> ServerToClientMsg
+CreateGameObject :: (Int, GameObject, Maybe PhysicalObject) -> ServerToClientMsg
 
 -- | The physical objects in the system TODO: Pack this better. Also send
 --   the generation of the data
