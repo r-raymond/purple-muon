@@ -54,10 +54,18 @@ type FlType = Float
 newtype Position
 Position :: V2 FlType -> Position
 [unPosition] :: Position -> V2 FlType
+
+-- | A key into a collection of objects
+newtype Key a
+Key :: Int -> Key a
+[unKey] :: Key a -> Int
+instance GHC.Generics.Generic (PurpleMuon.Types.Key a)
+instance GHC.Classes.Eq (PurpleMuon.Types.Key a)
 instance GHC.Show.Show PurpleMuon.Types.Position
 instance GHC.Classes.Eq PurpleMuon.Types.Position
 instance GHC.Generics.Generic PurpleMuon.Types.Position
 instance Data.Binary.Class.Binary PurpleMuon.Types.Position
+instance Data.Binary.Class.Binary (PurpleMuon.Types.Key a)
 
 
 -- | This module defines helper function for frame management. It allows to
@@ -77,9 +85,7 @@ manageFps :: MonadIO m => NominalDiffTime -> m UTCTime -> (FlType -> m ()) -> m 
 module PurpleMuon.Physics.Types
 
 -- | A physical object identifier
-newtype PhyObjUUID
-PhyObjUUID :: Int -> PhyObjUUID
-[unPhyObjUUID] :: PhyObjUUID -> Int
+type PhyObjKey = Key PhysicalObject
 
 -- | The mass of an object
 newtype Mass
@@ -187,7 +193,6 @@ instance Data.VectorSpace.VectorSpace PurpleMuon.Physics.Types.Acceleration
 instance Data.AdditiveGroup.AdditiveGroup PurpleMuon.Physics.Types.Derivative
 instance Data.VectorSpace.VectorSpace PurpleMuon.Physics.Types.Derivative
 instance Data.AdditiveGroup.AdditiveGroup PurpleMuon.Physics.Types.DeltaTime
-instance Data.Binary.Class.Binary PurpleMuon.Physics.Types.PhyObjUUID
 instance GHC.Generics.Generic PurpleMuon.Physics.Types.PhysicalObject
 instance GHC.Show.Show PurpleMuon.Physics.Types.PhysicalObject
 instance GHC.Generics.Generic PurpleMuon.Physics.Types.ObjGrav
@@ -215,13 +220,6 @@ instance GHC.Classes.Eq PurpleMuon.Physics.Types.Velocity
 instance GHC.Generics.Generic PurpleMuon.Physics.Types.Mass
 instance GHC.Show.Show PurpleMuon.Physics.Types.Mass
 instance GHC.Classes.Eq PurpleMuon.Physics.Types.Mass
-instance GHC.Generics.Generic PurpleMuon.Physics.Types.PhyObjUUID
-instance GHC.Real.Integral PurpleMuon.Physics.Types.PhyObjUUID
-instance GHC.Enum.Enum PurpleMuon.Physics.Types.PhyObjUUID
-instance GHC.Real.Real PurpleMuon.Physics.Types.PhyObjUUID
-instance GHC.Num.Num PurpleMuon.Physics.Types.PhyObjUUID
-instance GHC.Classes.Ord PurpleMuon.Physics.Types.PhyObjUUID
-instance GHC.Classes.Eq PurpleMuon.Physics.Types.PhyObjUUID
 instance Data.Binary.Class.Binary PurpleMuon.Physics.Types.Mass
 instance Data.Binary.Class.Binary PurpleMuon.Physics.Types.Velocity
 instance Data.Binary.Class.Binary PurpleMuon.Physics.Types.ObjType
@@ -400,23 +398,21 @@ module PurpleMuon.Game.Types
 
 -- | A game object. Has optionally a name and a <tt>PhysicalObject</tt>.
 data GameObject
-GameObject :: GameObjectData -> Maybe Text -> Maybe PhyObjUUID -> Maybe RenderInfo -> GameObject
+GameObject :: GameObjectData -> Maybe Text -> Maybe PhyObjKey -> Maybe RenderInfo -> GameObject
 [_goData] :: GameObject -> GameObjectData
 [_mName] :: GameObject -> Maybe Text
-[_mPhOb] :: GameObject -> Maybe PhyObjUUID
+[_mPhOb] :: GameObject -> Maybe PhyObjKey
 [_mReInfo] :: GameObject -> Maybe RenderInfo
 goData :: Lens' GameObject GameObjectData
 mName :: Lens' GameObject (Maybe Text)
-mPhOb :: Lens' GameObject (Maybe PhyObjUUID)
+mPhOb :: Lens' GameObject (Maybe PhyObjKey)
 mReInfo :: Lens' GameObject (Maybe RenderInfo)
 
 -- | The type of the game object and the data that goes with it.
 data GameObjectData
 PlayerShip :: GameObjectData
 Comet :: GameObjectData
-newtype GameObjUUID
-GameObjUUID :: Word16 -> GameObjUUID
-[unGameObjUUID] :: GameObjUUID -> Word16
+type GameObjKey = Key GameObject
 data Size
 Size :: Float -> Float -> Size
 [_xSize] :: Size -> Float
@@ -437,8 +433,6 @@ instance GHC.Generics.Generic PurpleMuon.Game.Types.GameObject
 instance GHC.Generics.Generic PurpleMuon.Game.Types.Size
 instance GHC.Generics.Generic PurpleMuon.Game.Types.RenderInfo
 instance GHC.Generics.Generic PurpleMuon.Game.Types.GameObjectData
-instance GHC.Classes.Ord PurpleMuon.Game.Types.GameObjUUID
-instance GHC.Classes.Eq PurpleMuon.Game.Types.GameObjUUID
 instance Data.Binary.Class.Binary PurpleMuon.Game.Types.GameObjectData
 instance Data.Binary.Class.Binary PurpleMuon.Game.Types.Size
 instance Data.Binary.Class.Binary PurpleMuon.Game.Types.RenderInfo
@@ -501,7 +495,7 @@ data ServerToClientMsg
 Ping :: ServerToClientMsg
 
 -- | Create a new game object
-CreateGameObject :: (Int, GameObject, Maybe PhysicalObject) -> ServerToClientMsg
+CreateGameObject :: (GameObjKey, GameObject, Maybe PhysicalObject) -> ServerToClientMsg
 
 -- | The physical objects in the system TODO: Pack this better. Also send
 --   the generation of the data
@@ -658,13 +652,13 @@ uuid :: Lens' Resources ProtocolUUID
 
 -- | A client connection saves all the data the server knows about a client
 data ClientConnection
-ClientConnection :: SockAddr -> Text -> GameObjUUID -> ClientConnection
+ClientConnection :: SockAddr -> Text -> GameObjKey -> ClientConnection
 [_addr] :: ClientConnection -> SockAddr
 [_name] :: ClientConnection -> Text
-[_gameObj] :: ClientConnection -> GameObjUUID
+[_gameObj] :: ClientConnection -> GameObjKey
 addr :: Lens' ClientConnection SockAddr
 name :: Lens' ClientConnection Text
-gameObj :: Lens' ClientConnection GameObjUUID
+gameObj :: Lens' ClientConnection GameObjKey
 
 module Server.Frames
 frameBegin :: Server ()
