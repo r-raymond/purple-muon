@@ -38,6 +38,7 @@ import qualified PurpleMuon.Game.Types    as PGT
 import qualified PurpleMuon.Network.Types as PNT
 import qualified PurpleMuon.Types         as PTY
 
+import qualified Client.Assets.Font       as CAF
 import qualified Client.Assets.Generic    as CAG
 import qualified Client.Assets.Sound      as CAS
 import qualified Client.Assets.Util       as CAU
@@ -54,6 +55,15 @@ playBackgroundMusic = do
     (Right (CAG.A a)) <- runExceptT $ CAG.getAsset sl (CAG.AssetID "click1")
     SMI.playForever a
 
+loadFonts :: MonadIO m => m ()
+loadFonts = do
+    let callback f p = putStrLn (FOR.format (FOR.fixed 0 FOR.% "%: loading " FOR.% FOR.stext) f p)
+    fl <- CAF.fontLoader (CAF.FontSize 12)
+    res <- runExceptT $ CAG.loadAssets fl CAU.fontAssets callback
+    case res of
+        Left e -> print e
+        Right () -> return ()
+
 initLoop :: CTY.Game()
 initLoop = do
     sta <- get
@@ -62,6 +72,7 @@ initLoop = do
 
 
     playBackgroundMusic
+    loadFonts
     res <- runExceptT $ CAG.loadAssets sl CAU.pngAssets callback
     case res of
         Right () -> loop
