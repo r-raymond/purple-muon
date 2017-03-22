@@ -36,7 +36,6 @@ import qualified SDL.Video                as SVI
 
 import qualified PurpleMuon.Game.Types    as PGT
 import qualified PurpleMuon.Network.Types as PNT
-import qualified PurpleMuon.Physics.Types as PPT
 import qualified PurpleMuon.Types         as PTY
 
 import qualified Client.Assets.Generic    as CAG
@@ -97,7 +96,7 @@ render = do
     SVI.rendererDrawColor renderer SDL.$= SVE.V4 0 0 0 0
     SVI.clear renderer
 
-    --CVT.renderTexture texload (CTY.background tuu) Nothing
+    CVS.renderSprite renderer sl (CAG.AssetID "background.png") Nothing 0 (SDL.V2 False False)
 
     appState <- get
     let pos = CLE.view (CTY.game . CTY.physicalObjects) appState

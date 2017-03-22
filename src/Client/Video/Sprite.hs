@@ -16,7 +16,8 @@
 --  along with Purple Muon.  If not, see <http://www.gnu.org/licenses/>.
 
 module Client.Video.Sprite
-    ( renderGameObject
+    ( renderSprite
+    , renderGameObject
     , updateRenderInfo
     ) where
 
