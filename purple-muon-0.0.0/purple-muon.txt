@@ -272,6 +272,12 @@ module Client.Assets.Util
 --   game.
 pngAssets :: [FilePath]
 
+-- | Complete list of all sound assets in the game
+soundAssets :: [FilePath]
+
+-- | Complete list of all font assets used in the game
+fontAssets :: [FilePath]
+
 module Client.Assets.Generic
 
 -- | A unique identifier for assets. The identifier has a phantom type
@@ -330,9 +336,6 @@ module Client.Assets.Sound
 
 -- | Implementation of <tt>AssetLoader</tt> for sounds.
 soundLoader :: MonadIO m => m SoundLoaderType
-
--- | Complete list of all sound assets in the game
-soundAssets :: [FilePath]
 
 -- | A type of a sound loader
 type SoundLoaderType = HashmapLoader Chunk ()
@@ -678,20 +681,19 @@ sendPackageToAll :: (MonadState GameState m, MonadReader Resources m, MonadIO m)
 sendGameState :: (MonadReader Resources m, MonadIO m) => PhysicalObjects -> IntMap GameObject -> ClientConnection -> m ()
 
 module Client.Video.Sprite
+
+-- | Render a sprite
+--   
+--   TODO: The renderer as an argument is unnecessary if we take it out of
+--   the Textureloader
+renderSprite :: (MonadIO m) => Renderer -> SpriteLoaderType -> SpriteID -> Maybe (Rectangle CInt) -> CDouble -> V2 Bool -> m ()
+
+-- | Draw sprite without flipping
+noFlip :: V2 Bool
 renderGameObject :: MonadIO m => Renderer -> SpriteLoaderType -> Resolution -> GameObject -> m ()
 
 -- | Update the sprite position with the position of the physical Object
 updateRenderInfo :: PhysicalObjects -> GameObject -> GameObject
-
-module Client.MainLoop
-loop :: Game ()
-initLoop :: Game ()
-
-module Client.Main
-uuid :: ProtocolUUID
-initialeState :: MonadIO m => Renderer -> m AppState
-game :: TBQueue ServerToClientMsg -> Window -> Renderer -> IO ()
-main :: IO ()
 
 module Server.Config
 initialObjs :: IntMap GameObject
@@ -701,4 +703,31 @@ module Server.MainLoop
 initLoop :: MonadIO m => CommandLineOptions -> m ()
 
 module Server.Main
+main :: IO ()
+
+
+module Client.Assets.Font
+
+-- | A type of a font loader
+type FontLoaderType = HashmapLoader Font FontSize
+
+-- | Type of a font identifier
+type FontID = AssetID (Asset FontLoaderType)
+
+-- | The size of a font
+newtype FontSize
+FontSize :: Int -> FontSize
+[unFontSize] :: FontSize -> Int
+
+-- | Implementation of <tt>AssetLoader</tt> for sounds.
+fontLoader :: MonadIO m => FontSize -> m FontLoaderType
+
+module Client.MainLoop
+loop :: Game ()
+initLoop :: Game ()
+
+module Client.Main
+uuid :: ProtocolUUID
+initialeState :: MonadIO m => Renderer -> m AppState
+game :: TBQueue ServerToClientMsg -> Window -> Renderer -> IO ()
 main :: IO ()
