@@ -18,6 +18,7 @@
 
 module Client.Assets.Util
     ( pngAssets
+    , soundAssets
     ) where
 
 import           Protolude
@@ -48,3 +49,14 @@ pngAssets = [ "res/png/gravity.xml"
             , "res/png/gameicons_extended/sheet_white1x.xml"
             , "res/png/gameicons_extended/sheet_white2x.xml"
             ]
+
+-- | Complete list of all sound assets in the game
+soundAssets :: [FilePath]
+soundAssets =
+    [ "res/ogg/click1.ogg"
+    , "res/ogg/click2.ogg"
+    , "res/ogg/rollover1.ogg"
+    , "res/ogg/rollover2.ogg"
+    , "res/ogg/switch2.ogg"
+    , "res/ogg/switch3.ogg"
+    ]

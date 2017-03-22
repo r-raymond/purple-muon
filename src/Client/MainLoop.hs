@@ -50,7 +50,7 @@ playBackgroundMusic :: MonadIO m => m ()
 playBackgroundMusic = do
     let callback f p = putStrLn (FOR.format (FOR.fixed 0 FOR.% "%: loading " FOR.% FOR.stext) f p)
     sl <- CAS.soundLoader
-    Right () <- runExceptT $ CAG.loadAssets sl CAS.soundAssets callback
+    Right () <- runExceptT $ CAG.loadAssets sl CAU.soundAssets callback
     (Right (CAG.A a)) <- runExceptT $ CAG.getAsset sl (CAG.AssetID "click1")
     SMI.playForever a
 
@@ -96,7 +96,8 @@ render = do
     SVI.rendererDrawColor renderer SDL.$= SVE.V4 0 0 0 0
     SVI.clear renderer
 
-    CVS.renderSprite renderer sl (CAG.AssetID "background.png") Nothing 0 (SDL.V2 False False)
+    CVS.renderSprite renderer sl (CAG.AssetID "background.png") Nothing 0
+                     CVS.noFlip
 
     appState <- get
     let pos = CLE.view (CTY.game . CTY.physicalObjects) appState

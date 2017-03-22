@@ -17,6 +17,7 @@
 
 module Client.Video.Sprite
     ( renderSprite
+    , noFlip
     , renderGameObject
     , updateRenderInfo
     ) where
@@ -35,6 +36,10 @@ import qualified PurpleMuon.Physics.Types as PPT
 import qualified PurpleMuon.Types         as PTY
 
 type Resolution = SDL.V2 Int
+
+-- | Draw sprite without flipping
+noFlip :: SDL.V2 Bool
+noFlip = SDL.V2 False False
 
 -- | Render a sprite
 --
