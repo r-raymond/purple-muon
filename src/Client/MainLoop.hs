@@ -78,6 +78,7 @@ initLoop = do
         Right () -> loop
         Left e   -> panic $ "Could not load assets: " <> e
 
+
 loop :: CTY.Game ()
 loop = do
     CTF.frameBegin

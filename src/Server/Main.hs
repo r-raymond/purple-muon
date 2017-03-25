@@ -17,18 +17,34 @@
 
 module Server.Main
     ( main
+    , initLoop
     ) where
 
 import           Protolude
 
-import qualified Options.Applicative as OAP
+import qualified Control.Concurrent.STM  as CCS
+import qualified Data.Binary             as DBI
+import qualified Options.Applicative     as OAP
+import qualified System.Log.FastLogger   as SLF
 
-import qualified Server.CommandLine  as SCO
-import qualified Server.MainLoop     as SMA
+import qualified PurpleMuon.Network.Util as PNU
 
+import qualified Server.CommandLine      as SCO
+import qualified Server.Types            as STY
+import qualified Server.WaitingLoop      as SWA
+
+-- | Initialize the loop state
+initLoop :: MonadIO m => SCO.CommandLineOptions -> m ()
+initLoop clo = do
+    (Right ss) <- PNU.serverSocket "7123"
+    tb <- liftIO $ CCS.atomically $ CCS.newTBQueue 128
+    ls <- liftIO $ SLF.newStdoutLoggerSet SLF.defaultBufSize
+    let uui = toS $ DBI.encode $ SCO.uuid clo
+        res = STY.Resources tb ss ls uui
+    liftIO $ evalStateT (runReaderT SWA.waitingLoop res) (STY.WaitingState [])
 
 main :: IO ()
-main = OAP.execParser opts >>= SMA.initLoop
+main = OAP.execParser opts >>= initLoop
   where
     opts = OAP.info (OAP.helper OAP.<*> SCO.parser)
         ( OAP.fullDesc
