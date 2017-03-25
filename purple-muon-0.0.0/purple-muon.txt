@@ -514,11 +514,20 @@ RequestConnection :: PlayerName -> ClientToServerMsg
 -- | Answer to a ping command. The <a>MessageCount</a> indicates which
 Pong :: MessageCount -> ClientToServerMsg
 
+-- | Regular updates the client sends to the server
+ClientUpdate :: UpdateMsg -> ClientToServerMsg
+
 -- | A player name
 newtype PlayerName
 PlayerName :: Text -> PlayerName
 [unPlayerName] :: PlayerName -> Text
+data UpdateMsg
+UpdateMsg :: Word32 -> Word32 -> Word8 -> UpdateMsg
+[lastAck] :: UpdateMsg -> Word32
+[ackField] :: UpdateMsg -> Word32
+[controls] :: UpdateMsg -> Word8
 instance GHC.Generics.Generic PurpleMuon.Network.Types.ClientToServerMsg
+instance GHC.Generics.Generic PurpleMuon.Network.Types.UpdateMsg
 instance GHC.Generics.Generic PurpleMuon.Network.Types.PlayerName
 instance GHC.Generics.Generic PurpleMuon.Network.Types.ServerToClientMsg
 instance GHC.Generics.Generic PurpleMuon.Network.Types.MessageCount
@@ -526,6 +535,7 @@ instance Data.Binary.Class.Binary PurpleMuon.Network.Types.MessageCount
 instance Data.Binary.Class.Binary PurpleMuon.Network.Types.PlayerName
 instance Data.Binary.Class.Binary PurpleMuon.Network.Types.ServerToClientMsg
 instance Data.Binary.Class.Binary PurpleMuon.Network.Types.ClientToServerMsg
+instance Data.Binary.Class.Binary PurpleMuon.Network.Types.UpdateMsg
 
 module Client.Types
 data AppState
@@ -675,10 +685,13 @@ sendPackage :: (MonadReader Resources m, MonadIO m) => ServerToClientMsg -> Clie
 
 -- | Send a package to all clients. Don't request an acknowledgment of
 --   arrival.
-sendPackageToAll :: (MonadState GameState m, MonadReader Resources m, MonadIO m) => ServerToClientMsg -> m ()
+sendPackageToAll :: (MonadState [ClientConnection] m, MonadReader Resources m, MonadIO m) => ServerToClientMsg -> m ()
 
 -- | Send a complete game state to a client
 sendGameState :: (MonadReader Resources m, MonadIO m) => PhysicalObjects -> IntMap GameObject -> ClientConnection -> m ()
+
+module Server.MainLoop
+loop :: Server ()
 
 module Client.Video.Sprite
 
@@ -699,11 +712,15 @@ module Server.Config
 initialObjs :: IntMap GameObject
 initialPhyObjs :: PhysicalObjects
 
-module Server.MainLoop
-initLoop :: MonadIO m => CommandLineOptions -> m ()
+
+module Server.WaitingLoop
+waitingLoop :: WaitingServer ()
 
 module Server.Main
 main :: IO ()
+
+-- | Initialize the loop state
+initLoop :: MonadIO m => CommandLineOptions -> m ()
 
 
 module Client.Assets.Font

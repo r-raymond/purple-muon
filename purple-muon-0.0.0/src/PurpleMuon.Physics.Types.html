@@ -115,10 +115,15 @@ Portability : POSIX
 </span><a name="line-115"></a><span class="hs-keyword">instance</span><span> </span><span class="hs-identifier hs-type">DBI</span><span class="hs-operator hs-type">.</span><span class="hs-identifier hs-type">Binary</span><span> </span><a href="PurpleMuon.Physics.Types.html#Velocity"><span class="hs-identifier hs-type">Velocity</span></a><span>
 </span><a name="line-116"></a><span class="hs-keyword">instance</span><span> </span><span class="hs-identifier hs-type">DBI</span><span class="hs-operator hs-type">.</span><span class="hs-identifier hs-type">Binary</span><span> </span><a href="PurpleMuon.Physics.Types.html#ObjType"><span class="hs-identifier hs-type">ObjType</span></a><span>
 </span><a name="line-117"></a><span class="hs-keyword">instance</span><span> </span><span class="hs-identifier hs-type">DBI</span><span class="hs-operator hs-type">.</span><span class="hs-identifier hs-type">Binary</span><span> </span><a href="PurpleMuon.Physics.Types.html#ObjGrav"><span class="hs-identifier hs-type">ObjGrav</span></a><span>
-</span><a name="line-118"></a><span class="hs-keyword">instance</span><span> </span><span class="hs-identifier hs-type">DBI</span><span class="hs-operator hs-type">.</span><span class="hs-identifier hs-type">Binary</span><span> </span><a href="PurpleMuon.Physics.Types.html#PhysicalObject"><span class="hs-identifier hs-type">PhysicalObject</span></a><span>
-</span><a name="line-119"></a><span>
-</span><a name="line-120"></a><span>
-</span><a name="line-121"></a><span class="hs-identifier hs-var">CLE</span><span class="hs-operator hs-var">.</span><span class="hs-identifier hs-var">makeLenses</span><span> </span><span class="hs-char">''PhysicalObject
+</span><a name="line-118"></a><span>
+</span><a name="line-119"></a><span class="hs-comment">-- | TODO: Implement the binary instance of PhysicalObject by hand to safe</span><span>
+</span><a name="line-120"></a><span class="hs-comment">-- space.  Use the fact that the position is always in [0,1] and needs to only</span><span>
+</span><a name="line-121"></a><span class="hs-comment">-- be pixel precise. I.e. max 4096*4096 possible positions. For that we need</span><span>
+</span><a name="line-122"></a><span class="hs-comment">-- 12 + 12 = 24 bit, rather than the 64 bit for two floats.</span><span>
+</span><a name="line-123"></a><span class="hs-keyword">instance</span><span> </span><span class="hs-identifier hs-type">DBI</span><span class="hs-operator hs-type">.</span><span class="hs-identifier hs-type">Binary</span><span> </span><a href="PurpleMuon.Physics.Types.html#PhysicalObject"><span class="hs-identifier hs-type">PhysicalObject</span></a><span>
+</span><a name="line-124"></a><span>
+</span><a name="line-125"></a><span>
+</span><a name="line-126"></a><span class="hs-identifier hs-var">CLE</span><span class="hs-operator hs-var">.</span><span class="hs-identifier hs-var">makeLenses</span><span> </span><span class="hs-char">''PhysicalObject
 
 -- |The physical size of the playing board
 newtype PhysicalSize = PhysicalSize { unPhysicalSize :: LV2.V2 PTY.FlType }
