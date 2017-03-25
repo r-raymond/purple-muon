@@ -6,6 +6,7 @@ import           Protolude
 
 import qualified Control.Concurrent.STM       as CCS
 import qualified Control.Lens                 as CLE
+import qualified Control.Lens.Zoom            as CLZ
 import qualified Data.Binary                  as DBI
 import qualified Data.IntMap.Strict           as DIS
 import qualified Network.Socket.ByteString    as NSB
@@ -75,7 +76,8 @@ update = (CLE.over STY.pObjs
 sendUpdate :: STY.Server ()
 sendUpdate = do
     st <- get
-    SNE.sendPackageToAll (PNT.Update (CLE.view STY.pObjs st))
+    CLZ.zoom (STY.clients) $ do
+        SNE.sendPackageToAll (PNT.Update (CLE.view STY.pObjs st))
 
 --sendNetwork :: STY.Server ()
 --sendNetwork = do

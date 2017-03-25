@@ -51,14 +51,13 @@ sendPackage pkg cc = do
     void $ liftIO $ NSB.sendTo socket message addr
 
 -- | Send a package to all clients. Don't request an acknowledgment of arrival.
-sendPackageToAll :: ( MonadState STY.GameState m
+sendPackageToAll :: ( MonadState [STY.ClientConnection] m
                     , MonadReader STY.Resources m
                     , MonadIO m)
                  => PNT.ServerToClientMsg
                  -> m ()
 sendPackageToAll pkg = do
-    sta <- get
-    let clients = CLE.view STY.clients sta
+    clients <- get
     sequence_ (fmap (sendPackage pkg) clients)
 
 
