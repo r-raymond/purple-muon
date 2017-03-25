@@ -15,4 +15,12 @@
 --  You should have received a copy of the GNU General Public License
 --  along with Purple Muon.  If not, see <http://www.gnu.org/licenses/>.
 
+{-|
+Module      : 
+Description : 
+Copyright   : (c) Robin Raymond, 2016-2017
+License     : GPL-3
+Maintainer  : robin@robinraymond.de
+Portability : POSIX
+-}
 

@@ -18,6 +18,7 @@ data-files:
     - res/png/gameicons/*
     - res/png/gameicons_extended/*
     - res/ogg/*
+    - res/fonts/*
 
 default-extensions:
     - DeriveGeneric
@@ -60,6 +61,7 @@ dependencies:
 library:
   source-dirs: src
   other-modules:
+    - Paths_purple_muon
     - Version
 
 executables:

@@ -16,7 +16,9 @@
 --  along with Purple Muon.  If not, see <http://www.gnu.org/licenses/>.
 
 module Client.Video.Sprite
-    ( renderGameObject
+    ( renderSprite
+    , noFlip
+    , renderGameObject
     , updateRenderInfo
     ) where
 
@@ -34,6 +36,10 @@ import qualified PurpleMuon.Physics.Types as PPT
 import qualified PurpleMuon.Types         as PTY
 
 type Resolution = SDL.V2 Int
+
+-- | Draw sprite without flipping
+noFlip :: SDL.V2 Bool
+noFlip = SDL.V2 False False
 
 -- | Render a sprite
 --
@@ -83,5 +89,5 @@ updateRenderInfo pos go@(PGT.GameObject _ _ (Just po) (Just ri)) =
             npos = CLE.view PPT.pos np
         Nothing -> go
       where
-        newp = DIS.lookup (PPT.unPhyObjUUID po) pos
+        newp = DIS.lookup (PTY.unKey po) pos
 updateRenderInfo _ go = go

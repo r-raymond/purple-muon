@@ -26,6 +26,7 @@ import           Version
 
 import qualified Control.Concurrent.STM   as CCS
 import qualified Control.Lens             as CLE
+import qualified Data.IntMap.Strict       as DIS
 import qualified Formatting               as FOR
 import qualified SDL                      as SDL
 import qualified SDL.Event                as SEV
@@ -33,23 +34,35 @@ import qualified SDL.Mixer                as SMI
 import qualified SDL.Vect                 as SVE
 import qualified SDL.Video                as SVI
 
+import qualified PurpleMuon.Game.Types    as PGT
 import qualified PurpleMuon.Network.Types as PNT
+import qualified PurpleMuon.Types         as PTY
 
+import qualified Client.Assets.Font       as CAF
 import qualified Client.Assets.Generic    as CAG
-import qualified Client.Video.Sprite      as CVS
 import qualified Client.Assets.Sound      as CAS
 import qualified Client.Assets.Util       as CAU
 import qualified Client.Event             as CEV
 import qualified Client.Frames            as CTF
 import qualified Client.Types             as CTY
+import qualified Client.Video.Sprite      as CVS
 
 playBackgroundMusic :: MonadIO m => m ()
 playBackgroundMusic = do
     let callback f p = putStrLn (FOR.format (FOR.fixed 0 FOR.% "%: loading " FOR.% FOR.stext) f p)
     sl <- CAS.soundLoader
-    Right () <- runExceptT $ CAG.loadAssets sl CAS.soundAssets callback
+    Right () <- runExceptT $ CAG.loadAssets sl CAU.soundAssets callback
     (Right (CAG.A a)) <- runExceptT $ CAG.getAsset sl (CAG.AssetID "click1")
     SMI.playForever a
+
+loadFonts :: MonadIO m => m ()
+loadFonts = do
+    let callback f p = putStrLn (FOR.format (FOR.fixed 0 FOR.% "%: loading " FOR.% FOR.stext) f p)
+    fl <- CAF.fontLoader (CAF.FontSize 12)
+    res <- runExceptT $ CAG.loadAssets fl CAU.fontAssets callback
+    case res of
+        Left e -> print e
+        Right () -> return ()
 
 initLoop :: CTY.Game()
 initLoop = do
@@ -59,10 +72,11 @@ initLoop = do
 
 
     playBackgroundMusic
+    loadFonts
     res <- runExceptT $ CAG.loadAssets sl CAU.pngAssets callback
     case res of
         Right () -> loop
-        Left e -> panic $ "Could not load assets: " <> e
+        Left e   -> panic $ "Could not load assets: " <> e
 
 loop :: CTY.Game ()
 loop = do
@@ -93,7 +107,8 @@ render = do
     SVI.rendererDrawColor renderer SDL.$= SVE.V4 0 0 0 0
     SVI.clear renderer
 
-    --CVT.renderTexture texload (CTY.background tuu) Nothing
+    CVS.renderSprite renderer sl (CAG.AssetID "background.png") Nothing 0
+                     CVS.noFlip
 
     appState <- get
     let pos = CLE.view (CTY.game . CTY.physicalObjects) appState
@@ -108,7 +123,7 @@ render = do
     SVI.present renderer
 
 
-
+-- TODO: Move this in own module
 network :: CTY.Game ()
 network = do
     res <- ask
@@ -119,5 +134,18 @@ network = do
             modify (CLE.set (CTY.game . CTY.physicalObjects) objs)
             network
         Just (PNT.Ping) -> network                  -- < TODO
-        Just (PNT.CreateGameObject _) -> network    -- < TODO
+        Just (PNT.CreateGameObject (k, o, mp)) ->
+            let key = PTY.unKey k
+            in case mp of
+                Nothing -> do
+                    modify (CLE.over (CTY.game . CTY.gameObjects) (DIS.insert key o))
+                    network
+                Just p -> do
+                    let mpk = fmap PTY.unKey (CLE.view PGT.mPhOb o)
+                    case mpk of
+                        Just pk -> do
+                            modify (CLE.over (CTY.game . CTY.physicalObjects) (DIS.insert pk p))
+                            modify (CLE.over (CTY.game . CTY.gameObjects) (DIS.insert key o))
+                            network
+                        Nothing -> network -- TODO: Log error. got physical object but no matching id
         Nothing -> return ()

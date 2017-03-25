@@ -18,6 +18,8 @@
 
 module Client.Assets.Util
     ( pngAssets
+    , soundAssets
+    , fontAssets
     ) where
 
 import           Protolude
@@ -48,3 +50,30 @@ pngAssets = [ "res/png/gravity.xml"
             , "res/png/gameicons_extended/sheet_white1x.xml"
             , "res/png/gameicons_extended/sheet_white2x.xml"
             ]
+
+-- | Complete list of all sound assets in the game
+soundAssets :: [FilePath]
+soundAssets =
+    [ "res/ogg/click1.ogg"
+    , "res/ogg/click2.ogg"
+    , "res/ogg/rollover1.ogg"
+    , "res/ogg/rollover2.ogg"
+    , "res/ogg/switch2.ogg"
+    , "res/ogg/switch3.ogg"
+    ]
+
+-- | Complete list of all font assets used in the game
+fontAssets :: [FilePath]
+fontAssets =
+    [ "res/fonts/kenpixel.ttf"
+    , "res/fonts/kenpixel_blocks.ttf"
+    , "res/fonts/kenpixel_future.ttf"
+    , "res/fonts/kenpixel_future_square.ttf"
+    , "res/fonts/kenpixel_high.ttf"
+    , "res/fonts/kenpixel_high_square.ttf"
+    , "res/fonts/kenpixel_mini.ttf"
+    , "res/fonts/kenpixel_mini_square.ttf"
+    , "res/fonts/kenpixel_square.ttf"
+    , "res/fonts/kenvector_future.ttf"
+    , "res/fonts/kenvector_future_thin.ttf"
+    ]

@@ -45,7 +45,7 @@ data ClientConnection
     = ClientConnection
     { _addr    :: NSO.SockAddr
     , _name    :: Text
-    , _gameObj :: PGT.GameObjUUID
+    , _gameObj :: PGT.GameObjKey
     }
 
 -- | The state of a server waiting for connections
