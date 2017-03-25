@@ -115,6 +115,11 @@ instance DBI.Binary Mass
 instance DBI.Binary Velocity
 instance DBI.Binary ObjType
 instance DBI.Binary ObjGrav
+
+-- | TODO: Implement the binary instance of PhysicalObject by hand to safe
+-- space.  Use the fact that the position is always in [0,1] and needs to only
+-- be pixel precise. I.e. max 4096*4096 possible positions. For that we need
+-- 12 + 12 = 24 bit, rather than the 64 bit for two floats.
 instance DBI.Binary PhysicalObject
 
 
