@@ -27,6 +27,8 @@ import qualified Data.IntMap.Strict        as DIS
 import           Network.Socket.ByteString
 import qualified SDL.Video                 as SVI
 
+import qualified PurpleMuon.Input.Types    as PIT
+import qualified PurpleMuon.Input.Util     as PIU
 import qualified PurpleMuon.Network.Types  as PNT
 import qualified PurpleMuon.Network.Util   as PNU
 import qualified PurpleMuon.Physics.Types  as PPT
@@ -45,10 +47,16 @@ initialeState r = do
     tl <- CAT.textureLoader r
     sl <- CAS.spriteLoader tl
     return $ CTY.AppState True
-        (CTY.InGameState DIS.empty (PPT.DeltaTime 0) (PPT.DeltaTime 0) DIS.empty)
+        (CTY.InGameState DIS.empty
+                         (PPT.DeltaTime 0)
+                         (PPT.DeltaTime 0)
+                         DIS.empty
+                         (PIT.Controls False False False False
+                                       False False False False))
         (CTY.FpsCounter 60 [])
         (toEnum 0)
         sl
+        PIU.standardKeyMap
 
 game :: CCS.TBQueue PNT.ServerToClientMsg -> SVI.Window -> SVI.Renderer -> IO ()
 game tb w r = do

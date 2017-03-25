@@ -25,7 +25,9 @@ Portability : POSIX
 -}
 
 module PurpleMuon.Input.Util
-    ( getKeyboardState
+    ( updateKeyboardState
+    , getKeyboardState
+    , standardKeyMap
     ) where
 
 import Protolude
@@ -34,13 +36,31 @@ import qualified SDL
 
 import PurpleMuon.Input.Types as PIT
 
+-- | Update the current state of the keyboard
+updateKeyboardState :: (MonadIO m, MonadState PIT.Controls m)
+                    => PIT.KeyMap
+                    -> m ()
+updateKeyboardState km = getKeyboardState km >>= put
+
 -- | Get the current state of the keyboard
-getKeyboardState :: (MonadIO m, MonadReader PIT.KeyMap m)
-                 => m PIT.Controls
-getKeyboardState = do
-    (PIT.KeyMap a b c d e f g h) <- ask
+getKeyboardState :: MonadIO m
+                 => PIT.KeyMap
+                 -> m PIT.Controls
+getKeyboardState (PIT.KeyMap a b c d e f g h) = do
     ks <- SDL.getKeyboardState
     let [i,j,k,l,m,n,o,p] = fmap ks [a,b,c,d,e,f,g,h]
     return $ PIT.Controls i j k l m n o p
 
-
+-- | Standard keymap
+standardKeyMap :: PIT.KeyMap
+standardKeyMap
+    = PIT.KeyMap
+    { PIT.km_accel = SDL.ScancodeUp
+    , PIT.km_turn_left = SDL.ScancodeLeft
+    , PIT.km_turn_right = SDL.ScancodeRight
+    , PIT.km_decel = SDL.ScancodeDown
+    , PIT.km_fire1 = SDL.ScancodeSpace
+    , PIT.km_fire2 = SDL.ScancodeS
+    , PIT.km_fire3 = SDL.ScancodeD
+    , PIT.km_fire4 = SDL.ScancodeF
+    }

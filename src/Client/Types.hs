@@ -18,9 +18,9 @@
 {-# LANGUAGE TemplateHaskell #-}
 
 module Client.Types
-    ( AppState(..), running, game, fps, frameBegin, sprites
+    ( AppState(..), running, game, fps, frameBegin, sprites, keymap
     , Game
-    , GameState(..), physicalObjects, dt, accumTime, gameObjects
+    , GameState(..), physicalObjects, dt, accumTime, gameObjects, controls
     , Resources(..), window, renderer, tbqueue
     , FpsCounter(..)
     ) where
@@ -29,12 +29,13 @@ import           Protolude
 
 import qualified Control.Concurrent.STM   as CCS
 import qualified Control.Lens             as CLE
+import qualified Data.IntMap.Strict       as DIS
 import qualified Data.Thyme.Clock         as DTC
 import qualified SDL.Video                as SVI
-import qualified Data.IntMap.Strict       as DIS
 
 import qualified Client.Assets.Sprite     as CAS
 import qualified PurpleMuon.Game.Types    as PGT
+import qualified PurpleMuon.Input.Types   as PIT
 import qualified PurpleMuon.Network.Types as PNT
 import qualified PurpleMuon.Physics.Types as PPT
 import qualified PurpleMuon.Types         as PPY
@@ -46,6 +47,7 @@ data AppState
     , _fps        :: FpsCounter
     , _frameBegin :: DTC.UTCTime -- TODO: figure out how to get show back on Appstate
     , _sprites    :: CAS.SpriteLoaderType
+    , _keymap     :: PIT.KeyMap
     }
 
 type Game a = ReaderT Resources (StateT AppState IO) a
@@ -56,6 +58,7 @@ data GameState
     , _dt              :: PPT.DeltaTime
     , _accumTime       :: PPT.DeltaTime         -- ^ Accumulated time for fixed physics step
     , _gameObjects     :: DIS.IntMap PGT.GameObject
+    , _controls        :: PIT.Controls
     }
     | MenuState
 

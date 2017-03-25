@@ -26,6 +26,7 @@ import           Version
 
 import qualified Control.Concurrent.STM   as CCS
 import qualified Control.Lens             as CLE
+import qualified Control.Lens.Zoom        as CLZ
 import qualified Data.IntMap.Strict       as DIS
 import qualified Formatting               as FOR
 import qualified SDL                      as SDL
@@ -35,6 +36,7 @@ import qualified SDL.Vect                 as SVE
 import qualified SDL.Video                as SVI
 
 import qualified PurpleMuon.Game.Types    as PGT
+import qualified PurpleMuon.Input.Util    as PIU
 import qualified PurpleMuon.Network.Types as PNT
 import qualified PurpleMuon.Types         as PTY
 
@@ -61,7 +63,7 @@ loadFonts = do
     fl <- CAF.fontLoader (CAF.FontSize 12)
     res <- runExceptT $ CAG.loadAssets fl CAU.fontAssets callback
     case res of
-        Left e -> print e
+        Left e   -> print e
         Right () -> return ()
 
 initLoop :: CTY.Game()
@@ -90,6 +92,11 @@ loop = do
 
     SEV.mapEvents CEV.handleEvent
     render
+
+    -- Update keyboard state
+    km <- fmap (CLE.view CTY.keymap) get
+    CLZ.zoom (CTY.game . CTY.controls) $
+        PIU.updateKeyboardState km
 
     -- advanceGameState
 
