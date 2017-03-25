@@ -308,6 +308,9 @@ getKeyboardState :: MonadIO m => KeyMap -> m Controls
 -- | Standard keymap
 standardKeyMap :: KeyMap
 
+
+module Client.Network
+
 module Client.Init
 
 -- | Run a computation with SDL, SDL window and SDL renderer, SDL-ttf and
@@ -615,6 +618,14 @@ frameBegin :: Lens' AppState UTCTime
 sprites :: Lens' AppState SpriteLoaderType
 keymap :: Lens' AppState KeyMap
 type Game a = ReaderT Resources (StateT AppState IO) a
+
+-- | The network state of a client
+data NetworkState
+NetworkState :: UTCTime -> MessageCount -> AckField -> Socket -> NetworkState
+[_lastPacket] :: NetworkState -> UTCTime
+[_lastID] :: NetworkState -> MessageCount
+[_ackField] :: NetworkState -> AckField
+[_socket] :: NetworkState -> Socket
 data GameState
 InGameState :: PhysicalObjects -> DeltaTime -> DeltaTime -> IntMap GameObject -> Controls -> GameState
 [_physicalObjects] :: GameState -> PhysicalObjects
