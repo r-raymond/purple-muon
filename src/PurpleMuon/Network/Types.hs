@@ -37,6 +37,7 @@ module PurpleMuon.Network.Types
     , ServerToClientMsg(..)
     , ClientToServerMsg(..)
     , PlayerName(..)
+    , UpdateMsg(..)
     ) where
 
 import           Protolude
@@ -110,10 +111,19 @@ data ClientToServerMsg
                         -- answer with ping commands to establish the network
                         -- latency if the request is granted
     | Pong MessageCount -- ^ Answer to a ping command. The `MessageCount` indicates which
+    | ClientUpdate UpdateMsg  -- ^ Regular updates the client sends to the server
         deriving (Generic) -- `Ping` is answered
+
+data UpdateMsg
+    = UpdateMsg
+    { lastAck :: Word32
+    , ackField :: Word32
+    , controls :: Word8
+    } deriving (Generic)
 
 
 instance DBI.Binary MessageCount
 instance DBI.Binary PlayerName
 instance DBI.Binary ServerToClientMsg
 instance DBI.Binary ClientToServerMsg
+instance DBI.Binary UpdateMsg
