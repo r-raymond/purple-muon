@@ -17,7 +17,7 @@
 
 {-|
 Module      : PurpleMuon.Input.Types
-Description : Utility functions and types for controls.
+Description : Types for controls.
 Copyright   : (c) Robin Raymond, 2016-2017
 License     : GPL-3
 Maintainer  : robin@robinraymond.de
@@ -41,12 +41,16 @@ the order mentioned above.
 
 module PurpleMuon.Input.Types
     ( Controls(..)
+    , KeyMap(..)
     , packControls
     , unpackControls
     ) where
 
 import           Protolude
 
+import qualified SDL
+
+-- | A data type that stores information about the current keyboard state
 data Controls
     = Controls
     { accelerate :: Bool
@@ -57,6 +61,20 @@ data Controls
     , fire2      :: Bool
     , fire3      :: Bool
     , fire4      :: Bool
+    } deriving (Show, Eq)
+
+-- | A data type that stores a keymap. A keymap is a mapping from SDL scancodes
+-- to controls defined in the game
+data KeyMap
+    = KeyMap
+    { km_accel      :: SDL.Scancode
+    , km_turn_left  :: SDL.Scancode
+    , km_turn_right :: SDL.Scancode
+    , km_decel      :: SDL.Scancode
+    , km_fire1      :: SDL.Scancode
+    , km_fire2      :: SDL.Scancode
+    , km_fire3      :: SDL.Scancode
+    , km_fire4      :: SDL.Scancode
     } deriving (Show, Eq)
 
 packControls :: Controls -> Word8
