@@ -20,6 +20,7 @@
 module Client.Types
     ( AppState(..), running, game, fps, frameBegin, sprites, keymap
     , Game
+    , NetworkState(..)
     , GameState(..), physicalObjects, dt, accumTime, gameObjects, controls
     , Resources(..), window, renderer, tbqueue
     , FpsCounter(..)
@@ -31,6 +32,7 @@ import qualified Control.Concurrent.STM   as CCS
 import qualified Control.Lens             as CLE
 import qualified Data.IntMap.Strict       as DIS
 import qualified Data.Thyme.Clock         as DTC
+import qualified Network.Socket           as NSO
 import qualified SDL.Video                as SVI
 
 import qualified Client.Assets.Sprite     as CAS
@@ -51,6 +53,15 @@ data AppState
     }
 
 type Game a = ReaderT Resources (StateT AppState IO) a
+
+-- | The network state of a client
+data NetworkState
+    = NetworkState
+    { _lastPacket :: DTC.UTCTime
+    , _lastID     :: PNT.MessageCount
+    , _ackField   :: PNT.AckField
+    , _socket     :: NSO.Socket
+    }
 
 data GameState
     = InGameState
