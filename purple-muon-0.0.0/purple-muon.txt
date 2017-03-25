@@ -246,6 +246,68 @@ module PurpleMuon.Physics.Algorithm
 --   <a>https://en.wikipedia.org/wiki/Runge%E2%80%93Kutta_methods</a>
 integrateTimeStep :: GravitationalConstant -> DeltaTime -> PhysicalObjects -> Forces -> PhysicalObjects
 
+
+-- | Purple Moun Clients have `8` possible keys they can press. These are
+--   
+--   <ul>
+--   <li>accelerate (up key)</li>
+--   <li>turn left (left key)</li>
+--   <li>turn right (right key)</li>
+--   <li>decelerate (down key)</li>
+--   <li>fire 1 (space)</li>
+--   <li>fire 2 (s)</li>
+--   <li>fire 3 (d)</li>
+--   <li>fire 4 (f)</li>
+--   </ul>
+--   
+--   These controls are send from the clients to the server 30 times a
+--   second. They packed into a Word8, where the bits signalize pressed (1)
+--   or not pressed (0) in the order mentioned above.
+module PurpleMuon.Input.Types
+
+-- | A data type that stores information about the current keyboard state
+data Controls
+Controls :: Bool -> Bool -> Bool -> Bool -> Bool -> Bool -> Bool -> Bool -> Controls
+[accelerate] :: Controls -> Bool
+[turn_left] :: Controls -> Bool
+[turn_right] :: Controls -> Bool
+[decelerate] :: Controls -> Bool
+[fire1] :: Controls -> Bool
+[fire2] :: Controls -> Bool
+[fire3] :: Controls -> Bool
+[fire4] :: Controls -> Bool
+
+-- | A data type that stores a keymap. A keymap is a mapping from SDL
+--   scancodes to controls defined in the game
+data KeyMap
+KeyMap :: Scancode -> Scancode -> Scancode -> Scancode -> Scancode -> Scancode -> Scancode -> Scancode -> KeyMap
+[km_accel] :: KeyMap -> Scancode
+[km_turn_left] :: KeyMap -> Scancode
+[km_turn_right] :: KeyMap -> Scancode
+[km_decel] :: KeyMap -> Scancode
+[km_fire1] :: KeyMap -> Scancode
+[km_fire2] :: KeyMap -> Scancode
+[km_fire3] :: KeyMap -> Scancode
+[km_fire4] :: KeyMap -> Scancode
+packControls :: Controls -> Word8
+unpackControls :: Word8 -> Controls
+instance GHC.Classes.Eq PurpleMuon.Input.Types.KeyMap
+instance GHC.Show.Show PurpleMuon.Input.Types.KeyMap
+instance GHC.Classes.Eq PurpleMuon.Input.Types.Controls
+instance GHC.Show.Show PurpleMuon.Input.Types.Controls
+
+
+module PurpleMuon.Input.Util
+
+-- | Update the current state of the keyboard
+updateKeyboardState :: (MonadIO m, MonadState Controls m) => KeyMap -> m ()
+
+-- | Get the current state of the keyboard
+getKeyboardState :: MonadIO m => KeyMap -> m Controls
+
+-- | Standard keymap
+standardKeyMap :: KeyMap
+
 module Client.Init
 
 -- | Run a computation with SDL, SDL window and SDL renderer, SDL-ttf and
@@ -539,31 +601,35 @@ instance Data.Binary.Class.Binary PurpleMuon.Network.Types.UpdateMsg
 
 module Client.Types
 data AppState
-AppState :: Bool -> GameState -> FpsCounter -> UTCTime -> SpriteLoaderType -> AppState
+AppState :: Bool -> GameState -> FpsCounter -> UTCTime -> SpriteLoaderType -> KeyMap -> AppState
 [_running] :: AppState -> Bool
 [_game] :: AppState -> GameState
 [_fps] :: AppState -> FpsCounter
 [_frameBegin] :: AppState -> UTCTime
 [_sprites] :: AppState -> SpriteLoaderType
+[_keymap] :: AppState -> KeyMap
 running :: Lens' AppState Bool
 game :: Lens' AppState GameState
 fps :: Lens' AppState FpsCounter
 frameBegin :: Lens' AppState UTCTime
 sprites :: Lens' AppState SpriteLoaderType
+keymap :: Lens' AppState KeyMap
 type Game a = ReaderT Resources (StateT AppState IO) a
 data GameState
-InGameState :: PhysicalObjects -> DeltaTime -> DeltaTime -> IntMap GameObject -> GameState
+InGameState :: PhysicalObjects -> DeltaTime -> DeltaTime -> IntMap GameObject -> Controls -> GameState
 [_physicalObjects] :: GameState -> PhysicalObjects
 [_dt] :: GameState -> DeltaTime
 
 -- | Accumulated time for fixed physics step
 [_accumTime] :: GameState -> DeltaTime
 [_gameObjects] :: GameState -> IntMap GameObject
+[_controls] :: GameState -> Controls
 MenuState :: GameState
 physicalObjects :: Traversal' GameState PhysicalObjects
 dt :: Traversal' GameState DeltaTime
 accumTime :: Traversal' GameState DeltaTime
 gameObjects :: Traversal' GameState (IntMap GameObject)
+controls :: Traversal' GameState Controls
 data Resources
 Resources :: Window -> Renderer -> TBQueue ServerToClientMsg -> Resources
 [_window] :: Resources -> Window
