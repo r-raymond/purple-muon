@@ -23,7 +23,8 @@ module Server.Types
     , WaitingServer, clientsConnected
     , Server
     , Resources(..), tbqueue, socket, uuid
-    , ClientConnection(..), addr, name, gameObj
+    , ClientConnection(..), addr, name, connType
+    , ClientConnectionType(..)
     ) where
 
 import           Protolude
@@ -36,6 +37,7 @@ import qualified Network.Socket           as NSO
 import qualified System.Log.FastLogger    as SLF
 
 import qualified PurpleMuon.Game.Types    as PGT
+import qualified PurpleMuon.Input.Types   as PIT
 import qualified PurpleMuon.Network.Types as PNT
 import qualified PurpleMuon.Physics.Types as PPT
 
@@ -43,10 +45,18 @@ import qualified PurpleMuon.Physics.Types as PPT
 -- a client
 data ClientConnection
     = ClientConnection
-    { _addr    :: NSO.SockAddr
-    , _name    :: Text
-    , _gameObj :: PGT.GameObjKey
+    { _addr     :: NSO.SockAddr
+    , _name     :: Text
+    , _connType :: ClientConnectionType
     }
+
+-- | The type of client connection
+data ClientConnectionType
+    = ClientConnectionPlayer    -- ^ A player connection
+    { playerObj     :: PGT.GameObjKey  -- ^ The game object belonging to the player
+    , inputControls :: PIT.Controls -- ^ The current input state of this player
+    }
+    | ClientConnectionViewer    -- ^ A viewer connection
 
 -- | The state of a server waiting for connections
 data WaitingState

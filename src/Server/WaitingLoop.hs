@@ -34,6 +34,7 @@ import qualified Control.Lens              as CLE
 import qualified Data.Binary               as DBI
 import qualified Network.Socket.ByteString as NSB
 
+import qualified PurpleMuon.Input.Types    as PIT
 import qualified PurpleMuon.Network.Types  as PNT
 import qualified PurpleMuon.Types          as PTY
 import qualified System.Log.FastLogger     as SLF
@@ -58,7 +59,18 @@ waitingLoop = do
                 (PNT.RequestConnection (PNT.PlayerName name)) -> liftIO $ do
                     SLF.pushLogStrLn l (SLF.toLogStr $ "Player " <> name <> " connected")
                     evalStateT (runReaderT SMA.loop res)
-                               (STY.GameState SCO.initialObjs SCO.initialPhyObjs (toEnum 0) [STY.ClientConnection a name (PTY.Key 0)] 0)
+                               (STY.GameState SCO.initialObjs
+                                              SCO.initialPhyObjs
+                                              (toEnum 0)
+                                              [STY.ClientConnection
+                                                    a
+                                                    name
+                                                    (STY.ClientConnectionPlayer
+                                                        (PTY.Key 0)
+                                                        (PIT.unpackControls 0)
+                                                    )
+                                              ]
+                                              0)
                 _ -> do
                     liftIO $ SLF.pushLogStrLn l "Discard valid but inappropriate package"
                     waitingLoop
