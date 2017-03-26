@@ -14,16 +14,17 @@ import qualified PurpleMuon.Util.Frames   as PUF
 
 import qualified Server.Types             as STY
 
+-- TODO: Restrict state via zoom
 frameBegin :: STY.Server ()
-frameBegin = PUF.frameBegin storeFb
-  where
-    storeFb t = modify $ CLE.set STY.frameBegin t
+frameBegin = do
+    t <- PUF.getTime
+    modify $ CLE.set STY.frameBegin t
 
+-- TODO: Restrict state via zoom
 manageFps :: STY.Server ()
-manageFps = PUF.manageFps minFrameTime getFb storeDt
-  where
-    getFb = fmap (CLE.view STY.frameBegin) get
-    storeDt _ = return ()
+manageFps = do
+    start <- fmap (CLE.view STY.frameBegin) get
+    void $ PUF.manageFps minFrameTime start
 
 minFrameTime :: DTC.NominalDiffTime
 minFrameTime = DTC.fromSeconds (1 / 30 :: PPY.FlType)

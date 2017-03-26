@@ -30,7 +30,7 @@ storing frame lengths and calculating FPS.
 -}
 
 module PurpleMuon.Util.Frames
-    ( frameBegin
+    ( getTime
     , manageFps
     ) where
 
@@ -43,14 +43,9 @@ import qualified Data.Thyme.Clock         as DTC
 
 import qualified PurpleMuon.Types         as PTY
 
--- | Call at the beginning of a frame.
--- Updates the frameBegin timer.
-frameBegin :: MonadIO m
-           => (DTC.UTCTime -> m ())     -- ^ function to store the time
-           -> m ()
-frameBegin f = do
-    b <- liftIO $ DTC.getCurrentTime
-    f b
+-- | Get the current time
+getTime :: MonadIO m => m DTC.UTCTime
+getTime = liftIO $ DTC.getCurrentTime
 
 -- | Sleep for a given time
 waitFor :: MonadIO m => DTC.NominalDiffTime -> m ()
@@ -60,17 +55,16 @@ waitFor dt = liftIO $ CCO.threadDelay dt_ms
     dt_ms_float = dt_s * 1000000
     dt_ms = truncate dt_ms_float
 
+
 -- | Handle frame time.
 -- The function will then calculate the remaining time, sleep the thread,
--- update the frame counter and the dt variable of the game state
+-- and return the final time of the frame.
 manageFps :: MonadIO m
           => DTC.NominalDiffTime     -- ^ the desired frame time
-          -> m DTC.UTCTime           -- ^ get the frame begin
-          -> (PTY.FlType -> m ())    -- ^ store `dt`
-          -> m ()
-manageFps minFT getFB storeDt = do
+          -> DTC.UTCTime             -- ^ the frame begin time
+          -> m PTY.FlType            -- ^ the final frame time in seconds
+manageFps minFT start = do
     end <- liftIO $ DTC.getCurrentTime
-    start <- getFB
     let used = end DAF..-. start
 
     when (used < minFT) (waitFor (minFT DAD.^-^ used))
@@ -78,4 +72,4 @@ manageFps minFT getFB storeDt = do
     let elapsed = final DAF..-. start
         frameTime = DTC.toSeconds elapsed :: PTY.FlType
 
-    storeDt frameTime
+    return frameTime

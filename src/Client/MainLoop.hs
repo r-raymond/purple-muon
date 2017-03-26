@@ -83,7 +83,7 @@ initLoop = do
 
 loop :: CTY.Game ()
 loop = do
-    CTF.frameBegin
+    CLZ.zoom (CTY.frameState . CTY.frameBegin) CTF.frameBegin
 
     network
 
@@ -94,15 +94,18 @@ loop = do
     render
 
     -- Update keyboard state
-    km <- fmap (CLE.view CTY.keymap) get
+    st <- get
+    let km = CTY._keymap $ CTY._game  st
     CLZ.zoom (CTY.game . CTY.controls) $
         PIU.updateKeyboardState km
 
     -- advanceGameState
 
-    CTF.manageFps
+    CLZ.zoom CTY.frameState CTF.manageFps
 
-    fps <- CTF.formatFps
+    sta <- get
+    let fpsC = CLE.view (CTY.frameState . CTY.fpsCounter) sta
+        fps = CTF.formatFps fpsC
     SVI.windowTitle window SDL.$= ("PM " <> gitTag <> " (" <> fps <> ")")
     whenM (fmap (CLE.view CTY.running) get) loop
 
@@ -134,8 +137,8 @@ render = do
 -- TODO: Move this in own module
 network :: CTY.Game ()
 network = do
-    res <- ask
-    let s = CLE.view CTY.tbqueue res
+    sta <- get
+    let s = CTY._tbqueue $ CTY._netState $ CTY._game sta
     bin <- liftIO $ CCS.atomically $ CCS.tryReadTBQueue s
     case bin of
         Just (PNT.Update objs) -> do

@@ -18,11 +18,12 @@
 {-# LANGUAGE TemplateHaskell #-}
 
 module Client.Types
-    ( AppState(..), running, game, fps, frameBegin, sprites, keymap
+    ( AppState(..), running, game, sprites, frameState
     , Game
-    , NetworkState(..)
-    , GameState(..), physicalObjects, dt, accumTime, gameObjects, controls
-    , Resources(..), window, renderer, tbqueue
+    , FrameState(..), fpsCounter, frameBegin
+    , NetworkState(..), lastPacket, lastID, ackField, socket, tbqueue
+    , GameState(..), physicalObjects, dt, accumTime, gameObjects, controls, netState, keymap
+    , Resources(..), window, renderer
     , FpsCounter(..)
     ) where
 
@@ -42,43 +43,57 @@ import qualified PurpleMuon.Network.Types as PNT
 import qualified PurpleMuon.Physics.Types as PPT
 import qualified PurpleMuon.Types         as PPY
 
+-- | The `AppState` holds all information of the entire application.
 data AppState
     = AppState
     { _running    :: Bool
     , _game       :: GameState
-    , _fps        :: FpsCounter
-    , _frameBegin :: DTC.UTCTime -- TODO: figure out how to get show back on Appstate
     , _sprites    :: CAS.SpriteLoaderType
-    , _keymap     :: PIT.KeyMap
+    , _frameState :: FrameState
+    }
+
+-- | The frame state contains information on the app's fps.
+data FrameState
+    = FrameState
+    { _fpsCounter :: FpsCounter
+    , _frameBegin :: DTC.UTCTime
+    , _dt         :: PPT.DeltaTime
     }
 
 type Game a = ReaderT Resources (StateT AppState IO) a
 
--- | The network state of a client
+-- | The network state of a client.
+-- This data type contains every information that is available for a connection
+-- to a game server.
 data NetworkState
     = NetworkState
     { _lastPacket :: DTC.UTCTime
     , _lastID     :: PNT.MessageCount
     , _ackField   :: PNT.AckField
     , _socket     :: NSO.Socket
+    , _tbqueue    :: CCS.TBQueue PNT.ServerToClientMsg
     }
 
+-- | `GameState` has the information of the current state of the game. In can be
+-- either a ingame state, or a menu state.
 data GameState
     = InGameState
     { _physicalObjects :: PPT.PhysicalObjects
-    , _dt              :: PPT.DeltaTime
     , _accumTime       :: PPT.DeltaTime         -- ^ Accumulated time for fixed physics step
     , _gameObjects     :: DIS.IntMap PGT.GameObject
     , _controls        :: PIT.Controls
+    , _netState        :: NetworkState
+    , _keymap          :: PIT.KeyMap
     }
     | MenuState
 
+-- | Resources are things that do not change during a complete app cycle.
 data Resources
     = Resources
     { _window   :: SVI.Window
     , _renderer :: SVI.Renderer
-    , _tbqueue  :: CCS.TBQueue PNT.ServerToClientMsg
     }
+
 
 -- TODO: Make this more efficient. Maybe a mutable array?
 data FpsCounter
@@ -90,3 +105,5 @@ data FpsCounter
 CLE.makeLenses ''AppState
 CLE.makeLenses ''GameState
 CLE.makeLenses ''Resources
+CLE.makeLenses ''FrameState
+CLE.makeLenses ''NetworkState

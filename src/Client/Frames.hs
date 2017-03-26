@@ -15,6 +15,15 @@
 --  You should have received a copy of the GNU General Public License
 --  along with Purple Muon.  If not, see <http://www.gnu.org/licenses/>.
 
+{-|
+Module      : Client.Frames
+Description : Manage frames client specifically
+Copyright   : (c) Robin Raymond, 2016-2017
+License     : GPL-3
+Maintainer  : robin@robinraymond.de
+Portability : POSIX
+-}
+
 module Client.Frames
     ( frameBegin
     , manageFps
@@ -33,20 +42,19 @@ import qualified PurpleMuon.Util.Frames   as PUF
 
 import qualified Client.Types             as CTY
 
-frameBegin :: CTY.Game ()
-frameBegin = PUF.frameBegin storeFb
-  where
-    storeFb x = modify (CLE.set CTY.frameBegin x)
+-- | Manage the beginning of a frame, i.e. store the current time
+frameBegin :: (MonadIO m, MonadState DTC.UTCTime m) => m ()
+frameBegin = PUF.getTime >>= put
 
-manageFps :: CTY.Game ()
-manageFps = PUF.manageFps minFrameTime getFb storeDt
-  where
-    getFb = fmap (CLE.view CTY.frameBegin) get
-    storeDt dt = do
-        modify (CLE.set (CTY.game . CTY.dt) (PPT.DeltaTime dt))
-        modify (CLE.over CTY.fps (registerFps dt))
-        modify (CLE.over (CTY.game . CTY.accumTime)
-                         (\(PPT.DeltaTime a) -> PPT.DeltaTime (a + dt)))
+-- | Manage the end of a frame.
+-- Sleeps, times and updates the frame counter
+manageFps :: (MonadIO m, MonadState CTY.FrameState m) => m ()
+manageFps = do
+    start <- fmap (CLE.view CTY.frameBegin) get
+    dt <- PUF.manageFps minFrameTime start
+
+    modify (CLE.set CTY.dt (PPT.DeltaTime dt))
+    modify (CLE.over CTY.fpsCounter (registerFps dt))
 
 registerFps :: PTY.FlType -> CTY.FpsCounter -> CTY.FpsCounter
 registerFps fps fpsC = fpsC { CTY.fpsL = take m newFpsL }
@@ -64,8 +72,7 @@ minFrameTime = DTC.fromSeconds (1 / 120 :: PTY.FlType)
 fpsFormat :: FOR.Format r (PTY.FlType -> r)
 fpsFormat = "Fps : " FOR.% FOR.fixed 1
 
-formatFps :: CTY.Game Text
-formatFps = do
-    st <- get
-    let a = getAvgFrametime (CLE.view CTY.fps st)
-    return (FOR.sformat fpsFormat (1/a))
+formatFps :: CTY.FpsCounter -> Text
+formatFps cou = FOR.sformat fpsFormat (1/a)
+  where
+    a = getAvgFrametime cou

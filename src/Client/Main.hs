@@ -24,7 +24,8 @@ import           Version
 import qualified Control.Concurrent.STM    as CCS
 import qualified Data.Binary               as DBI
 import qualified Data.IntMap.Strict        as DIS
-import           Network.Socket.ByteString
+import qualified Network.Socket            as NSO
+import qualified Network.Socket.ByteString as NSB
 import qualified SDL.Video                 as SVI
 
 import qualified PurpleMuon.Input.Types    as PIT
@@ -42,26 +43,33 @@ import qualified Client.Types              as CTY
 uuid :: PNT.ProtocolUUID
 uuid = toS $ DBI.encode (1337 :: Word32)
 
-initialeState :: MonadIO m => SVI.Renderer -> m CTY.AppState
-initialeState r = do
+initialeState :: MonadIO m => NSO.Socket -> CCS.TBQueue PNT.ServerToClientMsg -> SVI.Renderer -> m CTY.AppState
+initialeState socket tbqueue r = do
     tl <- CAT.textureLoader r
     sl <- CAS.spriteLoader tl
     return $ CTY.AppState True
         (CTY.InGameState DIS.empty
                          (PPT.DeltaTime 0)
-                         (PPT.DeltaTime 0)
                          DIS.empty
                          (PIT.Controls False False False False
-                                       False False False False))
-        (CTY.FpsCounter 60 [])
-        (toEnum 0)
+                                       False False False False)
+                         (CTY.NetworkState
+                            (toEnum 0)
+                            (PNT.MessageCount 0)
+                            (PNT.AckField 0)
+                            socket
+                            tbqueue)
+                            PIU.standardKeyMap)
         sl
-        PIU.standardKeyMap
+        (CTY.FrameState
+            (CTY.FpsCounter 60 [])
+            (toEnum 0)
+            (PPT.DeltaTime 0))
 
-game :: CCS.TBQueue PNT.ServerToClientMsg -> SVI.Window -> SVI.Renderer -> IO ()
-game tb w r = do
-    initS <- initialeState r
-    evalStateT (runReaderT CMA.initLoop (CTY.Resources w r tb)) initS
+game :: NSO.Socket -> CCS.TBQueue PNT.ServerToClientMsg -> SVI.Window -> SVI.Renderer -> IO ()
+game s tb w r = do
+    initS <- initialeState s tb r
+    evalStateT (runReaderT CMA.initLoop (CTY.Resources w r)) initS
 
 main :: IO ()
 main = do
@@ -69,10 +77,10 @@ main = do
             <> platform <> " by " <> compiler)
     (Right cs) <- PNU.clientSocket "127.0.0.1" "7123"
     let cRe = PNT.RequestConnection (PNT.PlayerName "Chopstick WarrioR")
-    _ <- send cs (toS (DBI.encode cRe))
+    _ <- NSB.send cs (toS (DBI.encode cRe))
     tb <- CCS.atomically $ CCS.newTBQueue 128
     _ <- forkIO $ PNU.endlessRecv uuid 1400 cs tb
-    r <- CIN.withGraphics (game tb)
+    r <- CIN.withGraphics (game cs tb)
     case r of
         Left ex  -> putStrLn ("Error: " <> (show ex) :: Text)
         Right () -> return ()
