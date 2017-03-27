@@ -52,11 +52,11 @@ data ClientConnection
 
 -- | The type of client connection
 data ClientConnectionType
-    = ClientConnectionPlayer    -- ^ A player connection
-    { playerObj     :: PGT.GameObjKey  -- ^ The game object belonging to the player
-    , inputControls :: PIT.Controls -- ^ The current input state of this player
+    = ClientConnectionPlayer
+    { playerObj     :: PGT.GameObjKey
+    , inputControls :: PIT.Controls
     }
-    | ClientConnectionViewer    -- ^ A viewer connection
+    | ClientConnectionViewer 
 
 -- | The state of a server waiting for connections
 data WaitingState
