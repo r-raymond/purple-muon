@@ -18,7 +18,7 @@
 {-# LANGUAGE TemplateHaskell #-}
 
 module Client.Types
-    ( AppState(..), running, game, sprites, frameState
+    ( AppState(..), running, game, sprites, frameState, fonts
     , Game
     , FrameState(..), fpsCounter, frameBegin
     , NetworkState(..), lastPacket, lastID, ackField, socket, tbqueue
@@ -36,6 +36,7 @@ import qualified Data.Thyme.Clock         as DTC
 import qualified Network.Socket           as NSO
 import qualified SDL.Video                as SVI
 
+import qualified Client.Assets.Font       as CAF
 import qualified Client.Assets.Sprite     as CAS
 import qualified PurpleMuon.Game.Types    as PGT
 import qualified PurpleMuon.Input.Types   as PIT
@@ -50,6 +51,7 @@ data AppState
     , _game       :: GameState
     , _sprites    :: CAS.SpriteLoaderType
     , _frameState :: FrameState
+    , _fonts      :: CAF.FontLoaderType
     }
 
 -- | The frame state contains information on the app's fps.

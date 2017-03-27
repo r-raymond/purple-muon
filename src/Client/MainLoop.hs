@@ -31,6 +31,7 @@ import qualified Data.IntMap.Strict       as DIS
 import qualified Formatting               as FOR
 import qualified SDL                      as SDL
 import qualified SDL.Event                as SEV
+import qualified SDL.Font                 as SFO
 import qualified SDL.Mixer                as SMI
 import qualified SDL.Vect                 as SVE
 import qualified SDL.Video                as SVI
@@ -57,10 +58,9 @@ playBackgroundMusic = do
     (Right (CAG.A a)) <- runExceptT $ CAG.getAsset sl (CAG.AssetID "click1")
     SMI.playForever a
 
-loadFonts :: MonadIO m => m ()
-loadFonts = do
+loadFonts :: MonadIO m => CAF.FontLoaderType -> m ()
+loadFonts fl = do
     let callback f p = putStrLn (FOR.format (FOR.fixed 0 FOR.% "%: loading " FOR.% FOR.stext) f p)
-    fl <- CAF.fontLoader (CAF.FontSize 12)
     res <- runExceptT $ CAG.loadAssets fl CAU.fontAssets callback
     case res of
         Left e   -> print e
@@ -71,10 +71,11 @@ initLoop = do
     sta <- get
     let sl = CLE.view CTY.sprites sta
         callback f p = putStrLn (FOR.format (FOR.fixed 0 FOR.% "%: loading " FOR.% FOR.stext) f p)
+        fl = CLE.view CTY.fonts sta
 
 
     playBackgroundMusic
-    loadFonts
+    loadFonts fl
     res <- runExceptT $ CAG.loadAssets sl CAU.pngAssets callback
     case res of
         Right () -> loop
@@ -98,6 +99,7 @@ loop = do
     let km = CTY._keymap $ CTY._game  st
     CLZ.zoom (CTY.game . CTY.controls) $
         PIU.updateKeyboardState km
+
 
     -- advanceGameState
 
@@ -130,6 +132,14 @@ render = do
                                           sl
                                           (SDL.V2 640 480) -- TODO : fix
                                           ) ngos)
+
+    -- Test rendering of font
+    let fl = CLE.view CTY.fonts sta
+    Right (CAG.A f) <- runExceptT $ CAG.getAsset fl (CAG.AssetID "kenpixel_future")
+    sur <- SFO.blended f (SDL.V4 255 255 255 0) "Hello World"
+    t <- SDL.createTextureFromSurface renderer sur
+    SDL.copy renderer t Nothing (Just $ SDL.Rectangle (SDL.P $ SDL.V2 0 0) (SDL.V2 200 50))
+
 
     SVI.present renderer
 

@@ -38,7 +38,7 @@ import qualified PurpleMuon.Util.MonadError as PUM
 -- The identifier has a phantom type which ensures that id's of different assets
 -- can not be mixed.
 newtype AssetID a = AssetID { unAssetID :: Text }
-    deriving Generic
+    deriving (Generic, Show)
 
 -- | A AssetLoader is responsible for managing assets. It can load assets and
 -- store them for easy retrival.

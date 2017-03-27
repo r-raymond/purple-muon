@@ -34,6 +34,7 @@ import qualified PurpleMuon.Network.Types  as PNT
 import qualified PurpleMuon.Network.Util   as PNU
 import qualified PurpleMuon.Physics.Types  as PPT
 
+import qualified Client.Assets.Font        as CAF
 import qualified Client.Assets.Sprite      as CAS
 import qualified Client.Assets.Texture     as CAT
 import qualified Client.Init               as CIN
@@ -47,6 +48,7 @@ initialeState :: MonadIO m => NSO.Socket -> CCS.TBQueue PNT.ServerToClientMsg ->
 initialeState socket tbqueue r = do
     tl <- CAT.textureLoader r
     sl <- CAS.spriteLoader tl
+    fl <- CAF.fontLoader (CAF.FontSize 16)
     return $ CTY.AppState True
         (CTY.InGameState DIS.empty
                          (PPT.DeltaTime 0)
@@ -65,6 +67,7 @@ initialeState socket tbqueue r = do
             (CTY.FpsCounter 60 [])
             (toEnum 0)
             (PPT.DeltaTime 0))
+        fl
 
 game :: NSO.Socket -> CCS.TBQueue PNT.ServerToClientMsg -> SVI.Window -> SVI.Renderer -> IO ()
 game s tb w r = do
