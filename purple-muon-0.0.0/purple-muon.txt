@@ -392,6 +392,7 @@ loadAssets :: forall m a. (MonadError Text m, MonadIO m, AssetLoader a) => a -> 
 
 -- | Utility function to delete allassets in an <a>AssetLoader</a>
 deleteAssets :: (AssetLoader a, MonadIO m) => a -> m ()
+instance GHC.Show.Show (Client.Assets.Generic.AssetID a)
 instance GHC.Generics.Generic (Client.Assets.Generic.AssetID a)
 instance Client.Assets.Generic.AssetLoader (Client.Assets.Generic.HashmapLoader a ext)
 instance Data.Binary.Class.Binary (Client.Assets.Generic.AssetID b)
@@ -601,92 +602,6 @@ instance Data.Binary.Class.Binary PurpleMuon.Network.Types.ServerToClientMsg
 instance Data.Binary.Class.Binary PurpleMuon.Network.Types.ClientToServerMsg
 instance Data.Binary.Class.Binary PurpleMuon.Network.Types.UpdateMsg
 
-module Client.Types
-
--- | The <a>AppState</a> holds all information of the entire application.
-data AppState
-AppState :: Bool -> GameState -> SpriteLoaderType -> FrameState -> AppState
-[_running] :: AppState -> Bool
-[_game] :: AppState -> GameState
-[_sprites] :: AppState -> SpriteLoaderType
-[_frameState] :: AppState -> FrameState
-running :: Lens' AppState Bool
-game :: Lens' AppState GameState
-sprites :: Lens' AppState SpriteLoaderType
-frameState :: Lens' AppState FrameState
-type Game a = ReaderT Resources (StateT AppState IO) a
-
--- | The frame state contains information on the app's fps.
-data FrameState
-FrameState :: FpsCounter -> UTCTime -> DeltaTime -> FrameState
-[_fpsCounter] :: FrameState -> FpsCounter
-[_frameBegin] :: FrameState -> UTCTime
-[_dt] :: FrameState -> DeltaTime
-fpsCounter :: Lens' FrameState FpsCounter
-frameBegin :: Lens' FrameState UTCTime
-
--- | The network state of a client. This data type contains every
---   information that is available for a connection to a game server.
-data NetworkState
-NetworkState :: UTCTime -> MessageCount -> AckField -> Socket -> TBQueue ServerToClientMsg -> NetworkState
-[_lastPacket] :: NetworkState -> UTCTime
-[_lastID] :: NetworkState -> MessageCount
-[_ackField] :: NetworkState -> AckField
-[_socket] :: NetworkState -> Socket
-[_tbqueue] :: NetworkState -> TBQueue ServerToClientMsg
-lastPacket :: Lens' NetworkState UTCTime
-lastID :: Lens' NetworkState MessageCount
-ackField :: Lens' NetworkState AckField
-socket :: Lens' NetworkState Socket
-tbqueue :: Lens' NetworkState (TBQueue ServerToClientMsg)
-
--- | <a>GameState</a> has the information of the current state of the game.
---   In can be either a ingame state, or a menu state.
-data GameState
-InGameState :: PhysicalObjects -> DeltaTime -> IntMap GameObject -> Controls -> NetworkState -> KeyMap -> GameState
-[_physicalObjects] :: GameState -> PhysicalObjects
-
--- | Accumulated time for fixed physics step
-[_accumTime] :: GameState -> DeltaTime
-[_gameObjects] :: GameState -> IntMap GameObject
-[_controls] :: GameState -> Controls
-[_netState] :: GameState -> NetworkState
-[_keymap] :: GameState -> KeyMap
-MenuState :: GameState
-physicalObjects :: Traversal' GameState PhysicalObjects
-dt :: Lens' FrameState DeltaTime
-accumTime :: Traversal' GameState DeltaTime
-gameObjects :: Traversal' GameState (IntMap GameObject)
-controls :: Traversal' GameState Controls
-netState :: Traversal' GameState NetworkState
-keymap :: Traversal' GameState KeyMap
-
--- | Resources are things that do not change during a complete app cycle.
-data Resources
-Resources :: Window -> Renderer -> Resources
-[_window] :: Resources -> Window
-[_renderer] :: Resources -> Renderer
-window :: Lens' Resources Window
-renderer :: Lens' Resources Renderer
-data FpsCounter
-FpsCounter :: Int -> [FlType] -> FpsCounter
-[maxFrames] :: FpsCounter -> Int
-[fpsL] :: FpsCounter -> [FlType]
-instance GHC.Show.Show Client.Types.FpsCounter
-
-module Client.Event
-handleEvent :: Event -> Game ()
-
-
-module Client.Frames
-
--- | Manage the beginning of a frame, i.e. store the current time
-frameBegin :: (MonadIO m, MonadState UTCTime m) => m ()
-
--- | Manage the end of a frame. Sleeps, times and updates the frame counter
-manageFps :: (MonadIO m, MonadState FrameState m) => m ()
-formatFps :: FpsCounter -> Text
-
 
 module PurpleMuon.Network.Message
 
@@ -846,6 +761,94 @@ FontSize :: Int -> FontSize
 
 -- | Implementation of <tt>AssetLoader</tt> for sounds.
 fontLoader :: MonadIO m => FontSize -> m FontLoaderType
+
+module Client.Types
+
+-- | The <a>AppState</a> holds all information of the entire application.
+data AppState
+AppState :: Bool -> GameState -> SpriteLoaderType -> FrameState -> FontLoaderType -> AppState
+[_running] :: AppState -> Bool
+[_game] :: AppState -> GameState
+[_sprites] :: AppState -> SpriteLoaderType
+[_frameState] :: AppState -> FrameState
+[_fonts] :: AppState -> FontLoaderType
+running :: Lens' AppState Bool
+game :: Lens' AppState GameState
+sprites :: Lens' AppState SpriteLoaderType
+frameState :: Lens' AppState FrameState
+fonts :: Lens' AppState FontLoaderType
+type Game a = ReaderT Resources (StateT AppState IO) a
+
+-- | The frame state contains information on the app's fps.
+data FrameState
+FrameState :: FpsCounter -> UTCTime -> DeltaTime -> FrameState
+[_fpsCounter] :: FrameState -> FpsCounter
+[_frameBegin] :: FrameState -> UTCTime
+[_dt] :: FrameState -> DeltaTime
+fpsCounter :: Lens' FrameState FpsCounter
+frameBegin :: Lens' FrameState UTCTime
+
+-- | The network state of a client. This data type contains every
+--   information that is available for a connection to a game server.
+data NetworkState
+NetworkState :: UTCTime -> MessageCount -> AckField -> Socket -> TBQueue ServerToClientMsg -> NetworkState
+[_lastPacket] :: NetworkState -> UTCTime
+[_lastID] :: NetworkState -> MessageCount
+[_ackField] :: NetworkState -> AckField
+[_socket] :: NetworkState -> Socket
+[_tbqueue] :: NetworkState -> TBQueue ServerToClientMsg
+lastPacket :: Lens' NetworkState UTCTime
+lastID :: Lens' NetworkState MessageCount
+ackField :: Lens' NetworkState AckField
+socket :: Lens' NetworkState Socket
+tbqueue :: Lens' NetworkState (TBQueue ServerToClientMsg)
+
+-- | <a>GameState</a> has the information of the current state of the game.
+--   In can be either a ingame state, or a menu state.
+data GameState
+InGameState :: PhysicalObjects -> DeltaTime -> IntMap GameObject -> Controls -> NetworkState -> KeyMap -> GameState
+[_physicalObjects] :: GameState -> PhysicalObjects
+
+-- | Accumulated time for fixed physics step
+[_accumTime] :: GameState -> DeltaTime
+[_gameObjects] :: GameState -> IntMap GameObject
+[_controls] :: GameState -> Controls
+[_netState] :: GameState -> NetworkState
+[_keymap] :: GameState -> KeyMap
+MenuState :: GameState
+physicalObjects :: Traversal' GameState PhysicalObjects
+dt :: Lens' FrameState DeltaTime
+accumTime :: Traversal' GameState DeltaTime
+gameObjects :: Traversal' GameState (IntMap GameObject)
+controls :: Traversal' GameState Controls
+netState :: Traversal' GameState NetworkState
+keymap :: Traversal' GameState KeyMap
+
+-- | Resources are things that do not change during a complete app cycle.
+data Resources
+Resources :: Window -> Renderer -> Resources
+[_window] :: Resources -> Window
+[_renderer] :: Resources -> Renderer
+window :: Lens' Resources Window
+renderer :: Lens' Resources Renderer
+data FpsCounter
+FpsCounter :: Int -> [FlType] -> FpsCounter
+[maxFrames] :: FpsCounter -> Int
+[fpsL] :: FpsCounter -> [FlType]
+instance GHC.Show.Show Client.Types.FpsCounter
+
+module Client.Event
+handleEvent :: Event -> Game ()
+
+
+module Client.Frames
+
+-- | Manage the beginning of a frame, i.e. store the current time
+frameBegin :: (MonadIO m, MonadState UTCTime m) => m ()
+
+-- | Manage the end of a frame. Sleeps, times and updates the frame counter
+manageFps :: (MonadIO m, MonadState FrameState m) => m ()
+formatFps :: FpsCounter -> Text
 
 module Client.MainLoop
 loop :: Game ()
