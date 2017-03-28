@@ -349,52 +349,35 @@ module Client.Assets.Generic
 newtype AssetID a
 AssetID :: Text -> AssetID a
 [unAssetID] :: AssetID a -> Text
+data AssetLoader a b c
+AssetLoader :: BasicHashTable Text a -> b -> (c -> b -> FilePath -> IO (Either Text [(AssetID a, a)])) -> (a -> IO ()) -> AssetLoader a b c
+[store] :: AssetLoader a b c -> BasicHashTable Text a
+[extData] :: AssetLoader a b c -> b
+[load] :: AssetLoader a b c -> c -> b -> FilePath -> IO (Either Text [(AssetID a, a)])
+[delete] :: AssetLoader a b c -> a -> IO ()
 
--- | A AssetLoader is responsible for managing assets. It can load assets
---   and store them for easy retrival.
-class AssetLoader al where data Asset al :: * where {
-    data family Asset al :: *;
-}
+-- | Utility function to retrieve a single asset
+getAsset :: (MonadIO m, MonadError Text m) => AssetLoader a b c -> (AssetID a) -> m a
 
--- | Load an asset (maybe multiple assets) into an AssetLoader. Returns the
---   <a>AssetID</a>s of the loaded types.
---   
---   WARNING: loadAsset will always normalize the given <a>FilePath</a> via
---   the cabal paths package. Hence all paths should be specified relative
---   to the root of the git repository. Also make sure that the files are
---   mentioned in the package.yaml file under data-files.
-loadAsset :: (AssetLoader al, MonadIO m, MonadError Text m) => al -> FilePath -> m [(AssetID (Asset al))]
+-- | Utility function to load a single asset
+loadAsset :: (MonadIO m, MonadError Text m) => AssetLoader a b c -> c -> FilePath -> m [AssetID a]
 
--- | Retreive asset from AssetLoader
-getAsset :: (AssetLoader al, MonadIO m, MonadError Text m) => al -> AssetID (Asset al) -> m (Asset al)
-
--- | Delete an asset
-deleteAsset :: (AssetLoader al, MonadIO m) => al -> AssetID (Asset al) -> m ()
-
--- | Get all <a>AssetID</a>s
-getAllIDs :: (AssetLoader al, MonadIO m) => al -> m [AssetID (Asset al)]
-
--- | A simple implementation of an AssetLoader via Hashmaps <tt>a</tt> is
---   the type of the Asset to be loaded and stored and <tt>ext</tt> can be
---   any extra data that needs to be used when loading an asset from a
---   file.
-data HashmapLoader a ext
-HashmapLoader :: BasicHashTable Text a -> ext -> (ext -> FilePath -> IO (Either Text [(AssetID a, a)])) -> (ext -> a -> IO ()) -> HashmapLoader a ext
-[store] :: HashmapLoader a ext -> BasicHashTable Text a
-[extraData] :: HashmapLoader a ext -> ext
-[loadFromFile] :: HashmapLoader a ext -> ext -> FilePath -> IO (Either Text [(AssetID a, a)])
-[delete] :: HashmapLoader a ext -> ext -> a -> IO ()
+-- | Utility function to load a single asset for the special case of `c ==
+--   ()`
+loadAsset_ :: (MonadIO m, MonadError Text m) => AssetLoader a b () -> FilePath -> m [AssetID a]
 
 -- | Utility function to load a bunch of assets into an <a>AssetLoader</a>
 --   with a callback function. Also normalizes the paths via the cabal
 --   paths.
-loadAssets :: forall m a. (MonadError Text m, MonadIO m, AssetLoader a) => a -> [FilePath] -> (Float -> Text -> m ()) -> m ()
+loadAssets :: forall m a b c. (MonadError Text m, MonadIO m) => AssetLoader a b c -> c -> [FilePath] -> (Float -> Text -> m ()) -> m ()
+
+-- | Same as <a>loadAssets</a> specialized for `c == ()`
+loadAssets_ :: (MonadIO m, MonadError Text m) => AssetLoader a b () -> [FilePath] -> (Float -> Text -> m ()) -> m ()
 
 -- | Utility function to delete allassets in an <a>AssetLoader</a>
-deleteAssets :: (AssetLoader a, MonadIO m) => a -> m ()
+deleteAssets :: MonadIO m => AssetLoader a b c -> m ()
 instance GHC.Show.Show (Client.Assets.Generic.AssetID a)
 instance GHC.Generics.Generic (Client.Assets.Generic.AssetID a)
-instance Client.Assets.Generic.AssetLoader (Client.Assets.Generic.HashmapLoader a ext)
 instance Data.Binary.Class.Binary (Client.Assets.Generic.AssetID b)
 
 module Client.Assets.Sound
@@ -403,10 +386,10 @@ module Client.Assets.Sound
 soundLoader :: MonadIO m => m SoundLoaderType
 
 -- | A type of a sound loader
-type SoundLoaderType = HashmapLoader Chunk ()
+type SoundLoaderType = AssetLoader Chunk () ()
 
 -- | Type of a sound identifier
-type SoundID = AssetID (Asset SoundLoaderType)
+type SoundID = AssetID Chunk
 
 module Client.Assets.Texture
 
@@ -414,10 +397,10 @@ module Client.Assets.Texture
 textureLoader :: MonadIO m => Renderer -> m TextureLoaderType
 
 -- | Type of a texture loader
-type TextureLoaderType = HashmapLoader Texture Renderer
+type TextureLoaderType = AssetLoader Texture Renderer ()
 
 -- | Type of a texture identifier
-type TextureID = AssetID (Asset TextureLoaderType)
+type TextureID = AssetID Texture
 
 module Client.Assets.Sprite
 
@@ -430,10 +413,10 @@ Sprite :: Texture -> Rectangle CInt -> Point V2 CInt -> Sprite
 [center] :: Sprite -> Point V2 CInt
 
 -- | Type of a sprite loader
-type SpriteLoaderType = HashmapLoader Sprite TextureLoaderType
+type SpriteLoaderType = AssetLoader Sprite TextureLoaderType ()
 
 -- | Type of a sprite loader identifier
-type SpriteID = AssetID (Asset SpriteLoaderType)
+type SpriteID = AssetID Sprite
 
 module Client.Video.Menu
 data MenuItem
@@ -749,10 +732,10 @@ initLoop :: MonadIO m => CommandLineOptions -> m ()
 module Client.Assets.Font
 
 -- | A type of a font loader
-type FontLoaderType = HashmapLoader Font FontSize
+type FontLoaderType = AssetLoader Font () FontSize
 
 -- | Type of a font identifier
-type FontID = AssetID (Asset FontLoaderType)
+type FontID = AssetID Font
 
 -- | The size of a font
 newtype FontSize
@@ -760,7 +743,7 @@ FontSize :: Int -> FontSize
 [unFontSize] :: FontSize -> Int
 
 -- | Implementation of <tt>AssetLoader</tt> for sounds.
-fontLoader :: MonadIO m => FontSize -> m FontLoaderType
+fontLoader :: MonadIO m => m FontLoaderType
 
 module Client.Types
 
