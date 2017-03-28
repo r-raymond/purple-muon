@@ -17,7 +17,9 @@
 module Client.Assets.Generic
     ( AssetID(..)
     , AssetLoader(..)
+    , addAsset
     , getAsset
+    , getAllIDs
     , loadAsset
     , loadAsset_
     , loadAssets
@@ -101,6 +103,10 @@ getAllIDs (AssetLoader s _ _ _) = do
     l <- liftIO $ DHI.toList s
     return (fmap (AssetID . fst) l)
 
+
+-- | Utiltiy function to manually add an asset
+addAsset :: (MonadIO m) => AssetLoader a b c -> a -> AssetID a -> m ()
+addAsset (AssetLoader s _ _ _) a (AssetID k) = liftIO $ DHI.insert s k a
 
 -- | Utility function to load a bunch of assets into an `AssetLoader` with a
 -- callback function. Also normalizes the paths via the cabal paths.

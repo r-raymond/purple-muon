@@ -45,7 +45,7 @@ noFlip = SDL.V2 False False
 --
 -- TODO: The renderer as an argument is unnecessary if we take it out of the
 -- Textureloader
-renderSprite :: (MonadIO m)
+renderSprite :: (MonadIO m, MonadError Text m)
              => SDL.Renderer
              -> CAS.SpriteLoaderType
              -> CAS.SpriteID
@@ -54,14 +54,12 @@ renderSprite :: (MonadIO m)
              -> SDL.V2 Bool
              -> m ()
 renderSprite ren sl id mr phi flips = do
-    es <- runExceptT $ CAG.getAsset sl id
-    case es of
-        (Right (CAS.Sprite t r c)) -> do
-                SDL.copyEx ren t (Just r) mr phi (Just c) flips
-        (Left t) -> panic t
+    CAS.Sprite t r c <- CAG.getAsset sl id
+    tex <- CAG.getAsset (CAG.extData sl) t
+    SDL.copyEx ren tex r mr phi (Just c) flips
 
 
-renderGameObject :: MonadIO m
+renderGameObject :: (MonadIO m, MonadError Text m)
                  => SDL.Renderer
                  -> CAS.SpriteLoaderType
                  -> Resolution

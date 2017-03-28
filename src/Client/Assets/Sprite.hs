@@ -18,6 +18,7 @@
 module Client.Assets.Sprite
     ( spriteLoader
     , Sprite(..)
+    , manualAdd
     , SpriteLoaderType
     , SpriteID
     ) where
@@ -35,8 +36,8 @@ import qualified PurpleMuon.Util.MonadError as PUM
 
 data Sprite
     = Sprite
-    { texture :: SDL.Texture
-    , rect    :: SDL.Rectangle FCT.CInt
+    { texture :: CAT.TextureID
+    , rect    :: Maybe (SDL.Rectangle FCT.CInt)
     , center  :: SDL.Point SDL.V2 FCT.CInt
     }
 
@@ -45,6 +46,17 @@ type SpriteLoaderType = CAG.AssetLoader Sprite CAT.TextureLoaderType ()
 
 -- | Type of a sprite loader identifier
 type SpriteID = CAG.AssetID Sprite
+
+-- | Manually add a sprite
+manualAdd :: MonadIO m
+          => SpriteLoaderType
+          -> Sprite
+          -> SDL.Texture
+          -> CAG.AssetID Sprite
+          -> m ()
+manualAdd sl s t k = do
+    CAG.addAsset (CAG.extData sl) t (texture s)
+    CAG.addAsset sl s k
 
 -- | Implementation of `AssetLoader` for sprites
 spriteLoader :: MonadIO m => CAT.TextureLoaderType -> m SpriteLoaderType
@@ -71,8 +83,7 @@ loadSpriteAtlas tlo p = do
     xml <- loadXMLDocument p
     let filtered = filter contentFilter (TXL.elContent xml)
     tid <- parseSpriteAtlasHeader tlo xml
-    tex <- CAG.getAsset tlo tid
-    sequence (fmap (parseSprite tex) filtered)
+    sequence (fmap (parseSprite tid) filtered)
 
 -- | Load an XML Document from a file with error handling
 loadXMLDocument :: (MonadError Text m, MonadIO m)
@@ -109,7 +120,7 @@ xmlAttrHelper atts key =
 
 -- |Parse a single sprite xml element
 parseSprite :: (MonadError Text m)
-            => SDL.Texture
+            => CAT.TextureID
             -> TXL.Content
             -> m (SpriteID, Sprite)
 parseSprite tex (TXL.Elem (TXL.Element (TXL.QName "SubTexture" Nothing Nothing) attr _ _)) = do
@@ -127,7 +138,7 @@ parseSprite tex (TXL.Elem (TXL.Element (TXL.QName "SubTexture" Nothing Nothing) 
     return (CAG.AssetID name,
             Sprite
                 tex
-                (SDL.Rectangle (SDL.P $ SDL.V2 xInt yInt) (SDL.V2 wInt hInt))
+                (Just $ SDL.Rectangle (SDL.P $ SDL.V2 xInt yInt) (SDL.V2 wInt hInt))
                 (SDL.P $ SDL.V2 (wInt `div` 2) (hInt `div` 2)))
 parseSprite _ t = throwError ("Error parsing texture" <> show t)
 

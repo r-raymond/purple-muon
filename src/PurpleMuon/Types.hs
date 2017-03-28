@@ -33,12 +33,14 @@ module PurpleMuon.Types
     ( FlType
     , Position(..)
     , Key(..)
+    , Color(..)
     ) where
 
 import           Protolude
 
 import qualified Data.Binary as DBI
 import qualified Linear.V2   as LV2
+import qualified Linear.V4   as LV4
 
 -- | The floating point type used in PurpleMuon
 type FlType = Float
@@ -53,6 +55,11 @@ newtype Position = Position { unPosition :: LV2.V2 FlType }
 -- | A key into a collection of objects
 newtype Key a = Key { unKey :: Int }
     deriving (Eq, Generic)
+
+
+-- | A color type
+-- Red Green Blue Alpha
+newtype Color = Color { unColor :: LV4.V4 Word8 }
 
 instance DBI.Binary Position
 instance DBI.Binary (Key a)

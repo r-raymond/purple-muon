@@ -27,6 +27,7 @@ Portability : POSIX
 module Client.Assets.Font
     ( FontLoaderType
     , FontID
+    , toFontID
     , FontSize(..)
     , fontLoader
     ) where
@@ -50,6 +51,14 @@ type FontID = CAG.AssetID SFO.Font
 -- | The size of a font
 newtype FontSize = FontSize { unFontSize :: Int }
 
+-- | Map a fontname + size to a font id
+toFontID :: FilePath -> FontSize -> FontID
+toFontID p (FontSize s) = CAG.AssetID $
+    ( toS $ SFP.takeBaseName p
+   <> ":"
+   <> show s
+    )
+
 -- | Implementation of `AssetLoader` for sounds.
 fontLoader :: MonadIO m => m FontLoaderType
 fontLoader = do
@@ -57,11 +66,11 @@ fontLoader = do
     return (CAG.AssetLoader
         { CAG.store = ht
         , CAG.extData = ()
-        , CAG.load = \(FontSize s) _ p -> do
-                        f <- try $ SFO.load p s
+        , CAG.load = \s _ p -> do
+                        f <- try $ SFO.load p (unFontSize s)
                                 :: IO (Either SomeException SFO.Font)
                         let r = PUM.mapLeft show f
-                            i = CAG.AssetID $ toS $ SFP.takeBaseName p
+                            i = toFontID p s
                         return (fmap (\x -> [(i, x)]) r)
         , CAG.delete = SFO.free
         })

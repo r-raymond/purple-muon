@@ -18,38 +18,51 @@
 {-# LANGUAGE TemplateHaskell #-}
 
 module Client.Video.Menu
-    ( MenuItem(..), position, mType
-    , MenuType(..), labelText, labelSize, labelTextue, buttonText, buttonSize, inputFieldText, inputFieldSize
+    ( MenuItem(..)
+    , MenuType(..)
+    , mkLabel
     ) where
 
 import           Protolude
 
-import qualified Control.Lens         as CLE
-import qualified Linear.V2            as LV2
+import qualified SDL
+import qualified SDL.Font              as SFO
 
-import qualified Client.Assets.Sprite as CAS
-import qualified PurpleMuon.Types     as PTY
+import qualified Client.Assets.Generic as CAG
+import qualified Client.Assets.Sprite  as CAS
+import qualified PurpleMuon.Types      as PTY
 
 data MenuItem
     = MenuItem
-    { _position :: PTY.Position
-    , _mType    :: MenuType
+    { position :: PTY.Position
+    , mType    :: MenuType
     }
 
 data MenuType
     = Label
-    { _labelText   :: Text
-    , _labelSize   :: Int
-    , _labelTextue :: CAS.SpriteID
+    { labelSprite :: CAS.SpriteID
     }
     | Button
-    { _buttonText :: Text
-    , _buttonSize :: LV2.V2 Float
+    { button      :: CAS.SpriteID
+    , buttonLabel :: CAS.SpriteID
     }
     | InputField
-    { _inputFieldText :: Text
-    , _inputFieldSize :: LV2.V2 Float
+    {
     }
 
-CLE.makeLenses ''MenuItem
-CLE.makeLenses ''MenuType
+mkLabel :: (MonadIO m, MonadError Text m)
+        => CAS.SpriteLoaderType
+        -> SDL.Renderer
+        -> PTY.Color
+        -> PTY.Position
+        -> Text
+        -> SFO.Font
+        -> m MenuItem
+mkLabel sl r c p t f = do
+    sur <- SFO.blended f (PTY.unColor c) t
+    tex <- SDL.createTextureFromSurface r sur
+    let id = "Label:" <> t
+    CAS.manualAdd sl (CAS.Sprite (CAG.AssetID id) Nothing (SDL.P $ SDL.V2 0 0))
+                  tex (CAG.AssetID id)
+    return (MenuItem p (Label (CAG.AssetID id)))
+

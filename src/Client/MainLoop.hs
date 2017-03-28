@@ -120,22 +120,22 @@ render = do
     SVI.rendererDrawColor renderer SDL.$= SVE.V4 0 0 0 0
     SVI.clear renderer
 
-    CVS.renderSprite renderer sl (CAG.AssetID "background.png") Nothing 0
-                     CVS.noFlip
+    void $ runExceptT $ CVS.renderSprite renderer sl (CAG.AssetID "background.png") Nothing 0
+                        CVS.noFlip
 
     appState <- get
     let pos = CLE.view (CTY.game . CTY.physicalObjects) appState
         gos = CLE.view (CTY.game . CTY.gameObjects) appState
         ngos = fmap (CVS.updateRenderInfo pos) gos
 
-    sequence_ (fmap (CVS.renderGameObject renderer
+    void $ runExceptT $ sequence_ (fmap (CVS.renderGameObject renderer
                                           sl
                                           (SDL.V2 640 480) -- TODO : fix
                                           ) ngos)
 
     -- Test rendering of font
     let fl = CLE.view CTY.fonts sta
-    Right f <- runExceptT $ CAG.getAsset fl (CAG.AssetID "kenpixel_future")
+    Right f <- runExceptT $ CAG.getAsset fl (CAG.AssetID "kenvector_future_thin:24")
     sur <- SFO.blended f (SDL.V4 255 255 255 0) "Hello World"
     t <- SDL.createTextureFromSurface renderer sur
     SDL.copy renderer t Nothing (Just $ SDL.Rectangle (SDL.P $ SDL.V2 0 0) (SDL.V2 200 50))
