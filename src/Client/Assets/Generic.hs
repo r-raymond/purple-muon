@@ -14,13 +14,14 @@
 --
 --  You should have received a copy of the GNU General Public License
 --  along with Purple Muon.  If not, see <http://www.gnu.org/licenses/>.
-
 module Client.Assets.Generic
     ( AssetID(..)
-    , Asset(..)
     , AssetLoader(..)
-    , HashmapLoader(..)
+    , getAsset
+    , loadAsset
+    , loadAsset_
     , loadAssets
+    , loadAssets_
     , deleteAssets
     ) where
 
@@ -40,74 +41,73 @@ import qualified PurpleMuon.Util.MonadError as PUM
 newtype AssetID a = AssetID { unAssetID :: Text }
     deriving (Generic, Show)
 
--- | A AssetLoader is responsible for managing assets. It can load assets and
--- store them for easy retrival.
-class AssetLoader al where
-    -- | Type of an asset
-    data Asset al :: *
-    -- | Load an asset (maybe multiple assets) into an AssetLoader. Returns the
-    -- `AssetID`s of the loaded types.
-    --
-    -- WARNING: loadAsset will always normalize the given `FilePath` via the
-    -- cabal paths package. Hence all paths should be specified relative to the
-    -- root of the git repository. Also make sure that the files are mentioned
-    -- in the package.yaml file under data-files.
-    loadAsset :: (MonadIO m, MonadError Text m)  => al -> FilePath ->  m [(AssetID (Asset al))]
-    -- | Retreive asset from AssetLoader
-    getAsset :: (MonadIO m, MonadError Text m) => al -> AssetID (Asset al) -> m (Asset al)
-    -- | Delete an asset
-    deleteAsset :: (MonadIO m) => al -> AssetID (Asset al) -> m ()
-    -- | Get all `AssetID`s
-    getAllIDs :: (MonadIO m) => al -> m [AssetID (Asset al)]
 
--- | A simple implementation of an AssetLoader via Hashmaps
--- `a` is the type of the Asset to be loaded and stored and `ext` can be any
--- extra data that needs to be used when loading an asset from a file.
-data HashmapLoader a ext
-    = HashmapLoader
+data AssetLoader a b c
+    = AssetLoader
     { store :: DHI.BasicHashTable Text a
-    , extraData :: ext
-    , loadFromFile :: ext -> FilePath -> IO (Either Text [(AssetID a, a)])
-    , delete :: ext -> a -> IO ()
+    , extData :: b
+    , load :: c -> b -> FilePath -> IO (Either Text [(AssetID a, a)])
+    , delete :: a -> IO ()
     }
 
-instance AssetLoader (HashmapLoader a ext) where
 
-    data Asset (HashmapLoader a ext) = A a -- Need a constructor here, makes things
-                                           -- unnecessarily complicated
+-- | Utility function to load a single asset
+loadAsset :: (MonadIO m, MonadError Text m)
+          => AssetLoader a b c
+          -> c
+          -> FilePath
+          -> m [AssetID a]
+loadAsset (AssetLoader s e l _) extra p = do
+    np <- liftIO $ getDataFileName p
+    massets <- liftIO $ l extra e np
+    assets <- PUM.liftEither massets
+    let insert ((AssetID id), asset) = DHI.insert s id asset
+        insertAll = fmap insert assets
+    liftIO $ sequence_ insertAll
+    return (fmap (\((AssetID id), _) -> AssetID id) assets)
 
-    loadAsset (HashmapLoader s e l _) p = do
-        np <- liftIO $ getDataFileName p
-        massets <- liftIO $ l e np
-        assets <- PUM.liftEither massets
-        let insert ((AssetID id), asset) = DHI.insert s id asset
-            insertAll = fmap insert assets
-        liftIO $ sequence_ insertAll
-        return (fmap (\((AssetID id), _) -> AssetID id) assets)
 
-    getAsset (HashmapLoader s _ _ _) (AssetID t) = do
-        ma <- liftIO $ DHI.lookup s t
-        a <- PUM.liftMaybe ("Could not load asset " <> t) ma
-        return (A a)
+-- | Utility function to load a single asset for the special case of `c == ()`
+loadAsset_ :: (MonadIO m, MonadError Text m)
+           => AssetLoader a b ()
+           -> FilePath
+           -> m [AssetID a]
+loadAsset_ al p = loadAsset al () p
 
-    deleteAsset (HashmapLoader s e _ d) (AssetID t) = do
-        ma <- liftIO $ DHI.lookup s t
-        case ma of
-            Just a -> liftIO $ do
-                d e a
-                DHI.delete s t
-            Nothing -> return ()
 
-    getAllIDs (HashmapLoader s _ _ _) = do
-        l <- liftIO $ DHI.toList s
-        return (fmap (AssetID . fst) l)
+-- | Utility function to retrieve a single asset
+getAsset :: (MonadIO m, MonadError Text m)
+         => AssetLoader a b c
+         -> (AssetID a)
+         -> m a
+getAsset (AssetLoader s _ _ _) (AssetID t) = do
+    ma <- liftIO $ DHI.lookup s t
+    a <- PUM.liftMaybe ("Could not load asset " <> t) ma
+    return a
+
+-- | Utility function to delete an asset
+deleteAsset :: (MonadIO m) => AssetLoader a b c -> AssetID a -> m ()
+deleteAsset (AssetLoader s _ _ d) (AssetID t) = do
+    ma <- liftIO $ DHI.lookup s t
+    case ma of
+        Just a -> liftIO $ do
+            d a
+            DHI.delete s t
+        Nothing -> return ()
+
+-- | Utility function for retrieving all assets
+getAllIDs :: (MonadIO m) => AssetLoader a b c -> m [AssetID a]
+getAllIDs (AssetLoader s _ _ _) = do
+    l <- liftIO $ DHI.toList s
+    return (fmap (AssetID . fst) l)
 
 
 -- | Utility function to load a bunch of assets into an `AssetLoader` with a
 -- callback function. Also normalizes the paths via the cabal paths.
-loadAssets :: forall m a. (MonadError Text m, MonadIO m, AssetLoader a)
-              => a                          -- ^ `AssetLoader` to load textures
+loadAssets :: forall m a b c. (MonadError Text m, MonadIO m) 
+              => AssetLoader a b c          -- ^ `AssetLoader` to load textures
                                             -- into
+              -> c                          -- ^ extra load data
               -> [FilePath]                 -- ^ Paths to asset files. Note that
                                             -- these should be specified
                                             -- relative to the root of the git
@@ -120,7 +120,7 @@ loadAssets :: forall m a. (MonadError Text m, MonadIO m, AssetLoader a)
                                             -- asset. If this is not needed,
                                             -- set it to `return ()`.
               -> m ()
-loadAssets al paths callback = do
+loadAssets al ext paths callback = do
     -- pair with percentages
     let perc = fmap (\x -> 100 * x / (fromIntegral $ length paths)) [1 ..]
         pspe = zip paths perc
@@ -128,12 +128,20 @@ loadAssets al paths callback = do
         loadA :: (FilePath, Float) -> m ()
         loadA = \(p, per) -> do
             callback per (toS $ SFP.takeFileName p)
-            void $ loadAsset al p
+            void $ loadAsset al ext p
         loadAll = fmap loadA pspe
     sequence_ loadAll
 
+-- | Same as `loadAssets` specialized for `c == ()`
+loadAssets_ :: (MonadIO m, MonadError Text m)
+            => AssetLoader a b ()
+            -> [FilePath]
+            -> (Float -> Text -> m ())
+            -> m ()
+loadAssets_ al p c = loadAssets al () p c
+
 -- | Utility function to delete allassets in an `AssetLoader`
-deleteAssets :: (AssetLoader a, MonadIO m) => a -> m ()
+deleteAssets :: MonadIO m => AssetLoader a b c -> m ()
 deleteAssets al = do
     ids <- getAllIDs al
     sequence_ (fmap (deleteAsset al) ids)

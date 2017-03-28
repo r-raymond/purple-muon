@@ -31,23 +31,23 @@ import qualified Client.Assets.Generic      as CAG
 import qualified PurpleMuon.Util.MonadError as PUM
 
 -- |A type of a sound loader
-type SoundLoaderType = CAG.HashmapLoader SMI.Chunk ()
+type SoundLoaderType = CAG.AssetLoader SMI.Chunk () ()
 
 -- |Type of a sound identifier
-type SoundID = CAG.AssetID (CAG.Asset SoundLoaderType)
+type SoundID = CAG.AssetID SMI.Chunk
 
 -- | Implementation of `AssetLoader` for sounds.
 soundLoader :: MonadIO m => m SoundLoaderType
 soundLoader = do
     ht <- liftIO $ DHI.new
-    return (CAG.HashmapLoader
+    return (CAG.AssetLoader
         { CAG.store = ht
-        , CAG.extraData = ()
-        , CAG.loadFromFile = \_ p -> do
+        , CAG.extData = ()
+        , CAG.load = \_ _ p -> do
                         s <- try $ SMI.load p
                                 :: IO (Either SomeException SMI.Chunk)
                         let r = PUM.mapLeft show s
                             i = CAG.AssetID $ toS $ SFP.takeBaseName p
                         return (fmap (\x -> [(i, x)]) r)
-        , CAG.delete = \_ s -> SMI.free s
+        , CAG.delete = SMI.free
         })

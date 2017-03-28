@@ -42,26 +42,26 @@ import qualified Client.Assets.Generic      as CAG
 import qualified PurpleMuon.Util.MonadError as PUM
 
 -- |A type of a font loader
-type FontLoaderType = CAG.HashmapLoader SFO.Font FontSize
+type FontLoaderType = CAG.AssetLoader SFO.Font () FontSize
 
 -- |Type of a font identifier
-type FontID = CAG.AssetID (CAG.Asset FontLoaderType)
+type FontID = CAG.AssetID SFO.Font
 
 -- | The size of a font
 newtype FontSize = FontSize { unFontSize :: Int }
 
 -- | Implementation of `AssetLoader` for sounds.
-fontLoader :: MonadIO m => FontSize -> m FontLoaderType
-fontLoader size = do
+fontLoader :: MonadIO m => m FontLoaderType
+fontLoader = do
     ht <- liftIO $ DHI.new
-    return (CAG.HashmapLoader
+    return (CAG.AssetLoader
         { CAG.store = ht
-        , CAG.extraData = size
-        , CAG.loadFromFile = \(FontSize s) p -> do
+        , CAG.extData = ()
+        , CAG.load = \(FontSize s) _ p -> do
                         f <- try $ SFO.load p s
                                 :: IO (Either SomeException SFO.Font)
                         let r = PUM.mapLeft show f
                             i = CAG.AssetID $ toS $ SFP.takeBaseName p
                         return (fmap (\x -> [(i, x)]) r)
-        , CAG.delete = \_ s -> SFO.free s
+        , CAG.delete = SFO.free
         })

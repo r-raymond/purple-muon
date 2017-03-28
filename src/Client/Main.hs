@@ -48,7 +48,7 @@ initialeState :: MonadIO m => NSO.Socket -> CCS.TBQueue PNT.ServerToClientMsg ->
 initialeState socket tbqueue r = do
     tl <- CAT.textureLoader r
     sl <- CAS.spriteLoader tl
-    fl <- CAF.fontLoader (CAF.FontSize 16)
+    fl <- CAF.fontLoader
     return $ CTY.AppState True
         (CTY.InGameState DIS.empty
                          (PPT.DeltaTime 0)

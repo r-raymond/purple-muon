@@ -54,14 +54,14 @@ playBackgroundMusic :: MonadIO m => m ()
 playBackgroundMusic = do
     let callback f p = putStrLn (FOR.format (FOR.fixed 0 FOR.% "%: loading " FOR.% FOR.stext) f p)
     sl <- CAS.soundLoader
-    Right () <- runExceptT $ CAG.loadAssets sl CAU.soundAssets callback
-    (Right (CAG.A a)) <- runExceptT $ CAG.getAsset sl (CAG.AssetID "click1")
+    Right () <- runExceptT $ CAG.loadAssets_ sl CAU.soundAssets callback
+    (Right a) <- runExceptT $ CAG.getAsset sl (CAG.AssetID "click1")
     SMI.playForever a
 
 loadFonts :: MonadIO m => CAF.FontLoaderType -> m ()
 loadFonts fl = do
     let callback f p = putStrLn (FOR.format (FOR.fixed 0 FOR.% "%: loading " FOR.% FOR.stext) f p)
-    res <- runExceptT $ CAG.loadAssets fl CAU.fontAssets callback
+    res <- runExceptT $ CAG.loadAssets fl (CAF.FontSize 24) CAU.fontAssets callback
     case res of
         Left e   -> print e
         Right () -> return ()
@@ -76,7 +76,7 @@ initLoop = do
 
     playBackgroundMusic
     loadFonts fl
-    res <- runExceptT $ CAG.loadAssets sl CAU.pngAssets callback
+    res <- runExceptT $ CAG.loadAssets_ sl CAU.pngAssets callback
     case res of
         Right () -> loop
         Left e   -> panic $ "Could not load assets: " <> e
@@ -135,7 +135,7 @@ render = do
 
     -- Test rendering of font
     let fl = CLE.view CTY.fonts sta
-    Right (CAG.A f) <- runExceptT $ CAG.getAsset fl (CAG.AssetID "kenpixel_future")
+    Right f <- runExceptT $ CAG.getAsset fl (CAG.AssetID "kenpixel_future")
     sur <- SFO.blended f (SDL.V4 255 255 255 0) "Hello World"
     t <- SDL.createTextureFromSurface renderer sur
     SDL.copy renderer t Nothing (Just $ SDL.Rectangle (SDL.P $ SDL.V2 0 0) (SDL.V2 200 50))

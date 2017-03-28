@@ -32,24 +32,24 @@ import qualified Client.Assets.Generic      as CAG
 import qualified PurpleMuon.Util.MonadError as PUM
 
 -- | Type of a texture loader
-type TextureLoaderType = CAG.HashmapLoader SDL.Texture SDL.Renderer
+type TextureLoaderType = CAG.AssetLoader SDL.Texture SDL.Renderer ()
 
 -- | Type of a texture identifier
-type TextureID = CAG.AssetID (CAG.Asset TextureLoaderType)
+type TextureID = CAG.AssetID SDL.Texture
 
 -- | Implementation of `AssetLoader` for textures
 textureLoader :: MonadIO m => SDL.Renderer -> m TextureLoaderType
 textureLoader ren = do
     ht <- liftIO $ DHI.new
-    return (CAG.HashmapLoader
+    return (CAG.AssetLoader
         { CAG.store = ht
-        , CAG.extraData = ren
-        , CAG.loadFromFile = \r p -> do
+        , CAG.extData = ren
+        , CAG.load = \_ r p -> do
                         t <- try $ SIM.loadTexture r p
                                 :: IO (Either SomeException SDL.Texture)
                         let res = PUM.mapLeft show t
                             i = CAG.AssetID $ toS $ SFP.takeBaseName p
                         return (fmap (\x -> [(i, x)]) res)
-        , CAG.delete = \_ t -> SDL.destroyTexture t
+        , CAG.delete = SDL.destroyTexture
         })
 

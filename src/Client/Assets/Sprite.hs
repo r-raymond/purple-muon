@@ -41,23 +41,23 @@ data Sprite
     }
 
 -- | Type of a sprite loader
-type SpriteLoaderType = CAG.HashmapLoader Sprite CAT.TextureLoaderType
+type SpriteLoaderType = CAG.AssetLoader Sprite CAT.TextureLoaderType ()
 
 -- | Type of a sprite loader identifier
-type SpriteID = CAG.AssetID (CAG.Asset SpriteLoaderType)
+type SpriteID = CAG.AssetID Sprite
 
 -- | Implementation of `AssetLoader` for sprites
 spriteLoader :: MonadIO m => CAT.TextureLoaderType -> m SpriteLoaderType
 spriteLoader tlo = do
     ht <- liftIO DHI.new
-    return CAG.HashmapLoader
+    return CAG.AssetLoader
         { CAG.store = ht
-        , CAG.extraData = tlo
-        , CAG.loadFromFile = \lo p -> do
+        , CAG.extData = tlo
+        , CAG.load = \_ lo p -> do
                             esp <- runExceptT $ loadSpriteAtlas lo p
                             let y = fmap (fmap (\(CAG.AssetID i, s) -> (CAG.AssetID i, s))) esp
                             return y
-        , CAG.delete = \_ _ -> return ()
+        , CAG.delete = \_ -> return ()
                 -- TODO: Implement. After deleting the sprite, check if there
                 -- might be no use of the texture left and if so, also delete it
         }
@@ -71,7 +71,7 @@ loadSpriteAtlas tlo p = do
     xml <- loadXMLDocument p
     let filtered = filter contentFilter (TXL.elContent xml)
     tid <- parseSpriteAtlasHeader tlo xml
-    (CAG.A tex) <- CAG.getAsset tlo tid
+    tex <- CAG.getAsset tlo tid
     sequence (fmap (parseSprite tex) filtered)
 
 -- | Load an XML Document from a file with error handling
@@ -97,7 +97,7 @@ parseSpriteAtlasHeader tlo x = do
     let atts = TXL.elAttribs x
     path <- PUM.liftMaybe "Error parsing Texture atlas header"
             (xmlAttrHelper atts "imagePath")
-    ids <- CAG.loadAsset tlo (toS path)
+    ids <- CAG.loadAsset_ tlo (toS path)
     PUM.liftList "Error parsing header" ids
 
 -- |Helper function that filters a attribute list for a given key.

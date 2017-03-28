@@ -56,7 +56,7 @@ renderSprite :: (MonadIO m)
 renderSprite ren sl id mr phi flips = do
     es <- runExceptT $ CAG.getAsset sl id
     case es of
-        (Right (CAG.A (CAS.Sprite t r c))) -> do
+        (Right (CAS.Sprite t r c)) -> do
                 SDL.copyEx ren t (Just r) mr phi (Just c) flips
         (Left t) -> panic t
 
