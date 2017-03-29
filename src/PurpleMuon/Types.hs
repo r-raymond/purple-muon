@@ -34,6 +34,7 @@ module PurpleMuon.Types
     , Position(..)
     , Key(..)
     , Color(..)
+    , Size(..)
     ) where
 
 import           Protolude
@@ -51,6 +52,10 @@ type FlType = Float
 -- positions to describe the physical objects.
 newtype Position = Position { unPosition :: LV2.V2 FlType }
     deriving (Generic, Eq, Show)
+
+newtype Size = Size { unSize :: LV2.V2 FlType }
+    deriving (Generic, Eq, Show)
+
 
 -- | A key into a collection of objects
 newtype Key a = Key { unKey :: Int }

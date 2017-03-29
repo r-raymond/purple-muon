@@ -113,8 +113,7 @@ addAsset (AssetLoader s _ _ _) a (AssetID k) = liftIO $ DHI.insert s k a
 loadAssets :: forall m a b c. (MonadError Text m, MonadIO m) 
               => AssetLoader a b c          -- ^ `AssetLoader` to load textures
                                             -- into
-              -> c                          -- ^ extra load data
-              -> [FilePath]                 -- ^ Paths to asset files. Note that
+              -> [(c, FilePath)]            -- ^ Paths to asset files. Note that
                                             -- these should be specified
                                             -- relative to the root of the git
                                             -- directory
@@ -126,13 +125,13 @@ loadAssets :: forall m a b c. (MonadError Text m, MonadIO m)
                                             -- asset. If this is not needed,
                                             -- set it to `return ()`.
               -> m ()
-loadAssets al ext paths callback = do
+loadAssets al paths callback = do
     -- pair with percentages
     let perc = fmap (\x -> 100 * x / (fromIntegral $ length paths)) [1 ..]
         pspe = zip paths perc
     -- functions for loading assets
-        loadA :: (FilePath, Float) -> m ()
-        loadA = \(p, per) -> do
+        loadA :: ((c, FilePath), Float) -> m ()
+        loadA = \((ext, p), per) -> do
             callback per (toS $ SFP.takeFileName p)
             void $ loadAsset al ext p
         loadAll = fmap loadA pspe
@@ -144,7 +143,7 @@ loadAssets_ :: (MonadIO m, MonadError Text m)
             -> [FilePath]
             -> (Float -> Text -> m ())
             -> m ()
-loadAssets_ al p c = loadAssets al () p c
+loadAssets_ al p c = loadAssets al (fmap (\x -> ((), x)) p) c
 
 -- | Utility function to delete allassets in an `AssetLoader`
 deleteAssets :: MonadIO m => AssetLoader a b c -> m ()

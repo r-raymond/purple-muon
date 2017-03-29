@@ -21,6 +21,7 @@ module Client.Video.Menu
     ( MenuItem(..)
     , MenuType(..)
     , mkLabel
+    , renderMenuItem
     ) where
 
 import           Protolude
@@ -30,13 +31,14 @@ import qualified SDL.Font              as SFO
 
 import qualified Client.Assets.Generic as CAG
 import qualified Client.Assets.Sprite  as CAS
+import qualified Client.Video.Sprite   as CVS
 import qualified PurpleMuon.Types      as PTY
 
 data MenuItem
     = MenuItem
-    { position :: PTY.Position
+    { pos      :: SDL.Rectangle PTY.FlType
     , mType    :: MenuType
-    }
+    } deriving Show
 
 data MenuType
     = Label
@@ -49,6 +51,7 @@ data MenuType
     | InputField
     {
     }
+    deriving Show
 
 -- | Make a new label
 mkLabel :: (MonadIO m, MonadError Text m)
@@ -56,14 +59,27 @@ mkLabel :: (MonadIO m, MonadError Text m)
         -> SDL.Renderer                     -- ^ renderer used to upload texture
         -> PTY.Color                        -- ^ color of text (RGBA)
         -> PTY.Position                     -- ^ position of label
+        -> PTY.Size                         -- ^ size of the label
         -> Text                             -- ^ text of label
         -> SFO.Font                         -- ^ used font
         -> m MenuItem
-mkLabel sl r c p t f = do
+mkLabel sl r c p s t f = do
     sur <- SFO.blended f (PTY.unColor c) t
     tex <- SDL.createTextureFromSurface r sur
     let id = "Label:" <> t
     CAS.manualAdd sl (CAS.Sprite (CAG.AssetID id) Nothing (SDL.P $ SDL.V2 0 0))
                   tex (CAG.AssetID id)
-    return (MenuItem p (Label (CAG.AssetID id)))
+    return (MenuItem
+        (SDL.Rectangle (SDL.P $ PTY.unPosition p) (PTY.unSize s))
+        (Label (CAG.AssetID id)))
 
+-- | Render a menu item
+renderMenuItem :: (MonadIO m, MonadError Text m)
+               => CAS.SpriteLoaderType
+               -> SDL.Renderer
+               -> MenuItem
+               -> m ()
+renderMenuItem sl r (MenuItem rect (Label s)) =
+    CVS.renderSprite r sl s (Just sr) 0 CVS.noFlip
+      where
+        sr = CVS.relToAbs (SDL.V2 800 600) rect -- TODO: Replace with resolution

@@ -30,8 +30,6 @@ module Client.States.Types
     ( State(..), inGameState, menuState
     ) where
 
-import           Protolude                       hiding (State)
-
 import qualified Control.Lens                    as CLE
 
 import qualified Client.States.InGameState.Types as CSIT

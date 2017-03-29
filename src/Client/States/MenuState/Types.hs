@@ -30,9 +30,7 @@ module Client.States.MenuState.Types
     ( State(..), menuSprites, menuItems, menuFonts
     ) where
 
-import           Protolude            hiding (State)
-
-import qualified Control.Lens             as CLE
+import qualified Control.Lens         as CLE
 
 import qualified Client.Assets.Font   as CAF
 import qualified Client.Assets.Sprite as CAS

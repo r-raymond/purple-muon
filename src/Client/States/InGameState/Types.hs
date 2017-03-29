@@ -32,8 +32,6 @@ module Client.States.InGameState.Types
     , NetworkState(..), lastPacket, lastID, ackField, socket, tbqueue
     ) where
 
-import           Protolude                hiding (State)
-
 import qualified Control.Concurrent.STM   as CCS
 import qualified Control.Lens             as CLE
 import qualified Data.IntMap.Strict       as DIS

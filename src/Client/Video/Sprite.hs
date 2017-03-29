@@ -20,6 +20,7 @@ module Client.Video.Sprite
     , noFlip
     , renderGameObject
     , updateRenderInfo
+    , relToAbs
     ) where
 
 import           Protolude
@@ -40,6 +41,15 @@ type Resolution = SDL.V2 Int
 -- | Draw sprite without flipping
 noFlip :: SDL.V2 Bool
 noFlip = SDL.V2 False False
+
+relToAbs :: Resolution -> SDL.Rectangle PTY.FlType -> SDL.Rectangle FCT.CInt
+relToAbs (SDL.V2 x y) (SDL.Rectangle (SDL.P (SDL.V2 px py)) (SDL.V2 sx sy)) =
+    SDL.Rectangle (SDL.P $ SDL.V2 npx npy) (SDL.V2 nsx nsy)
+      where 
+        npx = FCT.CInt $ truncate (fromIntegral x * px)
+        npy = FCT.CInt $ truncate (fromIntegral y * py)
+        nsx = FCT.CInt $ truncate (fromIntegral x * sx)
+        nsy = FCT.CInt $ truncate (fromIntegral y * sy)
 
 -- | Render a sprite
 --
