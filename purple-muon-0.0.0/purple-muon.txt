@@ -59,6 +59,11 @@ Position :: V2 FlType -> Position
 newtype Key a
 Key :: Int -> Key a
 [unKey] :: Key a -> Int
+
+-- | A color type Red Green Blue Alpha
+newtype Color
+Color :: V4 Word8 -> Color
+[unColor] :: Color -> V4 Word8
 instance GHC.Generics.Generic (PurpleMuon.Types.Key a)
 instance GHC.Classes.Eq (PurpleMuon.Types.Key a)
 instance GHC.Show.Show PurpleMuon.Types.Position
@@ -308,6 +313,12 @@ getKeyboardState :: MonadIO m => KeyMap -> m Controls
 standardKeyMap :: KeyMap
 
 
+module Client.States.MenuState.Events
+
+
+module Client.States.InGameState.Events
+
+
 module Client.Network
 
 module Client.Init
@@ -356,8 +367,14 @@ AssetLoader :: BasicHashTable Text a -> b -> (c -> b -> FilePath -> IO (Either T
 [load] :: AssetLoader a b c -> c -> b -> FilePath -> IO (Either Text [(AssetID a, a)])
 [delete] :: AssetLoader a b c -> a -> IO ()
 
+-- | Utiltiy function to manually add an asset
+addAsset :: (MonadIO m) => AssetLoader a b c -> a -> AssetID a -> m ()
+
 -- | Utility function to retrieve a single asset
 getAsset :: (MonadIO m, MonadError Text m) => AssetLoader a b c -> (AssetID a) -> m a
+
+-- | Utility function for retrieving all assets
+getAllIDs :: (MonadIO m) => AssetLoader a b c -> m [AssetID a]
 
 -- | Utility function to load a single asset
 loadAsset :: (MonadIO m, MonadError Text m) => AssetLoader a b c -> c -> FilePath -> m [AssetID a]
@@ -407,42 +424,19 @@ module Client.Assets.Sprite
 -- | Implementation of <tt>AssetLoader</tt> for sprites
 spriteLoader :: MonadIO m => TextureLoaderType -> m SpriteLoaderType
 data Sprite
-Sprite :: Texture -> Rectangle CInt -> Point V2 CInt -> Sprite
-[texture] :: Sprite -> Texture
-[rect] :: Sprite -> Rectangle CInt
+Sprite :: TextureID -> Maybe (Rectangle CInt) -> Point V2 CInt -> Sprite
+[texture] :: Sprite -> TextureID
+[rect] :: Sprite -> Maybe (Rectangle CInt)
 [center] :: Sprite -> Point V2 CInt
+
+-- | Manually add a sprite
+manualAdd :: MonadIO m => SpriteLoaderType -> Sprite -> Texture -> AssetID Sprite -> m ()
 
 -- | Type of a sprite loader
 type SpriteLoaderType = AssetLoader Sprite TextureLoaderType ()
 
 -- | Type of a sprite loader identifier
 type SpriteID = AssetID Sprite
-
-module Client.Video.Menu
-data MenuItem
-MenuItem :: Position -> MenuType -> MenuItem
-[_position] :: MenuItem -> Position
-[_mType] :: MenuItem -> MenuType
-position :: Lens' MenuItem Position
-mType :: Lens' MenuItem MenuType
-data MenuType
-Label :: Text -> Int -> SpriteID -> MenuType
-[_labelText] :: MenuType -> Text
-[_labelSize] :: MenuType -> Int
-[_labelTextue] :: MenuType -> SpriteID
-Button :: Text -> V2 Float -> MenuType
-[_buttonText] :: MenuType -> Text
-[_buttonSize] :: MenuType -> V2 Float
-InputField :: Text -> V2 Float -> MenuType
-[_inputFieldText] :: MenuType -> Text
-[_inputFieldSize] :: MenuType -> V2 Float
-labelText :: Traversal' MenuType Text
-labelSize :: Traversal' MenuType Int
-labelTextue :: Traversal' MenuType SpriteID
-buttonText :: Traversal' MenuType Text
-buttonSize :: Traversal' MenuType (V2 Float)
-inputFieldText :: Traversal' MenuType Text
-inputFieldSize :: Traversal' MenuType (V2 Float)
 
 
 module PurpleMuon.Game.Types
@@ -699,17 +693,33 @@ sendGameState :: (MonadReader Resources m, MonadIO m) => PhysicalObjects -> IntM
 module Server.MainLoop
 loop :: Server ()
 
+module Client.Video.Menu
+data MenuItem
+MenuItem :: Position -> MenuType -> MenuItem
+[position] :: MenuItem -> Position
+[mType] :: MenuItem -> MenuType
+data MenuType
+Label :: SpriteID -> MenuType
+[labelSprite] :: MenuType -> SpriteID
+Button :: SpriteID -> SpriteID -> MenuType
+[button] :: MenuType -> SpriteID
+[buttonLabel] :: MenuType -> SpriteID
+InputField :: MenuType
+
+-- | Make a new label
+mkLabel :: (MonadIO m, MonadError Text m) => SpriteLoaderType -> Renderer -> Color -> Position -> Text -> Font -> m MenuItem
+
 module Client.Video.Sprite
 
 -- | Render a sprite
 --   
 --   TODO: The renderer as an argument is unnecessary if we take it out of
 --   the Textureloader
-renderSprite :: (MonadIO m) => Renderer -> SpriteLoaderType -> SpriteID -> Maybe (Rectangle CInt) -> CDouble -> V2 Bool -> m ()
+renderSprite :: (MonadIO m, MonadError Text m) => Renderer -> SpriteLoaderType -> SpriteID -> Maybe (Rectangle CInt) -> CDouble -> V2 Bool -> m ()
 
 -- | Draw sprite without flipping
 noFlip :: V2 Bool
-renderGameObject :: MonadIO m => Renderer -> SpriteLoaderType -> Resolution -> GameObject -> m ()
+renderGameObject :: (MonadIO m, MonadError Text m) => Renderer -> SpriteLoaderType -> Resolution -> GameObject -> m ()
 
 -- | Update the sprite position with the position of the physical Object
 updateRenderInfo :: PhysicalObjects -> GameObject -> GameObject
@@ -737,6 +747,9 @@ type FontLoaderType = AssetLoader Font () FontSize
 -- | Type of a font identifier
 type FontID = AssetID Font
 
+-- | Map a fontname + size to a font id
+toFontID :: FilePath -> FontSize -> FontID
+
 -- | The size of a font
 newtype FontSize
 FontSize :: Int -> FontSize
@@ -745,31 +758,28 @@ FontSize :: Int -> FontSize
 -- | Implementation of <tt>AssetLoader</tt> for sounds.
 fontLoader :: MonadIO m => m FontLoaderType
 
-module Client.Types
 
--- | The <a>AppState</a> holds all information of the entire application.
-data AppState
-AppState :: Bool -> GameState -> SpriteLoaderType -> FrameState -> FontLoaderType -> AppState
-[_running] :: AppState -> Bool
-[_game] :: AppState -> GameState
-[_sprites] :: AppState -> SpriteLoaderType
-[_frameState] :: AppState -> FrameState
-[_fonts] :: AppState -> FontLoaderType
-running :: Lens' AppState Bool
-game :: Lens' AppState GameState
-sprites :: Lens' AppState SpriteLoaderType
-frameState :: Lens' AppState FrameState
-fonts :: Lens' AppState FontLoaderType
-type Game a = ReaderT Resources (StateT AppState IO) a
+module Client.States.InGameState.Types
+data State
+State :: PhysicalObjects -> DeltaTime -> IntMap GameObject -> Controls -> NetworkState -> KeyMap -> SpriteLoaderType -> FontLoaderType -> State
+[_physicalObjects] :: State -> PhysicalObjects
 
--- | The frame state contains information on the app's fps.
-data FrameState
-FrameState :: FpsCounter -> UTCTime -> DeltaTime -> FrameState
-[_fpsCounter] :: FrameState -> FpsCounter
-[_frameBegin] :: FrameState -> UTCTime
-[_dt] :: FrameState -> DeltaTime
-fpsCounter :: Lens' FrameState FpsCounter
-frameBegin :: Lens' FrameState UTCTime
+-- | Accumulated time for fixed physics step
+[_accumTime] :: State -> DeltaTime
+[_gameObjects] :: State -> IntMap GameObject
+[_controls] :: State -> Controls
+[_netState] :: State -> NetworkState
+[_keymap] :: State -> KeyMap
+[_gameSprites] :: State -> SpriteLoaderType
+[_gameFonts] :: State -> FontLoaderType
+physicalObjects :: Lens' State PhysicalObjects
+accumTime :: Lens' State DeltaTime
+gameObjects :: Lens' State (IntMap GameObject)
+controls :: Lens' State Controls
+netState :: Lens' State NetworkState
+keymap :: Lens' State KeyMap
+gameFonts :: Lens' State FontLoaderType
+gameSprites :: Lens' State SpriteLoaderType
 
 -- | The network state of a client. This data type contains every
 --   information that is available for a connection to a game server.
@@ -786,26 +796,49 @@ ackField :: Lens' NetworkState AckField
 socket :: Lens' NetworkState Socket
 tbqueue :: Lens' NetworkState (TBQueue ServerToClientMsg)
 
--- | <a>GameState</a> has the information of the current state of the game.
---   In can be either a ingame state, or a menu state.
-data GameState
-InGameState :: PhysicalObjects -> DeltaTime -> IntMap GameObject -> Controls -> NetworkState -> KeyMap -> GameState
-[_physicalObjects] :: GameState -> PhysicalObjects
 
--- | Accumulated time for fixed physics step
-[_accumTime] :: GameState -> DeltaTime
-[_gameObjects] :: GameState -> IntMap GameObject
-[_controls] :: GameState -> Controls
-[_netState] :: GameState -> NetworkState
-[_keymap] :: GameState -> KeyMap
-MenuState :: GameState
-physicalObjects :: Traversal' GameState PhysicalObjects
+module Client.States.MenuState.Types
+data State
+State :: SpriteLoaderType -> [MenuItem] -> FontLoaderType -> State
+[_menuSprites] :: State -> SpriteLoaderType
+[_menuItems] :: State -> [MenuItem]
+[_menuFonts] :: State -> FontLoaderType
+menuSprites :: Lens' State SpriteLoaderType
+menuItems :: Lens' State [MenuItem]
+menuFonts :: Lens' State FontLoaderType
+
+
+module Client.States.Types
+data State
+InGameState :: State -> State
+[_inGameState] :: State -> State
+MenuState :: State -> State
+[_menuState] :: State -> State
+inGameState :: Traversal' State State
+menuState :: Traversal' State State
+
+module Client.Types
+
+-- | The <a>AppState</a> holds all information of the entire application.
+data AppState
+AppState :: Bool -> State -> FrameState -> AppState
+[_running] :: AppState -> Bool
+[_game] :: AppState -> State
+[_frameState] :: AppState -> FrameState
+running :: Lens' AppState Bool
+game :: Lens' AppState State
+frameState :: Lens' AppState FrameState
+type Game a = ReaderT Resources (StateT AppState IO) a
+
+-- | The frame state contains information on the app's fps.
+data FrameState
+FrameState :: FpsCounter -> UTCTime -> DeltaTime -> FrameState
+[_fpsCounter] :: FrameState -> FpsCounter
+[_frameBegin] :: FrameState -> UTCTime
+[_dt] :: FrameState -> DeltaTime
+fpsCounter :: Lens' FrameState FpsCounter
+frameBegin :: Lens' FrameState UTCTime
 dt :: Lens' FrameState DeltaTime
-accumTime :: Traversal' GameState DeltaTime
-gameObjects :: Traversal' GameState (IntMap GameObject)
-controls :: Traversal' GameState Controls
-netState :: Traversal' GameState NetworkState
-keymap :: Traversal' GameState KeyMap
 
 -- | Resources are things that do not change during a complete app cycle.
 data Resources
@@ -833,9 +866,24 @@ frameBegin :: (MonadIO m, MonadState UTCTime m) => m ()
 manageFps :: (MonadIO m, MonadState FrameState m) => m ()
 formatFps :: FpsCounter -> Text
 
-module Client.MainLoop
+
+module Client.States.InGameState.Loop
+
+-- | The loop while being in game Note that loop should _not_ pass any
+--   errors further along, unless they are fatal. There is no recovery
+--   beyond this point, hence no MonadError.
+loop :: (MonadIO m, MonadState State m, MonadReader Resources m) => m ()
+
+
+module Client.States.MenuState.Loop
+
+-- | The loop whil being in the menu. Note that loop should _not_ pass any
+--   errors further along, unless they are fatal. There is no recovery
+--   beyond this point, hence no MonadError.
+loop :: (MonadIO m, MonadState State m, MonadReader Resources m) => m ()
+
+module Client.Loop
 loop :: Game ()
-initLoop :: Game ()
 
 module Client.Main
 uuid :: ProtocolUUID
