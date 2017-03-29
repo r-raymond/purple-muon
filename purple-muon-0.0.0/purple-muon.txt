@@ -64,8 +64,14 @@ Key :: Int -> Key a
 newtype Color
 Color :: V4 Word8 -> Color
 [unColor] :: Color -> V4 Word8
+newtype Size
+Size :: V2 FlType -> Size
+[unSize] :: Size -> V2 FlType
 instance GHC.Generics.Generic (PurpleMuon.Types.Key a)
 instance GHC.Classes.Eq (PurpleMuon.Types.Key a)
+instance GHC.Show.Show PurpleMuon.Types.Size
+instance GHC.Classes.Eq PurpleMuon.Types.Size
+instance GHC.Generics.Generic PurpleMuon.Types.Size
 instance GHC.Show.Show PurpleMuon.Types.Position
 instance GHC.Classes.Eq PurpleMuon.Types.Position
 instance GHC.Generics.Generic PurpleMuon.Types.Position
@@ -386,7 +392,7 @@ loadAsset_ :: (MonadIO m, MonadError Text m) => AssetLoader a b () -> FilePath -
 -- | Utility function to load a bunch of assets into an <a>AssetLoader</a>
 --   with a callback function. Also normalizes the paths via the cabal
 --   paths.
-loadAssets :: forall m a b c. (MonadError Text m, MonadIO m) => AssetLoader a b c -> c -> [FilePath] -> (Float -> Text -> m ()) -> m ()
+loadAssets :: forall m a b c. (MonadError Text m, MonadIO m) => AssetLoader a b c -> [(c, FilePath)] -> (Float -> Text -> m ()) -> m ()
 
 -- | Same as <a>loadAssets</a> specialized for `c == ()`
 loadAssets_ :: (MonadIO m, MonadError Text m) => AssetLoader a b () -> [FilePath] -> (Float -> Text -> m ()) -> m ()
@@ -693,22 +699,6 @@ sendGameState :: (MonadReader Resources m, MonadIO m) => PhysicalObjects -> IntM
 module Server.MainLoop
 loop :: Server ()
 
-module Client.Video.Menu
-data MenuItem
-MenuItem :: Position -> MenuType -> MenuItem
-[position] :: MenuItem -> Position
-[mType] :: MenuItem -> MenuType
-data MenuType
-Label :: SpriteID -> MenuType
-[labelSprite] :: MenuType -> SpriteID
-Button :: SpriteID -> SpriteID -> MenuType
-[button] :: MenuType -> SpriteID
-[buttonLabel] :: MenuType -> SpriteID
-InputField :: MenuType
-
--- | Make a new label
-mkLabel :: (MonadIO m, MonadError Text m) => SpriteLoaderType -> Renderer -> Color -> Position -> Text -> Font -> m MenuItem
-
 module Client.Video.Sprite
 
 -- | Render a sprite
@@ -723,6 +713,28 @@ renderGameObject :: (MonadIO m, MonadError Text m) => Renderer -> SpriteLoaderTy
 
 -- | Update the sprite position with the position of the physical Object
 updateRenderInfo :: PhysicalObjects -> GameObject -> GameObject
+relToAbs :: Resolution -> Rectangle FlType -> Rectangle CInt
+
+module Client.Video.Menu
+data MenuItem
+MenuItem :: Rectangle FlType -> MenuType -> MenuItem
+[pos] :: MenuItem -> Rectangle FlType
+[mType] :: MenuItem -> MenuType
+data MenuType
+Label :: SpriteID -> MenuType
+[labelSprite] :: MenuType -> SpriteID
+Button :: SpriteID -> SpriteID -> MenuType
+[button] :: MenuType -> SpriteID
+[buttonLabel] :: MenuType -> SpriteID
+InputField :: MenuType
+
+-- | Make a new label
+mkLabel :: (MonadIO m, MonadError Text m) => SpriteLoaderType -> Renderer -> Color -> Position -> Size -> Text -> Font -> m MenuItem
+
+-- | Render a menu item
+renderMenuItem :: (MonadIO m, MonadError Text m) => SpriteLoaderType -> Renderer -> MenuItem -> m ()
+instance GHC.Show.Show Client.Video.Menu.MenuItem
+instance GHC.Show.Show Client.Video.Menu.MenuType
 
 module Server.Config
 initialObjs :: IntMap GameObject
@@ -817,6 +829,12 @@ MenuState :: State -> State
 inGameState :: Traversal' State State
 menuState :: Traversal' State State
 
+
+module Client.States.MenuState.Init
+
+-- | initialize a new menu
+initMenu :: MonadIO m => Renderer -> m State
+
 module Client.Types
 
 -- | The <a>AppState</a> holds all information of the entire application.
@@ -877,7 +895,7 @@ loop :: (MonadIO m, MonadState State m, MonadReader Resources m) => m ()
 
 module Client.States.MenuState.Loop
 
--- | The loop whil being in the menu. Note that loop should _not_ pass any
+-- | The loop while being in the menu. Note that loop should _not_ pass any
 --   errors further along, unless they are fatal. There is no recovery
 --   beyond this point, hence no MonadError.
 loop :: (MonadIO m, MonadState State m, MonadReader Resources m) => m ()
@@ -887,6 +905,6 @@ loop :: Game ()
 
 module Client.Main
 uuid :: ProtocolUUID
-initialeState :: MonadIO m => Socket -> TBQueue ServerToClientMsg -> Renderer -> m AppState
-game :: Socket -> TBQueue ServerToClientMsg -> Window -> Renderer -> IO ()
+initialeState :: MonadIO m => Renderer -> m AppState
+game :: Window -> Renderer -> IO ()
 main :: IO ()
