@@ -17,22 +17,23 @@
 
 {-# LANGUAGE TemplateHaskell #-}
 
-module Client.Loops.MainLoop
-    ( loop
-    ) where
+module Client.Loop
+   ( loop
+   ) where
 
 import           Protolude
 
 import           Version
 
-import qualified Control.Lens            as CLE
-import qualified Control.Lens.Zoom       as CLZ
+import qualified Control.Lens                   as CLE
+import qualified Control.Lens.Zoom              as CLZ
 import qualified SDL
 
-import qualified Client.Frames           as CFR
-import qualified Client.Loops.InGameLoop as CLI
-import qualified Client.Loops.MenuLoop   as CLM
-import qualified Client.Types            as CTY
+import qualified Client.Frames                  as CFR
+import qualified Client.States.InGameState.Loop as CSIL
+import qualified Client.States.MenuState.Loop   as CSML
+import qualified Client.States.Types            as CST
+import qualified Client.Types                   as CTY
 
 loop :: CTY.Game ()
 loop = do
@@ -52,8 +53,8 @@ loop = do
     let st = CLE.view CTY.game sta
 
     case st of
-        CTY.IGS _ -> CLE.zoom (CTY.game . CTY.igs) CLI.loop
-        CTY.MS  _ -> CLE.zoom (CTY.game . CTY.ms)  CLM.loop
+        CST.InGameState _ -> CLE.zoom (CTY.game . CST.inGameState) CSIL.loop
+        CST.MenuState   _ -> CLE.zoom (CTY.game . CST.menuState)   CSML.loop
 
 
     CLZ.zoom CTY.frameState CFR.manageFps

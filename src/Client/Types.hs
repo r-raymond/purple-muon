@@ -20,30 +20,18 @@
 module Client.Types
     ( AppState(..), running, game, frameState
     , Game
-    , FrameState(..), fpsCounter, frameBegin
-    , NetworkState(..), lastPacket, lastID, ackField, socket, tbqueue
-    , GameState(..), physicalObjects, dt, accumTime, gameObjects, controls, netState, keymap, gameFonts, menuFonts, gameSprites, menuSprites, menuItems, igs, ms
-    , InGameState(..)
-    , MenuState(..)
+    , FrameState(..), fpsCounter, frameBegin, dt
     , Resources(..), window, renderer
     , FpsCounter(..)
     ) where
 
 import           Protolude
 
-import qualified Control.Concurrent.STM   as CCS
 import qualified Control.Lens             as CLE
-import qualified Data.IntMap.Strict       as DIS
 import qualified Data.Thyme.Clock         as DTC
-import qualified Network.Socket           as NSO
 import qualified SDL.Video                as SVI
 
-import qualified Client.Assets.Font       as CAF
-import qualified Client.Assets.Sprite     as CAS
-import qualified Client.Video.Menu        as CVM
-import qualified PurpleMuon.Game.Types    as PGT
-import qualified PurpleMuon.Input.Types   as PIT
-import qualified PurpleMuon.Network.Types as PNT
+import qualified Client.States.Types      as CST
 import qualified PurpleMuon.Physics.Types as PPT
 import qualified PurpleMuon.Types         as PPY
 
@@ -51,7 +39,7 @@ import qualified PurpleMuon.Types         as PPY
 data AppState
     = AppState
     { _running    :: Bool
-    , _game       :: GameState
+    , _game       :: CST.State
     , _frameState :: FrameState
     }
 
@@ -65,55 +53,12 @@ data FrameState
 
 type Game a = ReaderT Resources (StateT AppState IO) a
 
--- | The network state of a client.
--- This data type contains every information that is available for a connection
--- to a game server.
-data NetworkState
-    = NetworkState
-    { _lastPacket :: DTC.UTCTime
-    , _lastID     :: PNT.MessageCount
-    , _ackField   :: PNT.AckField
-    , _socket     :: NSO.Socket
-    , _tbqueue    :: CCS.TBQueue PNT.ServerToClientMsg
-    }
-
--- | `GameState` has the information of the current state of the game. All
--- possible game states have to be listed here
-data GameState
-    = IGS
-    { _igs :: InGameState
-    }
-    | MS
-    { _ms :: MenuState
-    }
-
-
-data InGameState
-    = InGameState
-    { _physicalObjects :: PPT.PhysicalObjects
-    , _accumTime       :: PPT.DeltaTime         -- ^ Accumulated time for fixed physics step
-    , _gameObjects     :: DIS.IntMap PGT.GameObject
-    , _controls        :: PIT.Controls
-    , _netState        :: NetworkState
-    , _keymap          :: PIT.KeyMap
-    , _gameSprites     :: CAS.SpriteLoaderType
-    , _gameFonts       :: CAF.FontLoaderType
-    }
-
-data MenuState
-    = MenuState
-    { _menuSprites :: CAS.SpriteLoaderType
-    , _menuItems   :: [CVM.MenuItem]
-    , _menuFonts   :: CAF.FontLoaderType
-    }
-
 -- | Resources are things that do not change during a complete app cycle.
 data Resources
     = Resources
     { _window   :: SVI.Window
     , _renderer :: SVI.Renderer
     }
-
 
 -- TODO: Make this more efficient. Maybe a mutable array?
 data FpsCounter
@@ -123,9 +68,5 @@ data FpsCounter
     } deriving (Show)
 
 CLE.makeLenses ''AppState
-CLE.makeLenses ''InGameState
-CLE.makeLenses ''MenuState
 CLE.makeLenses ''Resources
 CLE.makeLenses ''FrameState
-CLE.makeLenses ''NetworkState
-CLE.makeLenses ''GameState

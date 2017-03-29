@@ -16,26 +16,27 @@
 --  along with Purple Muon.  If not, see <http://www.gnu.org/licenses/>.
 
 {-|
-Module      : Client.Loops.InGameLoop
-Description : The loop while being in the menu
+Module      : Client.States.InGameState.Loop
+Description : The loop function while in the game
 Copyright   : (c) Robin Raymond, 2016-2017
 License     : GPL-3
 Maintainer  : robin@robinraymond.de
 Portability : POSIX
 -}
 
-module Client.Loops.InGameLoop
+module Client.States.InGameState.Loop
     ( loop
     ) where
 
-import Protolude
+import           Protolude
 
-import qualified Client.Types as CTY
+import qualified Client.States.InGameState.Types as CSIT
+import qualified Client.Types                    as CTY
 
 -- | The loop while being in game
 -- Note that loop should _not_ pass any errors further along, unless they are
 -- fatal. There is no recovery beyond this point, hence no MonadError.
-loop :: (MonadIO m, MonadState CTY.InGameState m, MonadReader CTY.Resources m)
+loop :: (MonadIO m, MonadState CSIT.State m, MonadReader CTY.Resources m)
      => m ()
 loop = return ()
 

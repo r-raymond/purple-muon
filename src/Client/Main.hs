@@ -21,22 +21,24 @@ import           Protolude
 
 import           Version
 
-import qualified Control.Concurrent.STM    as CCS
-import qualified Data.Binary               as DBI
-import qualified Network.Socket            as NSO
-import qualified Network.Socket.ByteString as NSB
-import qualified SDL.Video                 as SVI
+import qualified Control.Concurrent.STM        as CCS
+import qualified Data.Binary                   as DBI
+import qualified Network.Socket                as NSO
+import qualified Network.Socket.ByteString     as NSB
+import qualified SDL.Video                     as SVI
 
-import qualified PurpleMuon.Network.Types  as PNT
-import qualified PurpleMuon.Network.Util   as PNU
-import qualified PurpleMuon.Physics.Types  as PPT
+import qualified PurpleMuon.Network.Types      as PNT
+import qualified PurpleMuon.Network.Util       as PNU
+import qualified PurpleMuon.Physics.Types      as PPT
 
-import qualified Client.Assets.Font        as CAF
-import qualified Client.Assets.Sprite      as CAS
-import qualified Client.Assets.Texture     as CAT
-import qualified Client.Init               as CIN
-import qualified Client.Loops.MainLoop     as CLM
-import qualified Client.Types              as CTY
+import qualified Client.Assets.Font            as CAF
+import qualified Client.Assets.Sprite          as CAS
+import qualified Client.Assets.Texture         as CAT
+import qualified Client.Init                   as CIN
+import qualified Client.Loop                   as CLO
+import qualified Client.States.MenuState.Types as CSMT
+import qualified Client.States.Types           as CST
+import qualified Client.Types                  as CTY
 
 uuid :: PNT.ProtocolUUID
 uuid = toS $ DBI.encode (1337 :: Word32)
@@ -47,7 +49,7 @@ initialeState socket tbqueue r = do
     sl <- CAS.spriteLoader tl
     fl <- CAF.fontLoader
     return $ CTY.AppState True
-          (CTY.MS (CTY.MenuState sl [] fl))
+          (CST.MenuState $ CSMT.State sl [] fl)
 --        (CTY.InGameState DIS.empty
 --                         (PPT.DeltaTime 0)
 --                         DIS.empty
@@ -68,7 +70,7 @@ initialeState socket tbqueue r = do
 game :: NSO.Socket -> CCS.TBQueue PNT.ServerToClientMsg -> SVI.Window -> SVI.Renderer -> IO ()
 game s tb w r = do
     initS <- initialeState s tb r
-    evalStateT (runReaderT CLM.loop (CTY.Resources w r)) initS
+    evalStateT (runReaderT CLO.loop (CTY.Resources w r)) initS
 
 main :: IO ()
 main = do

@@ -16,7 +16,7 @@
 --  along with Purple Muon.  If not, see <http://www.gnu.org/licenses/>.
 
 {-|
-Module      : Client.State
+Module      : Client.States.Types
 Description : Abstraction over states the client can be in.
 Copyright   : (c) Robin Raymond, 2016-2017
 License     : GPL-3
@@ -24,20 +24,21 @@ Maintainer  : robin@robinraymond.de
 Portability : POSIX
 -}
 
-{-# LANGUAGE GADTs #-}
+{-# LANGUAGE TemplateHaskell #-}
 
-module Client.State
-    (
+module Client.States.Types
+    ( State(..), inGameState, menuState
     ) where
 
-import Protolude
+import           Protolude                       hiding (State)
 
-data Next b
-    = Pop
-    | Push ExtState
-    | Remain
+import qualified Control.Lens                    as CLE
 
-class CState a where
-    loop :: a -> IO (b, Next b)
+import qualified Client.States.InGameState.Types as CSIT
+import qualified Client.States.MenuState.Types   as CSMT
 
-data ExtState = forall a. CState a => ExS a
+data State
+    = InGameState { _inGameState :: CSIT.State }
+    | MenuState   { _menuState   :: CSMT.State }
+
+CLE.makeLenses ''State

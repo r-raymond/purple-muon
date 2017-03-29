@@ -16,25 +16,14 @@
 --  along with Purple Muon.  If not, see <http://www.gnu.org/licenses/>.
 
 {-|
-Module      : Client.Loops.MenuLoop
-Description : The loop while being in the menu
+Module      : Client.States.MenuState.Events
+Description : Event handling for the menu state
 Copyright   : (c) Robin Raymond, 2016-2017
 License     : GPL-3
 Maintainer  : robin@robinraymond.de
 Portability : POSIX
 -}
 
-module Client.Loops.MenuLoop
-    ( loop
+module Client.States.MenuState.Events
+    (
     ) where
-
-import Protolude
-
-import qualified Client.Types as CTY
-
--- | The loop whil being in the menu.
--- Note that loop should _not_ pass any errors further along, unless they are
--- fatal. There is no recovery beyond this point, hence no MonadError.
-loop :: (MonadIO m, MonadState CTY.MenuState m, MonadReader CTY.Resources m)
-     => m ()
-loop = return ()
