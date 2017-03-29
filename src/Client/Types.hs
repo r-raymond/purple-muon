@@ -18,11 +18,13 @@
 {-# LANGUAGE TemplateHaskell #-}
 
 module Client.Types
-    ( AppState(..), running, game, sprites, frameState, fonts
+    ( AppState(..), running, game, frameState
     , Game
     , FrameState(..), fpsCounter, frameBegin
     , NetworkState(..), lastPacket, lastID, ackField, socket, tbqueue
-    , GameState(..), physicalObjects, dt, accumTime, gameObjects, controls, netState, keymap
+    , GameState(..), physicalObjects, dt, accumTime, gameObjects, controls, netState, keymap, gameFonts, menuFonts, gameSprites, menuSprites, menuItems, igs, ms
+    , InGameState(..)
+    , MenuState(..)
     , Resources(..), window, renderer
     , FpsCounter(..)
     ) where
@@ -38,6 +40,7 @@ import qualified SDL.Video                as SVI
 
 import qualified Client.Assets.Font       as CAF
 import qualified Client.Assets.Sprite     as CAS
+import qualified Client.Video.Menu        as CVM
 import qualified PurpleMuon.Game.Types    as PGT
 import qualified PurpleMuon.Input.Types   as PIT
 import qualified PurpleMuon.Network.Types as PNT
@@ -49,9 +52,7 @@ data AppState
     = AppState
     { _running    :: Bool
     , _game       :: GameState
-    , _sprites    :: CAS.SpriteLoaderType
     , _frameState :: FrameState
-    , _fonts      :: CAF.FontLoaderType
     }
 
 -- | The frame state contains information on the app's fps.
@@ -76,9 +77,18 @@ data NetworkState
     , _tbqueue    :: CCS.TBQueue PNT.ServerToClientMsg
     }
 
--- | `GameState` has the information of the current state of the game. In can be
--- either a ingame state, or a menu state.
+-- | `GameState` has the information of the current state of the game. All
+-- possible game states have to be listed here
 data GameState
+    = IGS
+    { _igs :: InGameState
+    }
+    | MS
+    { _ms :: MenuState
+    }
+
+
+data InGameState
     = InGameState
     { _physicalObjects :: PPT.PhysicalObjects
     , _accumTime       :: PPT.DeltaTime         -- ^ Accumulated time for fixed physics step
@@ -86,8 +96,16 @@ data GameState
     , _controls        :: PIT.Controls
     , _netState        :: NetworkState
     , _keymap          :: PIT.KeyMap
+    , _gameSprites     :: CAS.SpriteLoaderType
+    , _gameFonts       :: CAF.FontLoaderType
     }
-    | MenuState
+
+data MenuState
+    = MenuState
+    { _menuSprites :: CAS.SpriteLoaderType
+    , _menuItems   :: [CVM.MenuItem]
+    , _menuFonts   :: CAF.FontLoaderType
+    }
 
 -- | Resources are things that do not change during a complete app cycle.
 data Resources
@@ -105,7 +123,9 @@ data FpsCounter
     } deriving (Show)
 
 CLE.makeLenses ''AppState
-CLE.makeLenses ''GameState
+CLE.makeLenses ''InGameState
+CLE.makeLenses ''MenuState
 CLE.makeLenses ''Resources
 CLE.makeLenses ''FrameState
 CLE.makeLenses ''NetworkState
+CLE.makeLenses ''GameState

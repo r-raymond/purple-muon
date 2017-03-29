@@ -23,13 +23,10 @@ import           Version
 
 import qualified Control.Concurrent.STM    as CCS
 import qualified Data.Binary               as DBI
-import qualified Data.IntMap.Strict        as DIS
 import qualified Network.Socket            as NSO
 import qualified Network.Socket.ByteString as NSB
 import qualified SDL.Video                 as SVI
 
-import qualified PurpleMuon.Input.Types    as PIT
-import qualified PurpleMuon.Input.Util     as PIU
 import qualified PurpleMuon.Network.Types  as PNT
 import qualified PurpleMuon.Network.Util   as PNU
 import qualified PurpleMuon.Physics.Types  as PPT
@@ -38,7 +35,7 @@ import qualified Client.Assets.Font        as CAF
 import qualified Client.Assets.Sprite      as CAS
 import qualified Client.Assets.Texture     as CAT
 import qualified Client.Init               as CIN
-import qualified Client.MainLoop           as CMA
+import qualified Client.Loops.MainLoop     as CLM
 import qualified Client.Types              as CTY
 
 uuid :: PNT.ProtocolUUID
@@ -50,29 +47,28 @@ initialeState socket tbqueue r = do
     sl <- CAS.spriteLoader tl
     fl <- CAF.fontLoader
     return $ CTY.AppState True
-        (CTY.InGameState DIS.empty
-                         (PPT.DeltaTime 0)
-                         DIS.empty
-                         (PIT.Controls False False False False
-                                       False False False False)
-                         (CTY.NetworkState
-                            (toEnum 0)
-                            (PNT.MessageCount 0)
-                            (PNT.AckField 0)
-                            socket
-                            tbqueue)
-                            PIU.standardKeyMap)
-        sl
+          (CTY.MS (CTY.MenuState sl [] fl))
+--        (CTY.InGameState DIS.empty
+--                         (PPT.DeltaTime 0)
+--                         DIS.empty
+--                         (PIT.Controls False False False False
+--                                       False False False False)
+--                         (CTY.NetworkState
+--                            (toEnum 0)
+--                            (PNT.MessageCount 0)
+--                            (PNT.AckField 0)
+--                            socket
+--                            tbqueue)
+--                            PIU.standardKeyMap)
         (CTY.FrameState
             (CTY.FpsCounter 60 [])
             (toEnum 0)
             (PPT.DeltaTime 0))
-        fl
 
 game :: NSO.Socket -> CCS.TBQueue PNT.ServerToClientMsg -> SVI.Window -> SVI.Renderer -> IO ()
 game s tb w r = do
     initS <- initialeState s tb r
-    evalStateT (runReaderT CMA.initLoop (CTY.Resources w r)) initS
+    evalStateT (runReaderT CLM.loop (CTY.Resources w r)) initS
 
 main :: IO ()
 main = do

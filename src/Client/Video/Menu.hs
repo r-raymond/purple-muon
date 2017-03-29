@@ -50,13 +50,14 @@ data MenuType
     {
     }
 
+-- | Make a new label
 mkLabel :: (MonadIO m, MonadError Text m)
-        => CAS.SpriteLoaderType
-        -> SDL.Renderer
-        -> PTY.Color
-        -> PTY.Position
-        -> Text
-        -> SFO.Font
+        => CAS.SpriteLoaderType             -- ^ used to store rendered text
+        -> SDL.Renderer                     -- ^ renderer used to upload texture
+        -> PTY.Color                        -- ^ color of text (RGBA)
+        -> PTY.Position                     -- ^ position of label
+        -> Text                             -- ^ text of label
+        -> SFO.Font                         -- ^ used font
         -> m MenuItem
 mkLabel sl r c p t f = do
     sur <- SFO.blended f (PTY.unColor c) t
