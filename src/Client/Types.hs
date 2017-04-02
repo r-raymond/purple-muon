@@ -18,7 +18,7 @@
 {-# LANGUAGE TemplateHaskell #-}
 
 module Client.Types
-    ( AppState(..), running, game, frameState
+    ( AppState(..), running, game, comState, frameState
     , Game
     , FrameState(..), fpsCounter, frameBegin, dt
     , Resources(..), window, renderer
@@ -40,6 +40,7 @@ data AppState
     = AppState
     { _running    :: Bool
     , _game       :: CST.State
+    , _comState   :: CST.CommonState
     , _frameState :: FrameState
     }
 

@@ -56,9 +56,6 @@ initMenu r = do
             mainMenu sl fl r
     case res of
         Right mm -> return $ CST.MenuState (CSMT.State sl mm fl)
-                                           (CST.CommonState
-                                            (CVT.Resolution $ SDL.V2 800 600)
-                                            [])
         Left e   -> panic e
 
 -- | list of fonts used within the menu

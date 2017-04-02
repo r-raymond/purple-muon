@@ -52,10 +52,10 @@ loop = do
     let (commEv, stateEv) = DLI.partition CEV.isCommonEvent events
 
     -- Set the events for the state
-    modify $ CLE.set (CTY.game . CST.igCommon . CST.events) stateEv
-    modify $ CLE.set (CTY.game . CST.mCommon  . CST.events) stateEv
+    modify $ CLE.set (CTY.comState . CST.events) stateEv
 
-    -- TODO: handle common events
+    -- handle common events
+    sequence_ $ fmap CEV.handleCommonEvent commEv
 
 
     SDL.rendererDrawColor renderer SDL.$= SDL.V4 0 0 0 0
@@ -64,10 +64,11 @@ loop = do
     CLZ.zoom (CTY.frameState . CTY.frameBegin) CFR.frameBegin
 
     let st = CLE.view CTY.game sta
+        cs = CLE.view CTY.comState sta
 
     case st of
-        CST.InGameState _ _ -> CLE.zoom (CTY.game . CST.inGameState) CSIL.loop
-        CST.MenuState   _ _ -> CLE.zoom (CTY.game . CST.menuState)   CSML.loop
+        CST.InGameState _ -> CLE.zoom (CTY.game . CST.inGameState) CSIL.loop
+        CST.MenuState   _ -> CLE.zoom (CTY.game . CST.menuState)   (CSML.loop cs)
 
 
     CLZ.zoom CTY.frameState CFR.manageFps

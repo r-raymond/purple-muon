@@ -34,6 +34,7 @@ import qualified Control.Lens                  as CLE
 import qualified SDL
 
 import qualified Client.States.MenuState.Types as CSMT
+import qualified Client.States.Types           as CST
 import qualified Client.Types                  as CTY
 import qualified Client.Video.Menu             as CVM
 
@@ -41,17 +42,19 @@ import qualified Client.Video.Menu             as CVM
 -- Note that loop should _not_ pass any errors further along, unless they are
 -- fatal. There is no recovery beyond this point, hence no MonadError.
 loop :: (MonadIO m, MonadState CSMT.State m, MonadReader CTY.Resources m)
-     => m ()
-loop = do
+     => CST.CommonState
+     -> m ()
+loop cs = do
     sta <- get
     res <- ask
     let sl = CLE.view CSMT.menuSprites sta
         ren = CLE.view CTY.renderer res
+        resolution = CLE.view CST.resolution cs
 
     SDL.rendererDrawColor ren SDL.$= SDL.V4 29 12 32 0
     SDL.clear ren
 
 
     r <- runExceptT $ sequence_ $
-        fmap (CVM.renderMenuItem sl ren) (CLE.view CSMT.menuItems sta)
+        fmap (CVM.renderMenuItem resolution sl ren) (CLE.view CSMT.menuItems sta)
     return ()

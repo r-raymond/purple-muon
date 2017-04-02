@@ -33,4 +33,4 @@ import Protolude
 import qualified SDL
 
 -- | The resoltuion of the window
-newtype Resolution = Resolution { unResolution :: SDL.V2 Int }
+newtype Resolution = Resolution { unResolution :: SDL.V2 Int32 }

@@ -89,16 +89,17 @@ mkImage id p s = MenuItem
 
 -- | Render a menu item
 renderMenuItem :: (MonadIO m, MonadError Text m)
-               => CAS.SpriteLoaderType
+               => CVT.Resolution
+               -> CAS.SpriteLoaderType
                -> SDL.Renderer
                -> MenuItem
                -> m ()
-renderMenuItem sl r (MenuItem rect (Label s)) =
+renderMenuItem res sl r (MenuItem rect (Label s)) =
     CVS.renderSprite r sl s (Just sr) 0 CVS.noFlip
       where
-        sr = CVS.relToAbs (CVT.Resolution $ SDL.V2 800 600) rect -- TODO: Replace with resolution
+        sr = CVS.relToAbs res rect
 
-renderMenuItem sl r (MenuItem rect (Image s)) =
+renderMenuItem res sl r (MenuItem rect (Image s)) =
     CVS.renderSprite r sl s (Just sr) 0 CVS.noFlip
       where
-        sr = CVS.relToAbs (CVT.Resolution $ SDL.V2 800 600) rect -- TODO: Replace with resolution
+        sr = CVS.relToAbs res rect

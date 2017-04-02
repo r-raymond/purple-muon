@@ -27,8 +27,8 @@ Portability : POSIX
 {-# LANGUAGE TemplateHaskell #-}
 
 module Client.States.Types
-    ( State(..), inGameState, menuState, igCommon, mCommon, events
-    , CommonState(..), resolution
+    ( State(..), inGameState, menuState
+    , CommonState(..), resolution, events
     ) where
 
 import qualified Control.Lens                    as CLE
@@ -48,11 +48,9 @@ data CommonState
 data State
     = InGameState
     { _inGameState :: CSIT.State
-    , _igCommon    :: CommonState
     }
     | MenuState
     { _menuState :: CSMT.State
-    , _mCommon   :: CommonState
     }
 
 CLE.makeLenses ''State

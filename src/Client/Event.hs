@@ -16,17 +16,19 @@
 --  along with Purple Muon.  If not, see <http://www.gnu.org/licenses/>.
 
 module Client.Event
-    ( handleEvent
+    ( handleCommonEvent
     , isCommonEvent
     ) where
 
 import           Protolude
 
-import qualified Control.Lens       as CLE
+import qualified Control.Lens        as CLE
 import qualified SDL
-import qualified SDL.Input.Keyboard as SIK
+import qualified SDL.Input.Keyboard  as SIK
 
-import qualified Client.Types       as CTY
+import qualified Client.States.Types as CST
+import qualified Client.Types        as CTY
+import qualified Client.Video.Types  as CVT
 
 -- Is this a common event
 --
@@ -36,14 +38,9 @@ isCommonEvent :: SDL.Event -> Bool
 isCommonEvent (SDL.Event _ (SDL.WindowResizedEvent _)) = True
 isCommonEvent _                                        = False
 
-
-handleEvent :: SDL.Event -> CTY.Game ()
-handleEvent ev = case (SDL.eventPayload ev) of
-    SDL.KeyboardEvent e -> handleKeyboardEvent e
+-- Handle a common event
+handleCommonEvent :: SDL.Event -> CTY.Game ()
+handleCommonEvent ev = case (SDL.eventPayload ev) of
+    SDL.WindowResizedEvent e -> modify $ CLE.set (CTY.comState . CST.resolution)
+        (CVT.Resolution $ SDL.windowResizedEventSize e)
     _                   -> return ()
-
-
-handleKeyboardEvent :: SDL.KeyboardEventData -> CTY.Game ()
-handleKeyboardEvent (SDL.KeyboardEventData _ SDL.Pressed _ (SIK.Keysym SIK.ScancodeEscape _ _)) =
-    modify (CLE.set CTY.running False)
-handleKeyboardEvent _ = return ()

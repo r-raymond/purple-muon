@@ -21,30 +21,35 @@ import           Protolude
 
 import           Version
 
-import qualified Data.Binary                   as DBI
-import qualified SDL.Video                     as SVI
+import qualified Data.Binary                  as DBI
+import qualified SDL
 
-import qualified PurpleMuon.Network.Types      as PNT
-import qualified PurpleMuon.Physics.Types      as PPT
+import qualified PurpleMuon.Network.Types     as PNT
+import qualified PurpleMuon.Physics.Types     as PPT
 
-import qualified Client.Init                   as CIN
-import qualified Client.Loop                   as CLO
-import qualified Client.States.MenuState.Init  as CSMI
-import qualified Client.Types                  as CTY
+import qualified Client.Init                  as CIN
+import qualified Client.Loop                  as CLO
+import qualified Client.States.MenuState.Init as CSMI
+import qualified Client.States.Types          as CST
+import qualified Client.Types                 as CTY
+import qualified Client.Video.Types           as CVT
 
 uuid :: PNT.ProtocolUUID
 uuid = toS $ DBI.encode (1337 :: Word32)
 
-initialeState :: MonadIO m => SVI.Renderer -> m CTY.AppState
+initialeState :: MonadIO m => SDL.Renderer -> m CTY.AppState
 initialeState r = do
     menuState <- CSMI.initMenu r
     return $ CTY.AppState True menuState
+        (CST.CommonState
+            (CVT.Resolution $ SDL.V2 800 600)
+            [])
         (CTY.FrameState
             (CTY.FpsCounter 60 [])
             (toEnum 0)
             (PPT.DeltaTime 0))
 
-game :: SVI.Window -> SVI.Renderer -> IO ()
+game :: SDL.Window -> SDL.Renderer -> IO ()
 game w r = do
     initS <- initialeState r
     evalStateT (runReaderT CLO.loop (CTY.Resources w r)) initS
