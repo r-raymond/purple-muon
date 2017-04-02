@@ -319,6 +319,14 @@ getKeyboardState :: MonadIO m => KeyMap -> m Controls
 standardKeyMap :: KeyMap
 
 
+module Client.Video.Types
+
+-- | The resoltuion of the window
+newtype Resolution
+Resolution :: V2 Int -> Resolution
+[unResolution] :: Resolution -> V2 Int
+
+
 module Client.States.MenuState.Events
 
 
@@ -827,12 +835,26 @@ menuFonts :: Lens' State FontLoaderType
 
 module Client.States.Types
 data State
-InGameState :: State -> State
+InGameState :: State -> CommonState -> State
 [_inGameState] :: State -> State
-MenuState :: State -> State
+[_igCommon] :: State -> CommonState
+MenuState :: State -> CommonState -> State
 [_menuState] :: State -> State
+[_mCommon] :: State -> CommonState
 inGameState :: Traversal' State State
 menuState :: Traversal' State State
+igCommon :: Traversal' State CommonState
+mCommon :: Traversal' State CommonState
+events :: Lens' CommonState [Event]
+data CommonState
+CommonState :: Resolution -> [Event] -> CommonState
+
+-- | The current resolution of the screen
+[_resolution] :: CommonState -> Resolution
+
+-- | Events to be handled by the state
+[_events] :: CommonState -> [Event]
+resolution :: Lens' CommonState Resolution
 
 
 module Client.States.MenuState.Init
@@ -878,6 +900,7 @@ instance GHC.Show.Show Client.Types.FpsCounter
 
 module Client.Event
 handleEvent :: Event -> Game ()
+isCommonEvent :: Event -> Bool
 
 
 module Client.Frames
