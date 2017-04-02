@@ -19,6 +19,7 @@ data-files:
     - res/png/gameicons_extended/*
     - res/ogg/*
     - res/fonts/*
+    - res/fonts/fyodor/truetype/*
 
 default-extensions:
     - DeriveGeneric

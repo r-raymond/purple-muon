@@ -21,6 +21,7 @@ module Client.Video.Menu
     ( MenuItem(..)
     , MenuType(..)
     , mkLabel
+    , mkImage
     , renderMenuItem
     ) where
 
@@ -51,6 +52,9 @@ data MenuType
     | InputField
     {
     }
+    | Image
+    { imageSprite :: CAS.SpriteID
+    }
     deriving Show
 
 -- | Make a new label
@@ -73,6 +77,15 @@ mkLabel sl r c p s t f = do
         (SDL.Rectangle (SDL.P $ PTY.unPosition p) (PTY.unSize s))
         (Label (CAG.AssetID id)))
 
+-- | Make a new image
+mkImage :: CAS.SpriteID
+        -> PTY.Position
+        -> PTY.Size
+        -> MenuItem
+mkImage id p s = MenuItem
+        (SDL.Rectangle (SDL.P $ PTY.unPosition p) (PTY.unSize s))
+        (Image id)
+
 -- | Render a menu item
 renderMenuItem :: (MonadIO m, MonadError Text m)
                => CAS.SpriteLoaderType
@@ -80,6 +93,11 @@ renderMenuItem :: (MonadIO m, MonadError Text m)
                -> MenuItem
                -> m ()
 renderMenuItem sl r (MenuItem rect (Label s)) =
+    CVS.renderSprite r sl s (Just sr) 0 CVS.noFlip
+      where
+        sr = CVS.relToAbs (SDL.V2 800 600) rect -- TODO: Replace with resolution
+
+renderMenuItem sl r (MenuItem rect (Image s)) =
     CVS.renderSprite r sl s (Just sr) 0 CVS.noFlip
       where
         sr = CVS.relToAbs (SDL.V2 800 600) rect -- TODO: Replace with resolution

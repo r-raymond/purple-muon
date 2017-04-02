@@ -48,10 +48,10 @@ loop = do
     let sl = CLE.view CSMT.menuSprites sta
         ren = CLE.view CTY.renderer res
 
-    SDL.rendererDrawColor ren SDL.$= SDL.V4 227 227 227 0
+    SDL.rendererDrawColor ren SDL.$= SDL.V4 29 12 32 0
     SDL.clear ren
 
 
-    res <- runExceptT $ sequence_ $
+    r <- runExceptT $ sequence_ $
         fmap (CVM.renderMenuItem sl ren) (CLE.view CSMT.menuItems sta)
     return ()
