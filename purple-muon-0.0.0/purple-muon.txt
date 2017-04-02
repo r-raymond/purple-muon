@@ -727,9 +727,14 @@ Button :: SpriteID -> SpriteID -> MenuType
 [button] :: MenuType -> SpriteID
 [buttonLabel] :: MenuType -> SpriteID
 InputField :: MenuType
+Image :: SpriteID -> MenuType
+[imageSprite] :: MenuType -> SpriteID
 
 -- | Make a new label
 mkLabel :: (MonadIO m, MonadError Text m) => SpriteLoaderType -> Renderer -> Color -> Position -> Size -> Text -> Font -> m MenuItem
+
+-- | Make a new image
+mkImage :: SpriteID -> Position -> Size -> MenuItem
 
 -- | Render a menu item
 renderMenuItem :: (MonadIO m, MonadError Text m) => SpriteLoaderType -> Renderer -> MenuItem -> m ()
