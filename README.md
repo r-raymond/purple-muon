@@ -1,5 +1,8 @@
 [![Build Status](https://travis-ci.org/r-raymond/purple-muon.svg?branch=master)](https://travis-ci.org/r-raymond/purple-muon) [![LICENSE](https://img.shields.io/badge/LICENSE-GPL--3-brightgreen.svg)](https://www.gnu.org/licenses/gpl-3.0.en.html)
 
+
+![Purple Muon Logo](https://github.com/r-raymond/purple-muon/blob/master/res/png/logo.png)
+
 Purple Muon (Working Title)
 ==========================
 
@@ -54,3 +57,7 @@ Special Thanks
 Copyright
 ---------
 2016 - 2017 Robin Raymond
+
+Credits
+-------
+Logo graphic by <a href="http://www.freepik.com/">Freepik</a> from <a href="http://www.flaticon.com/">Flaticon</a> is licensed under <a href="http://creativecommons.org/licenses/by/3.0/" title="Creative Commons BY 3.0">CC BY 3.0</a>. Made with <a href="http://logomakr.com" title="Logo Maker">Logo Maker</a>
