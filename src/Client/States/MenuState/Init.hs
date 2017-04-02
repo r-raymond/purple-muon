@@ -98,7 +98,7 @@ mainMenu sl fl r = do
     version <- CVM.mkLabel sl r versionC
                     (PTY.Position $ SDL.V2 0.6 0.22)
                     (PTY.Size $ SDL.V2 0.2 0.05)
-                    ("v." <> gitTag) f
+                    gitTag f
     bl1 <- CVM.mkLabel sl r headerC
                     (PTY.Position $ SDL.V2 0.35 0.45)
                     (PTY.Size $ SDL.V2 0.3 0.1)
