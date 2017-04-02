@@ -323,8 +323,8 @@ module Client.Video.Types
 
 -- | The resoltuion of the window
 newtype Resolution
-Resolution :: V2 Int -> Resolution
-[unResolution] :: Resolution -> V2 Int
+Resolution :: V2 Int32 -> Resolution
+[unResolution] :: Resolution -> V2 Int32
 
 
 module Client.States.MenuState.Events
@@ -745,7 +745,7 @@ mkLabel :: (MonadIO m, MonadError Text m) => SpriteLoaderType -> Renderer -> Col
 mkImage :: SpriteID -> Position -> Size -> MenuItem
 
 -- | Render a menu item
-renderMenuItem :: (MonadIO m, MonadError Text m) => SpriteLoaderType -> Renderer -> MenuItem -> m ()
+renderMenuItem :: (MonadIO m, MonadError Text m) => Resolution -> SpriteLoaderType -> Renderer -> MenuItem -> m ()
 instance GHC.Show.Show Client.Video.Menu.MenuItem
 instance GHC.Show.Show Client.Video.Menu.MenuType
 
@@ -835,17 +835,12 @@ menuFonts :: Lens' State FontLoaderType
 
 module Client.States.Types
 data State
-InGameState :: State -> CommonState -> State
+InGameState :: State -> State
 [_inGameState] :: State -> State
-[_igCommon] :: State -> CommonState
-MenuState :: State -> CommonState -> State
+MenuState :: State -> State
 [_menuState] :: State -> State
-[_mCommon] :: State -> CommonState
 inGameState :: Traversal' State State
 menuState :: Traversal' State State
-igCommon :: Traversal' State CommonState
-mCommon :: Traversal' State CommonState
-events :: Lens' CommonState [Event]
 data CommonState
 CommonState :: Resolution -> [Event] -> CommonState
 
@@ -855,6 +850,7 @@ CommonState :: Resolution -> [Event] -> CommonState
 -- | Events to be handled by the state
 [_events] :: CommonState -> [Event]
 resolution :: Lens' CommonState Resolution
+events :: Lens' CommonState [Event]
 
 
 module Client.States.MenuState.Init
@@ -866,12 +862,14 @@ module Client.Types
 
 -- | The <a>AppState</a> holds all information of the entire application.
 data AppState
-AppState :: Bool -> State -> FrameState -> AppState
+AppState :: Bool -> State -> CommonState -> FrameState -> AppState
 [_running] :: AppState -> Bool
 [_game] :: AppState -> State
+[_comState] :: AppState -> CommonState
 [_frameState] :: AppState -> FrameState
 running :: Lens' AppState Bool
 game :: Lens' AppState State
+comState :: Lens' AppState CommonState
 frameState :: Lens' AppState FrameState
 type Game a = ReaderT Resources (StateT AppState IO) a
 
@@ -899,7 +897,7 @@ FpsCounter :: Int -> [FlType] -> FpsCounter
 instance GHC.Show.Show Client.Types.FpsCounter
 
 module Client.Event
-handleEvent :: Event -> Game ()
+handleCommonEvent :: Event -> Game ()
 isCommonEvent :: Event -> Bool
 
 
@@ -926,7 +924,7 @@ module Client.States.MenuState.Loop
 -- | The loop while being in the menu. Note that loop should _not_ pass any
 --   errors further along, unless they are fatal. There is no recovery
 --   beyond this point, hence no MonadError.
-loop :: (MonadIO m, MonadState State m, MonadReader Resources m) => m ()
+loop :: (MonadIO m, MonadState State m, MonadReader Resources m) => CommonState -> m ()
 
 module Client.Loop
 loop :: Game ()
