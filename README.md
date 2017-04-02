@@ -52,7 +52,7 @@ Special Thanks
 
 * To the Haskell community for helping me endless times and providing the
   awesome libraries used in this project
-* [Kenney](kenney.nl) for creating and sharing awesome sprites and sounds
+* [Kenney](http://www.kenney.nl) for creating and sharing awesome sprites and sounds
 
 Copyright
 ---------

@@ -33,6 +33,7 @@ import qualified SDL.Font              as SFO
 import qualified Client.Assets.Generic as CAG
 import qualified Client.Assets.Sprite  as CAS
 import qualified Client.Video.Sprite   as CVS
+import qualified Client.Video.Types    as CVT
 import qualified PurpleMuon.Types      as PTY
 
 data MenuItem
@@ -95,9 +96,9 @@ renderMenuItem :: (MonadIO m, MonadError Text m)
 renderMenuItem sl r (MenuItem rect (Label s)) =
     CVS.renderSprite r sl s (Just sr) 0 CVS.noFlip
       where
-        sr = CVS.relToAbs (SDL.V2 800 600) rect -- TODO: Replace with resolution
+        sr = CVS.relToAbs (CVT.Resolution $ SDL.V2 800 600) rect -- TODO: Replace with resolution
 
 renderMenuItem sl r (MenuItem rect (Image s)) =
     CVS.renderSprite r sl s (Just sr) 0 CVS.noFlip
       where
-        sr = CVS.relToAbs (SDL.V2 800 600) rect -- TODO: Replace with resolution
+        sr = CVS.relToAbs (CVT.Resolution $ SDL.V2 800 600) rect -- TODO: Replace with resolution

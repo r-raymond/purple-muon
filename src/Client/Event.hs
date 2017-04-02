@@ -17,23 +17,33 @@
 
 module Client.Event
     ( handleEvent
+    , isCommonEvent
     ) where
 
-import Protolude
+import           Protolude
 
-import qualified Control.Lens as CLE
-import qualified SDL.Input.Keyboard        as SIK
-import qualified SDL.Event as SEV
+import qualified Control.Lens       as CLE
+import qualified SDL
+import qualified SDL.Input.Keyboard as SIK
 
-import qualified Client.Types as CTY
+import qualified Client.Types       as CTY
 
-handleEvent :: SEV.Event -> CTY.Game ()
-handleEvent ev = case (SEV.eventPayload ev) of
-    SEV.KeyboardEvent e -> handleKeyboardEvent e
-    _ -> return ()
+-- Is this a common event
+--
+-- A common event is an event that will be handled before passing it to the
+-- application states
+isCommonEvent :: SDL.Event -> Bool
+isCommonEvent (SDL.Event _ (SDL.WindowResizedEvent _)) = True
+isCommonEvent _                                        = False
 
 
-handleKeyboardEvent :: SEV.KeyboardEventData -> CTY.Game ()
-handleKeyboardEvent (SEV.KeyboardEventData _ SEV.Pressed _ (SIK.Keysym SIK.ScancodeEscape _ _)) =
+handleEvent :: SDL.Event -> CTY.Game ()
+handleEvent ev = case (SDL.eventPayload ev) of
+    SDL.KeyboardEvent e -> handleKeyboardEvent e
+    _                   -> return ()
+
+
+handleKeyboardEvent :: SDL.KeyboardEventData -> CTY.Game ()
+handleKeyboardEvent (SDL.KeyboardEventData _ SDL.Pressed _ (SIK.Keysym SIK.ScancodeEscape _ _)) =
     modify (CLE.set CTY.running False)
 handleKeyboardEvent _ = return ()

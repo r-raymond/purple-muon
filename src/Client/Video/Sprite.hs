@@ -32,18 +32,18 @@ import qualified SDL
 
 import qualified Client.Assets.Generic    as CAG
 import qualified Client.Assets.Sprite     as CAS
+import qualified Client.Video.Types       as CVT
 import qualified PurpleMuon.Game.Types    as PGT
 import qualified PurpleMuon.Physics.Types as PPT
 import qualified PurpleMuon.Types         as PTY
-
-type Resolution = SDL.V2 Int
 
 -- | Draw sprite without flipping
 noFlip :: SDL.V2 Bool
 noFlip = SDL.V2 False False
 
-relToAbs :: Resolution -> SDL.Rectangle PTY.FlType -> SDL.Rectangle FCT.CInt
-relToAbs (SDL.V2 x y) (SDL.Rectangle (SDL.P (SDL.V2 px py)) (SDL.V2 sx sy)) =
+relToAbs :: CVT.Resolution -> SDL.Rectangle PTY.FlType -> SDL.Rectangle FCT.CInt
+relToAbs (CVT.Resolution (SDL.V2 x y))
+         (SDL.Rectangle (SDL.P (SDL.V2 px py)) (SDL.V2 sx sy)) =
     SDL.Rectangle (SDL.P $ SDL.V2 npx npy) (SDL.V2 nsx nsy)
       where 
         npx = FCT.CInt $ truncate (fromIntegral x * px)
@@ -72,10 +72,10 @@ renderSprite ren sl id mr phi flips = do
 renderGameObject :: (MonadIO m, MonadError Text m)
                  => SDL.Renderer
                  -> CAS.SpriteLoaderType
-                 -> Resolution
+                 -> CVT.Resolution
                  -> PGT.GameObject
                  -> m ()
-renderGameObject ren sl res (PGT.GameObject _ _ _ mri) =
+renderGameObject ren sl (CVT.Resolution res) (PGT.GameObject _ _ _ mri) =
     case mri of
         Just (PGT.RenderInfo p a si sp) ->
             renderSprite ren sl sp (Just apos) an (SDL.V2 False False)

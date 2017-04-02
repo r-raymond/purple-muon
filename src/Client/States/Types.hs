@@ -27,16 +27,33 @@ Portability : POSIX
 {-# LANGUAGE TemplateHaskell #-}
 
 module Client.States.Types
-    ( State(..), inGameState, menuState
+    ( State(..), inGameState, menuState, igCommon, mCommon, events
+    , CommonState(..), resolution
     ) where
 
 import qualified Control.Lens                    as CLE
+import qualified SDL
 
 import qualified Client.States.InGameState.Types as CSIT
 import qualified Client.States.MenuState.Types   as CSMT
+import qualified Client.Video.Types              as CVT
+
+-- Info that is used by all states
+data CommonState
+    = CommonState
+    { _resolution :: CVT.Resolution     -- ^ The current resolution of the screen
+    , _events     :: [SDL.Event]        -- ^ Events to be handled by the state
+    }
 
 data State
-    = InGameState { _inGameState :: CSIT.State }
-    | MenuState   { _menuState   :: CSMT.State }
+    = InGameState
+    { _inGameState :: CSIT.State
+    , _igCommon    :: CommonState
+    }
+    | MenuState
+    { _menuState :: CSMT.State
+    , _mCommon   :: CommonState
+    }
 
 CLE.makeLenses ''State
+CLE.makeLenses ''CommonState

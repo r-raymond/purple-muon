@@ -41,6 +41,7 @@ import qualified Client.Assets.Texture         as CAT
 import qualified Client.States.MenuState.Types as CSMT
 import qualified Client.States.Types           as CST
 import qualified Client.Video.Menu             as CVM
+import qualified Client.Video.Types            as CVT
 import qualified PurpleMuon.Types              as PTY
 
 -- | initialize a new menu
@@ -54,7 +55,10 @@ initMenu r = do
             CAG.loadAssets_ sl menuImages (\_ _ -> return ())
             mainMenu sl fl r
     case res of
-        Right mm -> return $ CST.MenuState $ CSMT.State sl mm fl
+        Right mm -> return $ CST.MenuState (CSMT.State sl mm fl)
+                                           (CST.CommonState
+                                            (CVT.Resolution $ SDL.V2 800 600)
+                                            [])
         Left e   -> panic e
 
 -- | list of fonts used within the menu

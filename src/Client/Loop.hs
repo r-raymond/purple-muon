@@ -27,8 +27,10 @@ import           Version
 
 import qualified Control.Lens                   as CLE
 import qualified Control.Lens.Zoom              as CLZ
+import qualified Data.List                      as DLI
 import qualified SDL
 
+import qualified Client.Event                   as CEV
 import qualified Client.Frames                  as CFR
 import qualified Client.States.InGameState.Loop as CSIL
 import qualified Client.States.MenuState.Loop   as CSML
@@ -45,6 +47,17 @@ loop = do
     -- FRAME BEGIN
     --
 
+    -- Input handling
+    events <- SDL.pollEvents
+    let (commEv, stateEv) = DLI.partition CEV.isCommonEvent events
+
+    -- Set the events for the state
+    modify $ CLE.set (CTY.game . CST.igCommon . CST.events) stateEv
+    modify $ CLE.set (CTY.game . CST.mCommon  . CST.events) stateEv
+
+    -- TODO: handle common events
+
+
     SDL.rendererDrawColor renderer SDL.$= SDL.V4 0 0 0 0
     SDL.clear renderer
 
@@ -53,8 +66,8 @@ loop = do
     let st = CLE.view CTY.game sta
 
     case st of
-        CST.InGameState _ -> CLE.zoom (CTY.game . CST.inGameState) CSIL.loop
-        CST.MenuState   _ -> CLE.zoom (CTY.game . CST.menuState)   CSML.loop
+        CST.InGameState _ _ -> CLE.zoom (CTY.game . CST.inGameState) CSIL.loop
+        CST.MenuState   _ _ -> CLE.zoom (CTY.game . CST.menuState)   CSML.loop
 
 
     CLZ.zoom CTY.frameState CFR.manageFps
