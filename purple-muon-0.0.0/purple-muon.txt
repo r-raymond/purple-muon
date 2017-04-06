@@ -726,23 +726,38 @@ relToAbs :: Resolution -> Rectangle FlType -> Rectangle CInt
 module Client.Video.Menu
 data MenuItem
 MenuItem :: Rectangle FlType -> MenuType -> MenuItem
-[pos] :: MenuItem -> Rectangle FlType
-[mType] :: MenuItem -> MenuType
+[_pos] :: MenuItem -> Rectangle FlType
+[_mType] :: MenuItem -> MenuType
+pos :: Lens' MenuItem (Rectangle FlType)
+mType :: Lens' MenuItem MenuType
 data MenuType
 Label :: SpriteID -> MenuType
-[labelSprite] :: MenuType -> SpriteID
-Button :: SpriteID -> SpriteID -> MenuType
-[button] :: MenuType -> SpriteID
-[buttonLabel] :: MenuType -> SpriteID
+[_labelSprite] :: MenuType -> SpriteID
+Button :: SpriteID -> SpriteID -> SpriteID -> SpriteID -> Bool -> MenuType
+[_button] :: MenuType -> SpriteID
+[_buttonLabel] :: MenuType -> SpriteID
+[_activeButton] :: MenuType -> SpriteID
+[_activeLabel] :: MenuType -> SpriteID
+[_active] :: MenuType -> Bool
 InputField :: MenuType
 Image :: SpriteID -> MenuType
-[imageSprite] :: MenuType -> SpriteID
+[_imageSprite] :: MenuType -> SpriteID
+labelSprite :: Traversal' MenuType SpriteID
+button :: Traversal' MenuType SpriteID
+buttonLabel :: Traversal' MenuType SpriteID
+activeButton :: Traversal' MenuType SpriteID
+activeLabel :: Traversal' MenuType SpriteID
+active :: Traversal' MenuType Bool
+imageSprite :: Traversal' MenuType SpriteID
 
 -- | Make a new label
 mkLabel :: (MonadIO m, MonadError Text m) => SpriteLoaderType -> Renderer -> Color -> Position -> Size -> Text -> Font -> m MenuItem
 
 -- | Make a new image
 mkImage :: SpriteID -> Position -> Size -> MenuItem
+
+-- | Make a new button
+mkButton :: (MonadIO m, MonadError Text m) => SpriteLoaderType -> Renderer -> Color -> Color -> SpriteID -> SpriteID -> Position -> Size -> Text -> Font -> m MenuItem
 
 -- | Render a menu item
 renderMenuItem :: (MonadIO m, MonadError Text m) => Resolution -> SpriteLoaderType -> Renderer -> MenuItem -> m ()
