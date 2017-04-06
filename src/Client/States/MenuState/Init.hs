@@ -32,6 +32,7 @@ import           Protolude
 
 import           Version
 
+import qualified Control.Lens                  as CLE
 import qualified SDL
 
 import qualified Client.Assets.Font            as CAF
@@ -41,7 +42,6 @@ import qualified Client.Assets.Texture         as CAT
 import qualified Client.States.MenuState.Types as CSMT
 import qualified Client.States.Types           as CST
 import qualified Client.Video.Menu             as CVM
-import qualified Client.Video.Types            as CVT
 import qualified PurpleMuon.Types              as PTY
 
 -- | initialize a new menu
@@ -68,7 +68,8 @@ menuFonts = fmap (\(x,y) -> (CAF.FontSize x, "res/fonts/" ++ y))
 menuImages :: [FilePath]
 menuImages = fmap (\x -> "res/png/" ++ x)
     [ "logo.xml"
-    , "uipackSpace_sheet.xml"
+    , "redSheet.xml"
+    , "blueSheet.xml"
     ]
 
 
@@ -80,15 +81,11 @@ mainMenu :: (MonadIO m, MonadError Text m)
 mainMenu sl fl r = do
     let headerC = PTY.Color $ SDL.V4 104 178 248 0
         versionC = PTY.Color $ SDL.V4 255 255 255 0
+        activeC = PTY.Color $ SDL.V4 0xee 0xee 0xec 0
+        inactiveC = PTY.Color $ SDL.V4 0x55 0x57 0x53 0
         logo = CVM.mkImage (CAG.AssetID "logo.png")
                            (PTY.Position $ SDL.V2 0.1 0.1)
                            (PTY.Size $ SDL.V2 0.2 0.2)
-        button1 = CVM.mkImage (CAG.AssetID "glassPanel_corners.png")
-                            (PTY.Position $ SDL.V2 0.3 0.4)
-                            (PTY.Size $ SDL.V2 0.4 0.2)
-        button2 = CVM.mkImage (CAG.AssetID "glassPanel_corners.png")
-                            (PTY.Position $ SDL.V2 0.3 0.65)
-                            (PTY.Size $ SDL.V2 0.4 0.2)
 
     f <- CAG.getAsset fl (CAG.AssetID "Fyodor-BoldExpandedOblique:48")
     header <- CVM.mkLabel sl r headerC
@@ -99,16 +96,34 @@ mainMenu sl fl r = do
                     (PTY.Position $ SDL.V2 0.6 0.22)
                     (PTY.Size $ SDL.V2 0.2 0.05)
                     gitTag f
-    bl1 <- CVM.mkLabel sl r headerC
-                    (PTY.Position $ SDL.V2 0.35 0.45)
-                    (PTY.Size $ SDL.V2 0.3 0.1)
-                    "New Game" f
-    bl2 <- CVM.mkLabel sl r headerC
-                    (PTY.Position $ SDL.V2 0.35 0.7)
-                    (PTY.Size $ SDL.V2 0.3 0.1)
-                    "Exit" f
+    startButton <- CVM.mkButton sl r activeC inactiveC
+                        (CAG.AssetID "red_button01.png")
+                        (CAG.AssetID "blue_button01.png")
+                        (PTY.Position $ SDL.V2 0.1 0.4)
+                        (PTY.Size $ SDL.V2 0.3 0.075)
+                        "New Game"
+                        f
+
+    creditButton  <- CVM.mkButton sl r activeC inactiveC
+                        (CAG.AssetID "red_button01.png")
+                        (CAG.AssetID "blue_button01.png")
+                        (PTY.Position $ SDL.V2 0.1 0.5)
+                        (PTY.Size $ SDL.V2 0.3 0.075)
+                        "Credits"
+                        f
+
+    exitButton  <- CVM.mkButton sl r activeC inactiveC
+                        (CAG.AssetID "red_button01.png")
+                        (CAG.AssetID "blue_button01.png")
+                        (PTY.Position $ SDL.V2 0.1 0.6)
+                        (PTY.Size $ SDL.V2 0.3 0.075)
+                        "Exit"
+                        f
 
 
 
-    return [header, version, logo, button1, button2, bl1, bl2]
+    let activeStartButton = CLE.set (CVM.mType . CVM.active) True startButton
+
+
+    return [header, version, logo, activeStartButton, creditButton, exitButton]
 

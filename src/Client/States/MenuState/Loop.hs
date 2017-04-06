@@ -51,7 +51,7 @@ loop cs = do
         ren = CLE.view CTY.renderer res
         resolution = CLE.view CST.resolution cs
 
-    SDL.rendererDrawColor ren SDL.$= SDL.V4 29 12 32 0
+    SDL.rendererDrawColor ren SDL.$= SDL.V4 0x2e 0x34 0x36 0
     SDL.clear ren
 
 
