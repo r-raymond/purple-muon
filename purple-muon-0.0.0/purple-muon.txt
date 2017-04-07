@@ -764,6 +764,9 @@ renderMenuItem :: (MonadIO m, MonadError Text m) => Resolution -> SpriteLoaderTy
 instance GHC.Show.Show Client.Video.Menu.MenuItem
 instance GHC.Show.Show Client.Video.Menu.MenuType
 
+
+module Client.States.MenuState.Menu
+
 module Server.Config
 initialObjs :: IntMap GameObject
 initialPhyObjs :: PhysicalObjects
