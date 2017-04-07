@@ -62,7 +62,8 @@ initMenu r = do
 menuFonts :: [(CAF.FontSize, FilePath)]
 menuFonts = fmap (\(x,y) -> (CAF.FontSize x, "res/fonts/" ++ y))
     [ (48, "fyodor/truetype/Fyodor-BoldExpandedOblique.ttf")
-    , (48, "fyodor/truetype/Fyodor-BoldExpanded.ttf") ]
+    , (48, "fyodor/truetype/Fyodor-BoldExpanded.ttf")
+    , (48, "kenpixel_square.ttf") ]
 
 -- | list of all images used in the menu
 menuImages :: [FilePath]
@@ -71,7 +72,6 @@ menuImages = fmap (\x -> "res/png/" ++ x)
     , "redSheet.xml"
     , "blueSheet.xml"
     ]
-
 
 mainMenu :: (MonadIO m, MonadError Text m)
          => CAS.SpriteLoaderType
@@ -88,14 +88,15 @@ mainMenu sl fl r = do
                            (PTY.Size $ SDL.V2 0.2 0.2)
 
     f <- CAG.getAsset fl (CAG.AssetID "Fyodor-BoldExpandedOblique:48")
+    vf <- CAG.getAsset fl (CAG.AssetID "kenpixel_square:48")
     header <- CVM.mkLabel sl r headerC
                     (PTY.Position $ SDL.V2 0.35 0.11)
                     (PTY.Size $ SDL.V2 0.6 0.1)
                     "Purple Muon" f
     version <- CVM.mkLabel sl r versionC
                     (PTY.Position $ SDL.V2 0.6 0.22)
-                    (PTY.Size $ SDL.V2 0.2 0.05)
-                    gitTag f
+                    (PTY.Size $ SDL.V2 0.25 0.05)
+                    gitTag vf
     startButton <- CVM.mkButton sl r activeC inactiveC
                         (CAG.AssetID "red_button01.png")
                         (CAG.AssetID "blue_button01.png")
